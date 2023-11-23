@@ -1,0 +1,15 @@
+/home/lia/Escritorio/Wall-E/WaLLE/bin/Debug/net6.0/cp6
+/home/lia/Escritorio/Wall-E/WaLLE/bin/Debug/net6.0/cp6.deps.json
+/home/lia/Escritorio/Wall-E/WaLLE/bin/Debug/net6.0/cp6.runtimeconfig.json
+/home/lia/Escritorio/Wall-E/WaLLE/bin/Debug/net6.0/cp6.dll
+/home/lia/Escritorio/Wall-E/WaLLE/bin/Debug/net6.0/cp6.pdb
+/home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/cp6.csproj.AssemblyReference.cache
+/home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/cp6.GeneratedMSBuildEditorConfig.editorconfig
+/home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/cp6.AssemblyInfoInputs.cache
+/home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/cp6.AssemblyInfo.cs
+/home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/cp6.csproj.CoreCompileInputs.cache
+/home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/cp6.dll
+/home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/refint/cp6.dll
+/home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/cp6.pdb
+/home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/cp6.genruntimeconfig.cache
+/home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/ref/cp6.dll

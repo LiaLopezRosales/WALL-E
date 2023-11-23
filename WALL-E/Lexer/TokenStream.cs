@@ -59,9 +59,9 @@ public class TokenStream:IEnumerable<Token>
         return position<tokens.Count-1;
     }
     
-     public bool Next(Token.Type type)
+     public bool Next(Token.TokenType type)
     {
-        if (position<tokens.Count-1&& LookAhead(1).Tipo==type)
+        if (position<tokens.Count-1&& LookAhead(1).Type==type)
         {
             position++;
             return true;

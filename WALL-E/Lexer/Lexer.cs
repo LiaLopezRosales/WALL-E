@@ -10,35 +10,35 @@ public class Lexer
     }
     public List<Token> Tokens(string code)
     {
-        
         string patronNumeroNegativo = @"-?\d+(\.\d+)?";
+        string low=@"_";
         string patronTexto = "\".*?\"";
         string quotes ="\"";
-        string patronPalabras = @"\+|\-|\*|\%|\line sequence|\point sequence|\_|\...|(\<\=)|(\>\=)|(\=\=)|(\!\=)|(\=\>)|\{|\}|(\|)|(\&)|\/|\^|(\!)|\@|\,|\(|\)|\{|\}|\<|\>|\=|\;|\:";
+        string patronPalabras = @"\+|\-|\*|\%|(\...)|(\<\=)|(\>\=)|(\=\=)|(\!\=)|(\=\>)|\{|\}|(\|)|(\&)|\/|\^|(\!)|\@|\,|\(|\)|\{|\}|\<|\>|\=|\;|\:";
         string patronIdentificador = @"\b\w*[a-zA-Z]\w*\b";
-        string patron = $"{patronTexto}|{quotes}|{patronIdentificador}|{patronNumeroNegativo}|{patronPalabras} ";
+        string patron = $"{patronTexto}|{low}|{quotes}|{patronIdentificador}|{patronNumeroNegativo}|{patronPalabras} ";
         MatchCollection matches = Regex.Matches(code, patron);
         List<Token> possibletokens = new List<Token>();
         foreach (Match match in matches)
         {
             Token temporal = IdentifyType(match.Value,lexererrors);
             possibletokens.Add(temporal);
-        }
-        string previus_token="";
-        foreach (Token token in possibletokens)
-        {
-            if (token.Value != "EOL")
-            {
-                previus_token=token.Value;
-            }
-            else
-            {
-                if (previus_token != ";")
-                {
-                    lexererrors.Add(new Error(Error.TypeError.Lexical_Error,Error.ErrorCode.Expected,";"));
-                }
-            }
-        }
+        } 
+        //string previus_token="";
+        // foreach (Token token in possibletokens)
+        // {
+        //     if (token.Value != "EOL")
+        //     {
+        //         previus_token=token.Value;
+        //     }
+        //     else
+        //     {
+        //         if (previus_token != ";" && previus_token!="let")
+        //         {
+        //             lexererrors.Add(new Error(Error.TypeError.Lexical_Error,Error.ErrorCode.Expected,";"));
+        //         }
+        //     }
+        // }
         return possibletokens;
     }
 
@@ -49,7 +49,7 @@ public class Lexer
 
     public static Token IdentifyType(string possibletoken,List<Error> errors)
     {
-        Token token=new Token(Token.Type.not_id,possibletoken);
+        Token token=new Token(Token.TokenType.not_id,possibletoken);
         if (possibletoken == "draw" )
         {
             token = new Token(Token.TokenType.draw,possibletoken);
