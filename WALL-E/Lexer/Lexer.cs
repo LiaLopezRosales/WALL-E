@@ -14,7 +14,7 @@ public class Lexer
         string low=@"_";
         string patronTexto = "\".*?\"";
         string quotes ="\"";
-        string patronPalabras = @"\+|\-|\*|\%|(\...)|(\<\=)|(\>\=)|(\=\=)|(\!\=)|(\=\>)|\{|\}|(\|)|(\&)|\/|\^|(\!)|\@|\,|\(|\)|\{|\}|\<|\>|\=|\;|\:";
+        string patronPalabras = @"\+|\-|\*|\%|(\...)|(\<\=)|(\>\=)|(\=\=)|(\!\=)|(\=\>)|\{|\}|\/|\^|(\!)|\,|\(|\)|\{|\}|\<|\>|\=|\;|\:";
         string patronIdentificador = @"\b\w*[a-zA-Z]\w*\b";
         string patron = $"{patronTexto}|{low}|{quotes}|{patronIdentificador}|{patronNumeroNegativo}|{patronPalabras} ";
         MatchCollection matches = Regex.Matches(code, patron);
@@ -24,21 +24,6 @@ public class Lexer
             Token temporal = IdentifyType(match.Value,lexererrors);
             possibletokens.Add(temporal);
         } 
-        //string previus_token="";
-        // foreach (Token token in possibletokens)
-        // {
-        //     if (token.Value != "EOL")
-        //     {
-        //         previus_token=token.Value;
-        //     }
-        //     else
-        //     {
-        //         if (previus_token != ";" && previus_token!="let")
-        //         {
-        //             lexererrors.Add(new Error(Error.TypeError.Lexical_Error,Error.ErrorCode.Expected,";"));
-        //         }
-        //     }
-        // }
         return possibletokens;
     }
 
@@ -127,7 +112,6 @@ public class Lexer
         {
             token = new Token(Token.TokenType.point,possibletoken);
         }
-        //Este existía?
         else if (possibletoken == "sequence" )
         {
             token = new Token(Token.TokenType.sequence,possibletoken);
@@ -212,7 +196,7 @@ public class Lexer
         {
             token = new Token(Token.TokenType.right_key,possibletoken);
         }
-        else if (possibletoken=="!")
+        else if (possibletoken=="not")
         {
             token = new Token(Token.TokenType.not,possibletoken);
         }
@@ -244,11 +228,11 @@ public class Lexer
         {
             token = new Token(Token.TokenType.equal_major, possibletoken);
         }
-        else if (possibletoken == "|" )
+        else if (possibletoken == "or" )
         {
             token = new Token(Token.TokenType.Or, possibletoken);
         }
-        else if (possibletoken == "&" )
+        else if (possibletoken == "and" )
         {
             token = new Token(Token.TokenType.And, possibletoken);
         } 

@@ -13,3 +13,11 @@
 /home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/WALL-E.genruntimeconfig.cache
 /home/lia/Escritorio/Wall-E/WaLLE/obj/Debug/net6.0/ref/WALL-E.dll
 /home/lia/Escritorio/Wall-E/WaLLE/bin/Debug/net6.0/ref/WALL-E.dll
+/home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/WALL-E.csproj.AssemblyReference.cache
+/home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/WALL-E.GeneratedMSBuildEditorConfig.editorconfig
+/home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/WALL-E.AssemblyInfoInputs.cache
+/home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/WALL-E.AssemblyInfo.cs
+/home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/WALL-E.csproj.CoreCompileInputs.cache
+/home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/WALL-E.dll
+/home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/ref/WALL-E.dll
+/home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/WALL-E.pdb

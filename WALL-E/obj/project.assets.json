@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/lia/Escritorio/Wall-E/WaLLE/WALL-E.csproj",
+      "projectUniqueName": "/home/lia/Escritorio/Wall-E/WALL-E/WALL-E.csproj",
       "projectName": "WALL-E",
-      "projectPath": "/home/lia/Escritorio/Wall-E/WaLLE/WALL-E.csproj",
+      "projectPath": "/home/lia/Escritorio/Wall-E/WALL-E/WALL-E.csproj",
       "packagesPath": "/home/lia/.nuget/packages/",
-      "outputPath": "/home/lia/Escritorio/Wall-E/WaLLE/obj/",
+      "outputPath": "/home/lia/Escritorio/Wall-E/WALL-E/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/lia/.nuget/NuGet/NuGet.Config"
