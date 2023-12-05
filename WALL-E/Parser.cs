@@ -136,19 +136,19 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.text)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of file"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of file",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         Node value = new Node();
         value.Type = Node.NodeType.Import;
         value.NodeExpression = tokenstream.tokens[tokenstream.Position()].Value;
         if (!(tokenstream.tokens[tokenstream.Position()].Value.EndsWith(".geo")))
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"file named,must end with .geo extension"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"file named,must end with .geo extension",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,import order must contain only the name of the file"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,import order must contain only the name of the file",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         return value;
 
@@ -166,7 +166,7 @@ public class Parser
             {
                 if (tokenstream.Position() >= tokens.Count - 1)
                 {
-                    errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression"));
+                    errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
                     break;
                 }
                 Node arg=new Node();
@@ -177,7 +177,7 @@ public class Parser
             } while (tokenstream.tokens[tokenstream.Position()].Value == ",");
             if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
 
@@ -195,7 +195,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the figure"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         Node value = new Node();
         value.Type = Node.NodeType.Circle;
@@ -203,7 +203,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         return value;
 
@@ -213,7 +213,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the figure"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         Node value = new Node();
         value.Type = Node.NodeType.Point;
@@ -221,7 +221,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         return value;
 
@@ -231,7 +231,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the figure"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         Node value = new Node();
         value.Type = Node.NodeType.Line;
@@ -239,7 +239,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         return value;
 
@@ -249,7 +249,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the figure"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         Node value = new Node();
         value.Type = Node.NodeType.Segment;
@@ -257,7 +257,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         return value;
 
@@ -267,7 +267,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the figure"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         Node value = new Node();
         value.Type = Node.NodeType.Ray;
@@ -275,7 +275,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         return value;
 
@@ -285,7 +285,7 @@ public class Parser
         tokenstream.MoveForward(2);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the sequence"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the sequence",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         Node value = new Node();
         value.Type = Node.NodeType.Point_Seq;
@@ -293,7 +293,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the sequence"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the sequence",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         return value;
 
@@ -303,7 +303,7 @@ public class Parser
         tokenstream.MoveForward(2);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the sequence"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "name of the sequence",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         Node value = new Node();
         value.Type = Node.NodeType.Line_Seq;
@@ -311,7 +311,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the sequence"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the sequence",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         return value;
 
@@ -321,7 +321,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.color_value)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "valid color"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "valid color",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         Node value = new Node();
         value.Type = Node.NodeType.Color;
@@ -329,7 +329,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only a color"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only a color",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         return value;
 
@@ -339,7 +339,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, restore order must be alone"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, restore order must be alone",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         Node value = new Node();
         value.Type = Node.NodeType.Restore;
@@ -356,7 +356,7 @@ public class Parser
         Node value = ParseExpression();
         if (value.NodeExpression is Error)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         globalvar.Branches = new List<Node> { var_name, value };
         //Revisar si hay que comprobar si la expresion continua
@@ -371,7 +371,7 @@ public class Parser
         {
             if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier && tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.low_hyphen)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "constant name or (_) symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "constant name or (_) symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             Node arg = new Node();
             if (tokenstream.tokens[tokenstream.Position()].Type == Token.TokenType.low_hyphen)
@@ -389,7 +389,7 @@ public class Parser
         } while (tokenstream.tokens[tokenstream.Position()].Value == ",");
         if (tokenstream.tokens[tokenstream.Position()].Value != "=")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, " = symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, " = symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node value = ParseExpression();
@@ -410,7 +410,7 @@ public class Parser
             text=ParseExpression();
            if(text.Type!=Node.NodeType.Text)
           {
-             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "text"));
+             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "text",tokenstream.tokens[tokenstream.Position()].TokenLocation));
           }
         }
         draw.Branches=new List<Node>{mainvalue,text};
@@ -423,13 +423,13 @@ public class Parser
         Node if_part = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != "then")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, " 'then' keyword"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, " 'then' keyword",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node then_part = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != "else")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'else' keyword"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'else' keyword",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node else_part = ParseExpression();
@@ -448,14 +448,14 @@ public class Parser
         center.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node radio = new Node();
         radio.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         arguments.Branches = new List<Node> { center, radio };
         return arguments;
@@ -470,14 +470,14 @@ public class Parser
         p1.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node p2 = new Node();
         p2.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         arguments.Branches = new List<Node> { p1, p2 };
         return arguments;
@@ -491,14 +491,14 @@ public class Parser
         p1.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node p2 = new Node();
         p2.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         arguments.Branches = new List<Node> { p1, p2 };
         return arguments;
@@ -512,14 +512,14 @@ public class Parser
         p1.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node p2 = new Node();
         p2.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         arguments.Branches = new List<Node> { p1, p2 };
         return arguments;
@@ -529,7 +529,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node arguments = new Node();
@@ -538,14 +538,14 @@ public class Parser
         p1.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node p2 = new Node();
         p2.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         arguments.Branches = new List<Node> { p1, p2 };
         return arguments;
@@ -555,7 +555,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node arguments = new Node();
@@ -564,14 +564,14 @@ public class Parser
         f1.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node f2 = new Node();
         f2.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         arguments.Branches = new List<Node> { f1, f2 };
         return arguments;
@@ -581,7 +581,7 @@ public class Parser
         tokenstream.MoveForward(1);
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node arguments = new Node();
@@ -590,28 +590,28 @@ public class Parser
         p1.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node p2 = new Node();
         p2.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node p3 = new Node();
         p3.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
         Node m = new Node();
         m.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         arguments.Branches = new List<Node> { p1, p2, p3, m };
         return arguments;
@@ -628,7 +628,7 @@ public class Parser
         {   //Revisar que termine de parsear instruccion hasta ; y luego avance una posicion para que el ciclo acabe
             if (tokenstream.Position() >= tokens.Count - 1)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "let-in expression"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "let-in expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
                 break;
             }
             Node instruction = new Node();
@@ -656,7 +656,7 @@ public class Parser
             {
                 if (tokenstream.Position() >= tokens.Count - 1)
                 {
-                    errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression"));
+                    errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
                     break;
                 }
                 Node arg=new Node();
@@ -668,7 +668,7 @@ public class Parser
             } while (tokenstream.tokens[tokenstream.Position()].Value == ",");
             if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
 
@@ -689,7 +689,7 @@ public class Parser
             function.Branches = new List<Node> { function_name, Arguments, body };
             if (tokenstream.tokens[tokens.Count - 1].Value != ";")
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             return function;
         }
@@ -715,7 +715,7 @@ public class Parser
             Node right = ParseOP();
             if (right.NodeExpression is Error)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             if (whatkind == Token.TokenType.Or)
             {
@@ -743,7 +743,7 @@ public class Parser
             Node right = ParseComparation();
             if (right.NodeExpression is Error)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             if (whatkind == Token.TokenType.minor)
             {
@@ -785,7 +785,7 @@ public class Parser
             Node right = ParseSum_O_Sub();
             if (right.NodeExpression is Error)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
 
             if (whatkind == Token.TokenType.sum)
@@ -815,7 +815,7 @@ public class Parser
             Node right = ParseMul_O_Div();
             if (right.NodeExpression is Error)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
 
             if (whatkind == Token.TokenType.multiplication)
@@ -847,7 +847,7 @@ public class Parser
             Node right = ParsePower();
             if (right.NodeExpression is Error)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
 
             pow.Type = Node.NodeType.Pow;
@@ -864,7 +864,7 @@ public class Parser
     {
         if (tokenstream.Position()>=tokenstream.tokens.Count)
         {
-            errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"expression"));
+            errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
         }
         Token current = tokenstream.tokens[tokenstream.Position()];
 
@@ -872,9 +872,9 @@ public class Parser
         {
             tokenstream.MoveForward(1);
             Node subnode=ParseExpression();
-            if (tokenstream.Position()>=tokenstream.tokens.Count&&tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.right_bracket)
+            if (tokenstream.Position()==tokenstream.tokens.Count-1&&tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
              tokenstream.MoveForward(1);
              return subnode;
@@ -927,12 +927,12 @@ public class Parser
         {
             if (tokenstream.tokens[tokenstream.Position()+1].Type!=Token.TokenType.left_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol after randoms function)"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol after randoms function)",tokenstream.tokens[tokenstream.Position()+1].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             if (tokenstream.tokens[tokenstream.Position()+1].Type!=Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol to close randoms function)"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol to close randoms function)",tokenstream.tokens[tokenstream.Position()+1].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node temp=new Node();
@@ -947,13 +947,13 @@ public class Parser
             tokenstream.MoveForward(1);
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.left_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node value= ParseExpression();
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node temp=new Node();
@@ -966,13 +966,13 @@ public class Parser
             tokenstream.MoveForward(1);
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.left_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node value= ParseExpression();
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node temp=new Node();
@@ -985,13 +985,13 @@ public class Parser
             tokenstream.MoveForward(1);
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.left_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node value= ParseExpression();
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node temp=new Node();
@@ -1004,13 +1004,13 @@ public class Parser
             tokenstream.MoveForward(1);
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.left_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node value= ParseExpression();
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node temp=new Node();
@@ -1023,19 +1023,19 @@ public class Parser
             tokenstream.MoveForward(1);
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.left_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node base_of_log= ParseExpression();
             if (tokenstream.tokens[tokenstream.Position()].Value!=",")
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"',' symbol "));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node number = ParseExpression();
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node temp=new Node();
@@ -1047,12 +1047,12 @@ public class Parser
         {
             if (tokenstream.tokens[tokenstream.Position()+1].Type!=Token.TokenType.left_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol after samples function)"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol after samples function)",tokenstream.tokens[tokenstream.Position()+1].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             if (tokenstream.tokens[tokenstream.Position()+1].Type!=Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol to close samples function)"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol to close samples function)",tokenstream.tokens[tokenstream.Position()+1].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node temp=new Node();
@@ -1066,13 +1066,13 @@ public class Parser
             tokenstream.MoveForward(1);
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.left_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node value= ParseExpression();
             if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.right_bracket)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             else tokenstream.MoveForward(1);
             Node temp=new Node();
@@ -1118,7 +1118,7 @@ public class Parser
                 Node finalvalue=ParseExpression();
                 if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_key)
                 {
-                    errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"sequence declaration"));
+                    errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"sequence declaration",tokenstream.tokens[tokenstream.Position()].TokenLocation));
                 }
                 else tokenstream.MoveForward(1);
                 sequence.Type=Node.NodeType.Enclosed_Infinite_Seq;
@@ -1132,7 +1132,7 @@ public class Parser
                 {
                     if(tokenstream.Position() >= tokens.Count - 1)
                    {
-                    errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression"));
+                    errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
                     break;
                    }
                     Node value=ParseExpression();
@@ -1141,7 +1141,7 @@ public class Parser
                 } while (tokenstream.tokens[tokenstream.Position()].Value == ",");
                 if(tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_key)
                {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'}' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'}' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
                }
                else tokenstream.MoveForward(1);
                sequence.Type=Node.NodeType.Finite_Seq;
@@ -1149,7 +1149,7 @@ public class Parser
             }
             else if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_key)
             {
-                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"',' or '...' symbol"));
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"',' or '...' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             return sequence;
 
@@ -1168,7 +1168,7 @@ public class Parser
         else
         {
             Node temp = new Node();
-            temp.NodeExpression=new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"expression");
+            temp.NodeExpression=new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString()));
             return temp;
         }
     }
