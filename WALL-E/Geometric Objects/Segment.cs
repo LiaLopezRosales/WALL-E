@@ -25,9 +25,8 @@ public class Segment:IEquatable<Segment>
             while (existing)
             {
                 existing=false;
-                //Revisar pq pueden generarse rayos coincidentes
-                StartIn=existingsegments.Last().StartIn.IncrementCoordinate(generator.Next(1,10),generator.Next(1,10));
-                EndsIn=existingsegments.Last().EndsIn.IncrementCoordinate(generator.Next(1,10),generator.Next(1,10));
+                StartIn=existingsegments.Last().StartIn.IncrementCoordinate(generator.NextDouble(1,10),generator.NextDouble(1,10));
+                EndsIn=existingsegments.Last().EndsIn.IncrementCoordinate(generator.NextDouble(1,10),generator.NextDouble(1,10));
                 foreach (Segment seg in existingsegments)
                 {
                     if ((StartIn.Equals(seg!.StartIn)&&EndsIn.Equals(seg!.EndsIn))||(StartIn.Equals(seg!.EndsIn)&&EndsIn.Equals(seg!.StartIn)))

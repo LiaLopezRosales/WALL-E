@@ -26,8 +26,8 @@ public class Ray:IEquatable<Ray>
             {
                 existing=false;
                 //Revisar pq pueden generarse rayos coincidentes
-                StartIn=existingrays.Last().StartIn.IncrementCoordinate(generator.Next(1,10),generator.Next(1,10));
-                PassFor=existingrays.Last().PassFor.IncrementCoordinate(generator.Next(1,10),generator.Next(1,10));
+                StartIn=existingrays.Last().StartIn.IncrementCoordinate(generator.NextDouble(1,10),generator.NextDouble(1,10));
+                PassFor=existingrays.Last().PassFor.IncrementCoordinate(generator.NextDouble(1,10),generator.NextDouble(1,10));
                 foreach (Ray ray in existingrays)
                 {
                     if ((StartIn.Equals(ray!.StartIn)&&PassFor.Equals(ray!.PassFor))||(StartIn.Equals(ray!.PassFor)&&PassFor.Equals(ray!.StartIn)))

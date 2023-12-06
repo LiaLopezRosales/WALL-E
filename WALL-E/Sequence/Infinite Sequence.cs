@@ -6,6 +6,7 @@ public class Infinite_Sequence:GenericSequence<long>
     public Infinite_Sequence(long start)
     {
        StartsAd=start;
+       count=-1;
        Sequence=GenerateSequence(StartsAd);
     }
 
@@ -15,6 +16,7 @@ public class Infinite_Sequence:GenericSequence<long>
         while ((start+i)<long.MaxValue)
         {
             yield return start + i;
+            i++;
         }
     }
 }

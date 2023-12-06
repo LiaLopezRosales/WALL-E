@@ -1,7 +1,7 @@
 public class Circle:IEquatable<Circle>
 {
     public Point center{get;set;}
-    public int radio{get;set;}
+    public double radio{get;set;}
 
     public Circle(Point p,int r)
     {
@@ -16,7 +16,7 @@ public class Circle:IEquatable<Circle>
         {
             center=new Point(0,0);
             center.RandomPoint(points);
-            radio=generator.Next(1,25);
+            radio=generator.NextDouble(1,25);
         }
         else
         {
@@ -24,9 +24,8 @@ public class Circle:IEquatable<Circle>
             while (existing)
             {
                 existing=false;
-                //Buscar otra idea para balancear estas coordenadas
-                center=existingcircles.Last().center.IncrementCoordinate(generator.Next(1,10),generator.Next(1,10));
-                radio=generator.Next(existingcircles.Last().radio+1,existingcircles.Last().radio+21);
+                center=existingcircles.Last().center.IncrementCoordinate(generator.NextDouble(1,10),generator.NextDouble(1,10));
+                radio=generator.NextDouble(existingcircles.Last().radio+1,existingcircles.Last().radio+20);
                 foreach (Circle circle in existingcircles)
                 {
                     if (center.Equals(circle!.center)&&radio==circle.radio)
@@ -54,5 +53,43 @@ public class Circle:IEquatable<Circle>
             return false;
         }
         
+    }
+
+    public Point PointInsideFigure(List<Point> existingpoints)
+    {
+       Random random=new Random();
+       double angle=0;
+       double distance=0;
+       if (existingpoints.Count==0)
+        {
+            angle=random.NextDouble(0,2*Math.PI);
+            distance=random.NextDouble(0,radio);
+            return new Point(center.x+distance*Math.Cos(angle),center.y+distance*Math.Sin(angle));
+        }
+        else
+        {
+            bool existing=true;
+            Point alternative_point=new Point(0,0);
+            while (existing)
+            {
+                alternative_point=PointInsideFigure(new List<Point>());
+                existing=false;
+                
+                foreach (Point point in existingpoints)
+                {
+                    if (point.Equals(alternative_point))
+                    {
+                        existing=true;
+                        break;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+
+            }
+            return alternative_point;
+        }
     }
 }

@@ -74,6 +74,10 @@ public class Parser
         {
             return Restore();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.draw)
+        {
+            return Draw();
+        }
          if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
         {
             return Function();
@@ -83,10 +87,6 @@ public class Parser
     }
     public Node ParseExpression()
     {
-        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.draw)
-        {
-            return Draw();
-        }
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Value == "let")
         {
             return Let_In();
@@ -130,7 +130,6 @@ public class Parser
         return ParseOP();
 
     }
-    //Añadir algo despues para comprobar que los import sean las primeras lineas
     public Node Import()
     {
         tokenstream.MoveForward(1);

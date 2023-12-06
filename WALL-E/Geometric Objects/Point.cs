@@ -1,9 +1,9 @@
 public class Point:IEquatable<Point>
 {
-    public int x {get;set;}
-    public int y {get;set;}
+    public double x {get;set;}
+    public double y {get;set;}
 
-    public Point(int x1,int y1)
+    public Point(double x1,double y1)
     {
         x=x1;
         y=y1;
@@ -22,9 +22,8 @@ public class Point:IEquatable<Point>
             while (existing)
             {
                 existing=false;
-                //Buscar otra idea para balancear estas coordenadas
-                x=generator.Next(existingpoints.Last().x+1,existingpoints.Last().x+13);
-                y=generator.Next(existingpoints.Last().y+1,existingpoints.Last().y+13);
+                x=generator.NextDouble(existingpoints.Last().x+1,existingpoints.Last().x+13);
+                y=generator.NextDouble(existingpoints.Last().y+1,existingpoints.Last().y+13);
                 foreach (Point point in existingpoints)
                 {
                     if (point.x==x && point.y==y)
@@ -41,10 +40,10 @@ public class Point:IEquatable<Point>
             }
         }
     }
-    public Point IncrementCoordinate(int x1,int y1)
+    public Point IncrementCoordinate(double x1,double y1)
     {
-        int x2=x+x1;
-        int y2=y+y1;
+        double x2=x+x1;
+        double y2=y+y1;
         return new Point(x2,y2);
         
     }
@@ -59,4 +58,6 @@ public class Point:IEquatable<Point>
             return false;
         }
     }
+
+    
 }

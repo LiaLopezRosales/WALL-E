@@ -25,9 +25,8 @@ public class Line:IEquatable<Line>
             while (existing)
             {
                 existing=false;
-                //Buscar otra idea para balancear estas coordenadas
-                generalpoint1=existinglines.Last().generalpoint1.IncrementCoordinate(generator.Next(1,10),generator.Next(1,10));
-                generalpoint2=existinglines.Last().generalpoint2.IncrementCoordinate(generator.Next(1,10),generator.Next(1,10));
+                generalpoint1=existinglines.Last().generalpoint1.IncrementCoordinate(generator.NextDouble(1,10),generator.NextDouble(1,10));
+                generalpoint2=existinglines.Last().generalpoint2.IncrementCoordinate(generator.NextDouble(1,10),generator.NextDouble(1,10));
                 foreach (Line line in existinglines)
                 {
                     if ((generalpoint1.Equals(line!.generalpoint1)&&generalpoint2.Equals(line!.generalpoint2))||(generalpoint1.Equals(line!.generalpoint2)&&generalpoint2.Equals(line!.generalpoint1)))

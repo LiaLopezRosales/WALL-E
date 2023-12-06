@@ -8,8 +8,8 @@ public class Enclosed_Infinite_Sequence:GenericSequence<long>
     {
         StartsAd=start;
         EndsAd=end;
+        count=end-start+1;
         Sequence=GenerateSequence(StartsAd,EndsAd);
-
     }
 
     private IEnumerable<long> GenerateSequence(long start,long end)

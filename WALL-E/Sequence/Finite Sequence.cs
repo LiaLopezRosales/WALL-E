@@ -6,6 +6,7 @@ public class Finite_Sequence<T>:GenericSequence<T>
     public Finite_Sequence(List<T> items)
     {
       values=items;
+      count=values.Count;
       Sequence=GenerateSequence(values);
     }
 
