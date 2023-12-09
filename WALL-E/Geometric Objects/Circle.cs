@@ -1,4 +1,4 @@
-public class Circle:IEquatable<Circle>
+public class Circle:Figure,IEquatable<Circle>
 {
     public Point center{get;set;}
     public double radio{get;set;}
@@ -91,5 +91,15 @@ public class Circle:IEquatable<Circle>
             }
             return alternative_point;
         }
+    }
+
+    public override bool ContainPoint(Point p)
+    {
+        double distance=Math.Sqrt(Math.Pow(p.x-this.center.x,2)+Math.Pow(p.y-this.center.y,2));
+            if (distance==this.radio)
+            {
+                return true;
+            }
+            else return false;
     }
 }

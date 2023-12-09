@@ -1,4 +1,4 @@
-public class Ray:IEquatable<Ray>
+public class Ray:Figure,IEquatable<Ray>
 {
     public Point StartIn{get;set;}
     public Point PassFor{get;set;}
@@ -54,5 +54,48 @@ public class Ray:IEquatable<Ray>
         {
             return false;
         }
+    }
+    public override bool ContainPoint(Point p)
+    {
+       double m=(this.PassFor.y-this.StartIn.y)/(this.PassFor.x-this.StartIn.x);
+            double b=this.StartIn.y-m*this.StartIn.x;
+            if ((p.y-m*p.x)-b==0)
+            {
+                if (this.StartIn.x<=this.PassFor.x)
+                {
+                    if (this.StartIn.y<=this.PassFor.y)
+                    {
+                        if (p.x>=this.StartIn.x&&p.y>=this.PassFor.y)
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if (p.x>=this.StartIn.x&&p.y<=this.PassFor.y)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (this.StartIn.y<=this.PassFor.y)
+                    {
+                        if (p.x<=this.StartIn.x&&p.y>=this.PassFor.y)
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if (p.x<=this.StartIn.x&&p.y<=this.PassFor.y)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
     }
 }

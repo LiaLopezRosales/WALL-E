@@ -8,12 +8,13 @@ public class Context
     public Dictionary<string,Func<IEnumerable<double>>> Randoms {get;}
      public Dictionary<string,Func<IEnumerable<Point>>> Samples {get;}
      public Dictionary<string,Func<Circle,IEnumerable<Point>>> Points{get;}
-     public List<object>ToDraw{get;set;}
+     public List<DrawObject>ToDraw{get;set;}
      public List<Circle>ExistingCircles{get;set;}
      public List<Point>ExistingPoints{get;set;}
      public List<Segment>ExistingSegments{get;set;}
      public List<Line>ExistingLines{get;set;}
      public List<Ray>ExistingRays{get;set;}
+     public Stack<string> UtilizedColors{get;set;}
     public Context()
     {
         Available_Functions=new List<Fuction>();
@@ -33,12 +34,14 @@ public class Context
         Samples.Add("samples",GenerateSamples);
         Points=new Dictionary<string, Func<Circle, IEnumerable<Point>>>();
         Points.Add("points",GeneratePointsInFigure);
-        ToDraw=new List<object>();
+        ToDraw=new List<DrawObject>();
         ExistingCircles=new List<Circle>();
         ExistingLines=new List<Line>();
         ExistingPoints=new List<Point>();
         ExistingRays=new List<Ray>();
         ExistingSegments=new List<Segment>();
+        UtilizedColors=new Stack<string>();
+        UtilizedColors.Push("black");
     }
 
     private IEnumerable<double> GenerateRandoms()

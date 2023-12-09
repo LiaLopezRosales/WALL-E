@@ -1,4 +1,4 @@
-public class Segment:IEquatable<Segment>
+public class Segment:Figure,IEquatable<Segment>
 {
     public Point StartIn{get;set;}
     public Point EndsIn{get;set;}
@@ -53,5 +53,22 @@ public class Segment:IEquatable<Segment>
         {
             return false;
         }
+    }
+    public override bool ContainPoint(Point p)
+    {
+        double m=(this.EndsIn.y-this.StartIn.y)/(this.EndsIn.x-this.StartIn.x);
+            double b=this.StartIn.y-m*this.StartIn.x;
+            if ((p.y-m*p.x)-b==0)
+            {
+                double minX=Math.Min(this.StartIn.x,this.EndsIn.x);
+                double maxX=Math.Max(this.StartIn.x,this.EndsIn.x);
+                double minY=Math.Min(this.StartIn.y,this.EndsIn.y);
+                double maxY=Math.Max(this.StartIn.y,this.EndsIn.y);
+                if (p.x>=minX&&p.x<=maxX&&p.y>=minY&&p.y<=maxY)
+                {
+                    return true;
+                }
+            }
+            return false;
     }
 }

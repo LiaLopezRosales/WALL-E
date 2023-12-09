@@ -10,7 +10,28 @@ public class GeneralLexer
     {
         this.code=code;
         errors=new List<List<Error>>();
-        lines=code.Split(new[] {";"},StringSplitOptions.RemoveEmptyEntries);
+        lines=code.Split(new[] {";"},StringSplitOptions.None);
+        int index=-1;
+        //Check this
+        for (int i = 0; i < lines.Length; i++)
+        {  
+            if (index>=0 && !(lines[i].Contains("in")))
+            {
+                lines[index]=lines[index]+" "+lines[i];
+            }
+            else if (index>=0 && (lines[i].Contains("in")))
+            {
+                lines[index]=lines[index]+" "+lines[i];
+                index=-1;
+            }
+            else if (lines[i].Contains("let"))
+            {
+                index=i;
+                continue;
+            }
+
+            
+        }
         File=file;
     }
 

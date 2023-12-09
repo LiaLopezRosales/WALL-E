@@ -1,4 +1,4 @@
-public class Line:IEquatable<Line>
+public class Line:Figure,IEquatable<Line>
 {
     public Point generalpoint1{get;set;}
     public Point generalpoint2{get;set;}
@@ -53,5 +53,16 @@ public class Line:IEquatable<Line>
         {
             return false;
         }
+    }
+
+    public override bool ContainPoint(Point p)
+    {
+       double m=(this.generalpoint2.y-this.generalpoint1.y)/(this.generalpoint2.x-this.generalpoint1.x);
+            double b=this.generalpoint1.y-m*this.generalpoint1.x;
+            if ((p.y-m*p.x)-b==0)
+            {
+                return true;
+            }
+            else return false;
     }
 }

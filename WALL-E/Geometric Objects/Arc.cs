@@ -1,4 +1,4 @@
-public class Arc:IEquatable<Arc>
+public class Arc:Figure,IEquatable<Arc>
 {
     public Point center{get;set;}
     public Point point_of_semirect1{get;set;}
@@ -24,5 +24,18 @@ public class Arc:IEquatable<Arc>
         {
             return false;
         }
+    }
+
+    public override bool ContainPoint(Point p)
+    {
+       double angle=(Math.Atan2(p.y - this.point_of_semirect1.y,p.x - this.point_of_semirect1.x)-Math.Atan2(this.point_of_semirect2.y-this.point_of_semirect1.y,this.point_of_semirect2.x-this.point_of_semirect1.x))*180/Math.PI;
+            if (angle==this.measure)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
     }
 }

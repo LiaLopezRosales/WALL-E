@@ -145,6 +145,7 @@ public class Parser
             errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"file named,must end with .geo extension",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         tokenstream.MoveForward(1);
+        
         if (tokenstream.tokens[tokenstream.Position()].Value != ";")
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,import order must contain only the name of the file",tokenstream.tokens[tokenstream.Position()].TokenLocation));
@@ -683,7 +684,10 @@ public class Parser
             Node body = ParseExpression();
             foreach (var item in Arguments.Branches)
             {
-                
+                if (item.Type!=Node.NodeType.Var)
+                {
+                    errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"argument",(Location)item.Branches[0].NodeExpression!));
+                }
             }
             function.Branches = new List<Node> { function_name, Arguments, body };
             if (tokenstream.tokens[tokens.Count - 1].Value != ";")
@@ -1085,6 +1089,9 @@ public class Parser
             Node final =new Node();
             final.Type=Node.NodeType.Var;
             final.NodeExpression=value;
+            Node location=new Node();
+            location.NodeExpression=tokenstream.tokens[tokenstream.Position()].TokenLocation;
+            final.Branches=new List<Node>{location};
             tokenstream.MoveForward(1);
             return final;
         }
