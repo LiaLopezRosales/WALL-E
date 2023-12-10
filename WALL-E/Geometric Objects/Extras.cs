@@ -5,7 +5,17 @@ public static class RandomExtensions
             return min +(random.NextDouble()*(max-min));
         }
     }
-    
+    public static class CheckTrueORFalse
+    {
+        public static bool Check(object x)
+        {
+            if (x.Equals(0)||x.Equals("{}")||x.Equals("undefined"))
+            {
+                return false;
+            }
+            return true;
+        }
+    }
 
     // public class Intercept
     // {

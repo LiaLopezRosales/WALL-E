@@ -320,7 +320,7 @@ public class Evaluator
         long amount_of_elements=node.Branches[0].Branches.Count;
         long index=0;
         List<object>AlternativeSeq=new List<object>();
-        if (type is Finite_Sequence<object>)
+        if (value is Finite_Sequence<object>)
         {
         foreach (var subnode in node.Branches[0].Branches)
         {
@@ -450,7 +450,7 @@ public class Evaluator
           }
         }
       }
-      else if (type is Enclosed_Infinite_Sequence)
+      else if (value is Enclosed_Infinite_Sequence)
       {
         foreach (var subnode in node.Branches[0].Branches)
         {
@@ -541,7 +541,7 @@ public class Evaluator
           }
         }
       }
-      else if (type is Infinite_Sequence)
+      else if (value is Infinite_Sequence)
       {
         foreach (var subnode in node.Branches[0].Branches)
         {
@@ -745,6 +745,111 @@ public class Evaluator
           InfiniteDoubleSequence randoms=new InfiniteDoubleSequence(rand);
           return randoms;
       }
+      else if (node.Type==Node.NodeType.Samples)
+      {
+         IEnumerable<Point> sam =context.Samples["samples"]();
+          InfinitePointSequence samples=new InfinitePointSequence(sam);
+          return samples;
+      }
+      else if (node.Type==Node.NodeType.Points)
+      {
+          object arg=GeneralEvaluation(node.Branches[0]);
+          if (arg is Circle)
+          {
+            IEnumerable<Point> point =context.Points["points"]((Circle)arg);
+            InfinitePointSequence samples=new InfinitePointSequence(point);
+             return samples;
+          }
+          else
+          {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"argument",new Location("line","file","column")));
+          }
+          
+      }
+      else if (node.Type==Node.NodeType.Count)
+      {
+        object arg=GeneralEvaluation(node.Branches[0]);
+        if (arg is GenericSequence<object>)
+        {
+          long c= ((GenericSequence<object>)arg).count;
+          if (c<0)
+          {
+            return "undefined";
+          }
+          return c;
+        }
+        else if (node.Type==Node.NodeType.Undefined)
+        {
+          return "undefined";
+        }
+        else if(node.Type==Node.NodeType.Empty_Seq)
+        {
+          List<object> list=new List<object>();
+          Finite_Sequence<object> seq=new Finite_Sequence<object>(list);
+          return seq;
+        }
+        else if (node.Type==Node.NodeType.Infinite_Seq)
+        {
+          object value=GeneralEvaluation(node.Branches[0]);
+          if (value is long)
+          {
+            Infinite_Sequence seq =new Infinite_Sequence((long)value);
+            return seq;
+          }
+          else
+          {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"argument",new Location("line","file","column")));
+          }
+        }
+        else if (node.Type==Node.NodeType.Enclosed_Infinite_Seq)
+        {
+          object firstvalue=GeneralEvaluation(node.Branches[0]);
+          object finalvalue=GeneralEvaluation(node.Branches[1]);
+          if (firstvalue is long && finalvalue is long)
+          {
+            Enclosed_Infinite_Sequence seq =new Enclosed_Infinite_Sequence((long)firstvalue,(long)finalvalue);
+            return seq;
+          }
+          else
+          {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"boundries",new Location("line","file","column")));
+          }
+        }
+        else if (node.Type==Node.NodeType.Finite_Seq)
+        {
+          object firstvalue=GeneralEvaluation(node.Branches[0]);
+          Type t=firstvalue.GetType();
+          long index=0;
+          List<object> valuesofseq=new List<object>();
+          valuesofseq.Add(firstvalue);
+          foreach (var item in node.Branches)
+          {
+             if (index==0)
+             {
+              continue;
+             }
+             object value=GeneralEvaluation(item);
+             if (firstvalue.GetType()!=value.GetType())
+             {
+               Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"sequence, all values must belong to the same type",new Location("file","line","column")));
+               return "Invalid sequence";
+             }
+             valuesofseq.Add(value);
+          }
+          Finite_Sequence<object> seq=new Finite_Sequence<object>(valuesofseq);
+          return seq;
+        }
+        else if (node.Type==Node.NodeType.Negation)
+        {
+          object value=GeneralEvaluation(node.Branches[0]);
+          if (CheckTrueORFalse.Check(value))
+          {
+            return 0;
+          }
+          else return 1;
+        }
+      }
+
     }
 
      
