@@ -78,9 +78,17 @@ public class Context
     private IEnumerable<Point> GeneratePointsInFigure(Circle c)
     {
         List<Point> points=new List<Point>();
+        int count=0;
+        Point point=c.PointInsideFigure(points);
+        points.Add(point);
         while (true)
         {
-            Point point=c.PointInsideFigure(points);
+            if (count==0)
+            {
+                yield return point;
+            }
+            count++;
+            point=c.PointInsideFigure(points);
             points.Add(point);
             yield return point;
         }

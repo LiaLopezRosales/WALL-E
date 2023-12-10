@@ -20,4 +20,18 @@ public class Enclosed_Infinite_Sequence:GenericSequence<long>
             yield return i;
         }
     }
+
+    public override long ReturnValue()
+    {
+       var enumerator= Sequence.GetEnumerator();
+       if (enumerator.MoveNext())
+       {
+         return enumerator.Current;
+       }
+       else
+       {
+        return long.MinValue;
+       }
+       
+    }
 }

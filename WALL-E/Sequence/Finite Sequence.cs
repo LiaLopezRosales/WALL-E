@@ -17,4 +17,17 @@ public class Finite_Sequence<T>:GenericSequence<T>
             yield return item;
         }
     }
+     public override T ReturnValue()
+    {
+       var enumerator= Sequence.GetEnumerator();
+       if (enumerator.MoveNext())
+       {
+         return enumerator.Current;
+       }
+       else
+       {
+        return default(T)!;
+       }
+       
+    }
 }

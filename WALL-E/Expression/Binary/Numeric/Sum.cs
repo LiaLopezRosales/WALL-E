@@ -8,7 +8,23 @@ public class Sum:Binary
     public override object? Value { get => base.Value; set => base.Value = value; }
     public override void Evaluate(object left,object right)
     {
+        if(left is double && right is double)
+        {
         Value = Convert.ToDouble(left,CultureInfo.InvariantCulture) + Convert.ToDouble(right,CultureInfo.InvariantCulture);
+        }
+        else if (left is string && right is string)
+        {
+            Value=left.ToString() + right.ToString();
+        }
+        else if (left is Measure && right is Measure)
+        {
+            Value=((Measure)left).Sum((Measure)right);
+        }
+        else if (left is GenericSequence<object> && right is GenericSequence<object>)
+        {
+            Sequence_Concatenation<object> sum=new Sequence_Concatenation<object>((GenericSequence<object>)left,(GenericSequence<object>)right);
+            Value=sum;
+        }
     }
     public override string ToString()
     {

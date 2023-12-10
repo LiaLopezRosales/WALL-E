@@ -8,7 +8,14 @@ public class Division:Binary
     public override object? Value { get => base.Value; set => base.Value = value; }
     public override void Evaluate(object left,object right)
     {
+        if(left is double && right is double)
+        {
         Value = Convert.ToDouble(left,CultureInfo.InvariantCulture) / Convert.ToDouble(right,CultureInfo.InvariantCulture);
+        }
+        else if (left is Measure && right is Measure)
+        {
+            Value=((Measure)left).Division((Measure)right);
+        }
     }
     public override string ToString()
     {

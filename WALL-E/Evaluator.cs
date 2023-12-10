@@ -1,3 +1,4 @@
+using System.Globalization;
 public class Evaluator
 {   //Modificar para poder acceder a las localizaciones de los errores semánticos
      private Node AST{get;set;}
@@ -272,7 +273,7 @@ public class Evaluator
         {
           context.UtilizedColors.Pop();
         }
-        return context.UtilizedColors.Peek();
+        return ("Used color has been restore to {0}",context.UtilizedColors.Peek());
       }
       else if (node.Type==Node.NodeType.Draw)
       {
@@ -290,10 +291,459 @@ public class Evaluator
       {
         string name=node.Branches[0]!.ToString()!;
         Dictionary<string,object> arg=new Dictionary<string, object>();
+         string par_name="";
         foreach (var item in node.Branches[1].Branches)
         {
-          
+            par_name=(string)item.NodeExpression!;
+            arg.Add(par_name,"");
         }
+        Fuction func=new Fuction(node.Branches[0].NodeExpression!.ToString()!,node.Branches[2],arg);
+         bool exist=false;
+         foreach (var function in context.Available_Functions)
+         {
+            if (function.Name==par_name)
+            {
+               exist=true;
+            }
+         }
+         if (exist)
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"function name, already exist a preexistent function with the same name",new Location("file","line","column")));
+         }
+         else context.Available_Functions.Add(func);
+         return ("{0} Function created and saved",name);
+      }
+      else if (node.Type==Node.NodeType.GlobalSeq)
+      {
+        object value=GeneralEvaluation(node.Branches[1]);
+        Type type=value.GetType();
+        long amount_of_elements=node.Branches[0].Branches.Count;
+        long index=0;
+        List<object>AlternativeSeq=new List<object>();
+        if (type is Finite_Sequence<object>)
+        {
+        foreach (var subnode in node.Branches[0].Branches)
+        {
+
+          if (subnode.Type==Node.NodeType.Low_Hyphen)
+          {
+            continue;
+          }
+          if (index==amount_of_elements-1)
+          {
+            string name=GeneralEvaluation(subnode).ToString()!;
+            object valueofarg=((Finite_Sequence<object>)value).ReturnValue();
+            if (valueofarg==default(object))
+            {
+              valueofarg="{}";
+              if (CurrentScope.Parent==null)
+        {   
+             if (context.GlobalConstant.Keys.Contains(name))
+            {
+              Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+            }
+            else 
+            context.GlobalConstant.Add(name,valueofarg);
+        }
+        else
+        {   
+            if (CurrentScope.Variables.Keys.Contains(name))
+           {
+             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+           }
+            else
+            CurrentScope.Variables.Add(name,valueofarg);
+        }
+            }
+            else
+            {
+             AlternativeSeq.Add(valueofarg);
+            while (valueofarg!=default(object))
+            {
+              valueofarg=((Finite_Sequence<object>)value).ReturnValue();
+              if (valueofarg!=default(object))
+              {
+                AlternativeSeq.Add(valueofarg);
+              }
+            }
+            Finite_Sequence<object> rest =new Finite_Sequence<object>(AlternativeSeq);
+            valueofarg=rest;
+            if (CurrentScope.Parent==null)
+        {   
+             if (context.GlobalConstant.Keys.Contains(name))
+            {
+              Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+            }
+            else 
+            context.GlobalConstant.Add(name,valueofarg);
+        }
+        else
+        {   
+            if (CurrentScope.Variables.Keys.Contains(name))
+           {
+             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+           }
+            else
+            CurrentScope.Variables.Add(name,valueofarg);
+        }
+
+            }
+          }
+          else if (subnode.Type==Node.NodeType.VarName && index!=amount_of_elements-1)
+          {
+            string name=GeneralEvaluation(subnode).ToString()!;
+            object valueofarg=((Finite_Sequence<object>)value).ReturnValue();
+            if (valueofarg==default(object))
+            {
+              valueofarg="undefined";
+            }
+            if (CurrentScope.Parent==null)
+        {   
+             if (context.GlobalConstant.Keys.Contains(name))
+            {
+              Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+            }
+            else 
+            context.GlobalConstant.Add(name,valueofarg);
+        }
+        else
+        {   
+            if (CurrentScope.Variables.Keys.Contains(name))
+           {
+             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+           }
+            else
+            CurrentScope.Variables.Add(name,valueofarg);
+        }
+          }
+        }
+      }
+      else if(value.ToString()=="undefined")
+      {
+        foreach (var subnode in node.Branches[0].Branches)
+        {
+           if (subnode.Type==Node.NodeType.Low_Hyphen)
+          {
+            continue;
+          }
+          else if (subnode.Type==Node.NodeType.VarName)
+          {
+            string name=GeneralEvaluation(subnode).ToString()!;
+            if (CurrentScope.Parent==null)
+        {   
+             if (context.GlobalConstant.Keys.Contains(name))
+            {
+              Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+            }
+            else 
+            context.GlobalConstant.Add(name,"undefined");
+        }
+        else
+        {   
+            if (CurrentScope.Variables.Keys.Contains(name))
+           {
+             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+           }
+            else
+            CurrentScope.Variables.Add(name,"undefined");
+        }
+          }
+        }
+      }
+      else if (type is Enclosed_Infinite_Sequence)
+      {
+        foreach (var subnode in node.Branches[0].Branches)
+        {
+
+          if (subnode.Type==Node.NodeType.Low_Hyphen)
+          {
+            continue;
+          }
+          if (index==amount_of_elements-1)
+          {
+            string name=GeneralEvaluation(subnode).ToString()!;
+            object valueofarg=((Enclosed_Infinite_Sequence)value).ReturnValue();
+            if (valueofarg.Equals(long.MinValue))
+            {
+              valueofarg="{}";
+              if (CurrentScope.Parent==null)
+        {   
+             if (context.GlobalConstant.Keys.Contains(name))
+            {
+              Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+            }
+            else 
+            context.GlobalConstant.Add(name,valueofarg);
+        }
+        else
+        {   
+            if (CurrentScope.Variables.Keys.Contains(name))
+           {
+             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+           }
+            else
+            CurrentScope.Variables.Add(name,valueofarg);
+        }
+            }
+            else
+            {
+              long newstart=Convert.ToInt64(valueofarg);
+              long end=((Enclosed_Infinite_Sequence)value).EndsAd;
+              Enclosed_Infinite_Sequence rest =new Enclosed_Infinite_Sequence(newstart,end);
+              valueofarg=rest;
+            if (CurrentScope.Parent==null)
+        {   
+             if (context.GlobalConstant.Keys.Contains(name))
+            {
+              Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+            }
+            else 
+            context.GlobalConstant.Add(name,valueofarg);
+        }
+        else
+        {   
+            if (CurrentScope.Variables.Keys.Contains(name))
+           {
+             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+           }
+            else
+            CurrentScope.Variables.Add(name,valueofarg);
+        }
+
+            }
+          }
+          else if (subnode.Type==Node.NodeType.VarName && index!=amount_of_elements-1)
+          {
+            string name=GeneralEvaluation(subnode).ToString()!;
+            object valueofarg=((Enclosed_Infinite_Sequence)value).ReturnValue();
+            if (valueofarg.Equals(long.MinValue))
+            {
+              valueofarg="undefined";
+            }
+            if (CurrentScope.Parent==null)
+        {   
+             if (context.GlobalConstant.Keys.Contains(name))
+            {
+              Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+            }
+            else 
+            context.GlobalConstant.Add(name,valueofarg);
+        }
+        else
+        {   
+            if (CurrentScope.Variables.Keys.Contains(name))
+           {
+             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+           }
+            else
+            CurrentScope.Variables.Add(name,valueofarg);
+        }
+          }
+        }
+      }
+      else if (type is Infinite_Sequence)
+      {
+        foreach (var subnode in node.Branches[0].Branches)
+        {
+
+          if (subnode.Type==Node.NodeType.Low_Hyphen)
+          {
+            continue;
+          }
+          if (index==amount_of_elements-1)
+          {
+            string name=GeneralEvaluation(subnode).ToString()!;
+            object valueofarg=((Infinite_Sequence)value).ReturnValue();
+            
+              long newstart=Convert.ToInt64(valueofarg);
+              Infinite_Sequence rest =new Infinite_Sequence(newstart);
+              valueofarg=rest;
+            if (CurrentScope.Parent==null)
+        {   
+             if (context.GlobalConstant.Keys.Contains(name))
+            {
+              Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+            }
+            else 
+            context.GlobalConstant.Add(name,valueofarg);
+        }
+        else
+        {   
+            if (CurrentScope.Variables.Keys.Contains(name))
+           {
+             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+           }
+            else
+            CurrentScope.Variables.Add(name,valueofarg);
+        }
+
+            
+          }
+          else if (subnode.Type==Node.NodeType.VarName && index!=amount_of_elements-1)
+          {
+            string name=GeneralEvaluation(subnode).ToString()!;
+            object valueofarg=((Infinite_Sequence)value).ReturnValue();
+            if (CurrentScope.Parent==null)
+        {   
+             if (context.GlobalConstant.Keys.Contains(name))
+            {
+              Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+            }
+            else 
+            context.GlobalConstant.Add(name,valueofarg);
+        }
+        else
+        {   
+            if (CurrentScope.Variables.Keys.Contains(name))
+           {
+             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"operation,constants can't be modified",new Location("file","line","column")));
+           }
+            else
+            CurrentScope.Variables.Add(name,valueofarg);
+        }
+          }
+        }
+      }
+      return "Requested values seted";
+      }
+      else if (node.Type==Node.NodeType.FucName)
+      {
+         return node.NodeExpression!;
+      }
+      else if (node.Type==Node.NodeType.ParName)
+      {
+         return node.NodeExpression!;
+      }
+      else if (node.Type==Node.NodeType.VarName)
+      {
+         return node.NodeExpression!;
+      }
+      if (node.Type==Node.NodeType.Text)
+      {
+         return node.NodeExpression!;
+      }
+      else if (node.Type==Node.NodeType.Number)
+      {
+         return node.NodeExpression!;
+      }
+      else if (node.Type==Node.NodeType.Sum)
+      {
+         Sum sum =new Sum();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+         if ((left.GetType()!=right.GetType())||(!(left is double) && !(left is string) && !(left is Measure)&& !(left is GenericSequence<object>)))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
+         }
+         sum.Evaluate(left,right);
+         return sum.Value!;
+      }
+      else if (node.Type==Node.NodeType.Sub)
+      {
+         Substraction sub =new Substraction();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+         if ((left.GetType()!=right.GetType())||(!(left is double) && !(left is string) && !(left is Measure)))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
+         }
+         sub.Evaluate(left,right);
+         return sub.Value!;
+      }
+      else if (node.Type==Node.NodeType.Mul)
+      {
+         Multiplication mul =new Multiplication();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+         if (!(left is double && right is Measure) && !(left is Measure && right is double) && !(left is double && right is double))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
+         }
+         mul.Evaluate(left,right);
+         return mul.Value!;
+      }
+      else if (node.Type==Node.NodeType.Div)
+      {
+         Division div =new Division();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+         if (!(left is double && right is Measure) && !(left is Measure && right is double) && !(left is double && right is double))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
+         }
+         div.Evaluate(left,right);
+         return div.Value!;
+      }
+      else if (node.Type==Node.NodeType.Pow)
+      {
+         Power pow =new Power();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+         if (!(left is double)||!(right is double))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numerical values",new Location("file","line","column")));
+         }
+         pow.Evaluate(left,right);
+         return pow.Value!;
+      }
+      else if (node.Type==Node.NodeType.Module)
+      {
+        Module mod=new Module();
+        object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+         if (!(left is double)||!(right is double))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numerical values",new Location("file","line","column")));
+         }
+         mod.Evaluate(left,right);
+         return mod.Value!;
+      }
+      else if (node.Type==Node.NodeType.Var)
+      {
+         if (!CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Invalid,"variable",new Location("file","line","column")));
+         }
+         else return CurrentScope.Variables[node.NodeExpression!.ToString()!];
+      }
+      else if (node.Type==Node.NodeType.Declared_FucName)
+      {
+         return node.NodeExpression!;
+      }
+      else if (node.Type==Node.NodeType.Sin)
+      {
+         object arg = GeneralEvaluation(node.Branches[0]);
+         return context.Trig_functions["sin"](Convert.ToDouble(arg,CultureInfo.InvariantCulture));
+      }
+      else if (node.Type==Node.NodeType.Cos)
+      {
+         object arg = GeneralEvaluation(node.Branches[0]);
+         return context.Trig_functions["cos"]((double)arg);
+      }
+      else if (node.Type==Node.NodeType.Sqrt)
+      {
+         object arg = GeneralEvaluation(node.Branches[0]);
+         return context.Trig_functions["sqrt"](Convert.ToDouble(arg,CultureInfo.InvariantCulture));
+      }
+      else if (node.Type==Node.NodeType.Log)
+      {
+         object base_of = GeneralEvaluation(node.Branches[0]);
+         object arg = GeneralEvaluation(node.Branches[1]);
+         return context.Log["log"](Convert.ToDouble(base_of,CultureInfo.InvariantCulture),Convert.ToDouble(arg,CultureInfo.InvariantCulture));
+      }
+      else if (node.Type==Node.NodeType.PI)
+      {
+         return context.Math_value["PI"]();
+      }
+      else if (node.Type==Node.NodeType.E)
+      {
+         return context.Math_value["E"]();
+      }
+      else if (node.Type==Node.NodeType.Randoms)
+      {
+         IEnumerable<double> rand =context.Randoms["randoms"]();
+          InfiniteDoubleSequence randoms=new InfiniteDoubleSequence(rand);
+          return randoms;
       }
     }
 

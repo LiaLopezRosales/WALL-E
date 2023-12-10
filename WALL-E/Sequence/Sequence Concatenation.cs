@@ -1,4 +1,4 @@
-public abstract class Sequence_Concatenation<T>
+public class Sequence_Concatenation<T>
 {
    public GenericSequence<T> right{get;set;}
    public GenericSequence<T> left{get;set;}
