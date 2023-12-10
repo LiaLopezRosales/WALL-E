@@ -10,24 +10,33 @@ public class Diferent:Binary
     {
         if (left is double && right is double)
         {
-            if (Convert.ToDouble(left,CultureInfo.InvariantCulture) != Convert.ToDouble(right,CultureInfo.InvariantCulture))
+            if (Convert.ToDouble(left, CultureInfo.InvariantCulture) != Convert.ToDouble(right, CultureInfo.InvariantCulture))
+            {
+                Value = 1;
+            }
+            else
+            {
+                Value = 0;
+            }
+        }
+        else if (left is Measure && right is Measure)
         {
-          Value=1;
+            if (!Measure.Equals((Measure)left,(Measure)right))
+            {
+                Value = 1;
+            }
+            else
+            {
+                Value = 0;
+            }
         }
-        else
-        {
-            Value=0;
-        }
-        }
-        //Modificar este para "undefined"
         if(left is string && right is string)
         {
-            Value = left.ToString() != right.ToString();
-        }
-        //Modificar esto para valor {}
-        if (left is bool && right is bool)
-        {
-            Value = (bool)left!=(bool)right;
+            if(left.ToString() != right.ToString())
+            {
+                Value=1;
+            }
+            else Value=0;
         }
          
     }

@@ -7,14 +7,27 @@ public class Equal_Minor:Binary
 
     public override object? Value { get => base.Value; set => base.Value = value; }
     public override void Evaluate(object left,object right)
-    {
-      if (Convert.ToDouble(left,CultureInfo.InvariantCulture) <= Convert.ToDouble(right,CultureInfo.InvariantCulture))
+    {if (left is double && right is double)
         {
-          Value=1;
+            if (Convert.ToDouble(left, CultureInfo.InvariantCulture) <= Convert.ToDouble(right, CultureInfo.InvariantCulture))
+            {
+                Value = 1;
+            }
+            else
+            {
+                Value = 0;
+            }
         }
-        else
+        else if (left is Measure && right is Measure)
         {
-            Value=0;
+            if (Measure.Equals((Measure)left,(Measure)right)||!(Measure.GreaterThen((Measure)left,(Measure)right)))
+            {
+                Value = 1;
+            }
+            else
+            {
+                Value = 0;
+            }
         }
     }
     public override string ToString()

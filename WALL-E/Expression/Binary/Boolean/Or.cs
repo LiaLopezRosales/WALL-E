@@ -7,11 +7,15 @@ public class Or:Binary
     public override object? Value { get => base.Value; set => base.Value = value; }
     public override void Evaluate(object left,object right)
     {
-        if ((bool)left||(bool)right)
+        if (CheckTrueORFalse.Check(left)&&CheckTrueORFalse.Check(right))
         {
           Value=1;
         }
-        else
+        else if (CheckTrueORFalse.Check(left)&&!CheckTrueORFalse.Check(right) || (!CheckTrueORFalse.Check(left)&&CheckTrueORFalse.Check(right)))
+        {
+            Value=1;
+        }
+        else if(!CheckTrueORFalse.Check(left)&&!CheckTrueORFalse.Check(right))
         {
             Value=0;
         }

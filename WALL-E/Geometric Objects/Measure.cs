@@ -38,6 +38,23 @@ public class Measure
     {
        return Convert.ToInt64(this.Value/m.Value);
     }
+
+    public static  bool Equals(Measure m1,Measure m2)
+    {
+        if (m1.Value==m2.Value)
+        {
+            return true;
+        }
+        else return false;
+    }
+    public static bool GreaterThen(Measure m1,Measure m2)
+    {
+        if (m1.Value>m2.Value)
+        {
+            return true;
+        }
+        else return false;
+    }
     
     //Check this
     private Point PointAtDistance(Point p2,double wanteddistance)

@@ -7,9 +7,9 @@ public class And:Binary
     public override object? Value { get => base.Value; set => base.Value = value; }
     public override void Evaluate(object left,object right)
     {
-        if ((bool)left&&(bool)right)
+        if (CheckTrueORFalse.Check(left)&&CheckTrueORFalse.Check(right))
         {
-          Value=1;
+            Value=1;
         }
         else
         {

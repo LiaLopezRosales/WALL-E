@@ -643,7 +643,7 @@ public class Evaluator
          Substraction sub =new Substraction();
          object left = GeneralEvaluation(node.Branches[0]);
          object right=GeneralEvaluation(node.Branches[1]);
-         if ((left.GetType()!=right.GetType())||(!(left is double) && !(left is string) && !(left is Measure)))
+         if ((left.GetType()!=right.GetType())||(!(left is double) && !(left is Measure)))
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
          }
@@ -667,7 +667,7 @@ public class Evaluator
          Division div =new Division();
          object left = GeneralEvaluation(node.Branches[0]);
          object right=GeneralEvaluation(node.Branches[1]);
-         if (!(left is double && right is Measure) && !(left is Measure && right is double) && !(left is double && right is double))
+         if ((left.GetType()!=right.GetType())||(!(left is double) && !(left is Measure)))
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
          }
@@ -778,7 +778,9 @@ public class Evaluator
           }
           return c;
         }
-        else if (node.Type==Node.NodeType.Undefined)
+        
+      }
+      else if (node.Type==Node.NodeType.Undefined)
         {
           return "undefined";
         }
@@ -848,6 +850,53 @@ public class Evaluator
           }
           else return 1;
         }
+        else if (node.Type==Node.NodeType.Minor)
+      {
+         Minor min =new Minor();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+         if ((left.GetType()!=right.GetType())||(!(left is double) && !(left is Measure)))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numeric or measure values",new Location("file","line","column")));
+         }
+         min.Evaluate(left,right);
+         return min.Value!;
+      }
+      else if (node.Type==Node.NodeType.Major)
+      {
+         Major maj =new Major();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+         if ((left.GetType()!=right.GetType())||(!(left is double) && !(left is Measure)))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numeric or measure values",new Location("file","line","column")));
+         }
+         maj.Evaluate(left,right);
+         return maj.Value!;
+      }
+      else if (node.Type==Node.NodeType.Equal_Major)
+      {
+         Equal_Major emaj =new Equal_Major();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+         if ((left.GetType()!=right.GetType())||(!(left is double) && !(left is Measure)))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numeric or measure values",new Location("file","line","column")));
+         }
+         emaj.Evaluate(left,right);
+         return emaj.Value!;
+      }
+      else if (node.Type==Node.NodeType.Equal_Minor)
+      {
+         Equal_Minor emin =new Equal_Minor();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+         if ((left.GetType()!=right.GetType())||(!(left is double) && !(left is Measure)))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numeric or measure values",new Location("file","line","column")));
+         }
+         emin.Evaluate(left,right);
+         return emin.Value!;
       }
 
     }
