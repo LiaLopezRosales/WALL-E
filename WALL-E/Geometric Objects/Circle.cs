@@ -3,7 +3,7 @@ public class Circle:Figure,IEquatable<Circle>
     public Point center{get;set;}
     public double radio{get;set;}
 
-    public Circle(Point p,int r)
+    public Circle(Point p,double r)
     {
         center=p;
         radio=r;

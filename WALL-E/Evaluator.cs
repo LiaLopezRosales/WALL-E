@@ -635,8 +635,10 @@ public class Evaluator
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
          }
-         sum.Evaluate(left,right);
+         else
+         {sum.Evaluate(left,right);
          return sum.Value!;
+         }
       }
       else if (node.Type==Node.NodeType.Sub)
       {
@@ -659,8 +661,10 @@ public class Evaluator
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
          }
-         mul.Evaluate(left,right);
+         else
+         {mul.Evaluate(left,right);
          return mul.Value!;
+         }
       }
       else if (node.Type==Node.NodeType.Div)
       {
@@ -671,8 +675,15 @@ public class Evaluator
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
          }
-         div.Evaluate(left,right);
+         else if ((Convert.ToDouble(right, CultureInfo.InvariantCulture) == 0)||((Measure)right).Value==0)
+            {
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,can't divide by zero",new Location("file","line","column")));
+                return left;
+            }
+         else
+         {div.Evaluate(left,right);
          return div.Value!;
+         }
       }
       else if (node.Type==Node.NodeType.Pow)
       {
@@ -683,8 +694,10 @@ public class Evaluator
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numerical values",new Location("file","line","column")));
          }
-         pow.Evaluate(left,right);
+         else
+         {pow.Evaluate(left,right);
          return pow.Value!;
+         }
       }
       else if (node.Type==Node.NodeType.Module)
       {
@@ -695,8 +708,10 @@ public class Evaluator
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numerical values",new Location("file","line","column")));
          }
-         mod.Evaluate(left,right);
+         else
+         {mod.Evaluate(left,right);
          return mod.Value!;
+         }
       }
       else if (node.Type==Node.NodeType.Var)
       {
@@ -713,23 +728,39 @@ public class Evaluator
       else if (node.Type==Node.NodeType.Sin)
       {
          object arg = GeneralEvaluation(node.Branches[0]);
-         return context.Trig_functions["sin"](Convert.ToDouble(arg,CultureInfo.InvariantCulture));
+         if (!(arg is double))
+         {
+          Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numerical values",new Location("file","line","column")));
+         }
+         else return context.Trig_functions["sin"](Convert.ToDouble(arg,CultureInfo.InvariantCulture));
       }
       else if (node.Type==Node.NodeType.Cos)
       {
          object arg = GeneralEvaluation(node.Branches[0]);
-         return context.Trig_functions["cos"]((double)arg);
+         if (!(arg is double))
+         {
+          Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numerical values",new Location("file","line","column")));
+         }
+         else return context.Trig_functions["cos"](Convert.ToDouble(arg,CultureInfo.InvariantCulture));
       }
       else if (node.Type==Node.NodeType.Sqrt)
       {
          object arg = GeneralEvaluation(node.Branches[0]);
-         return context.Trig_functions["sqrt"](Convert.ToDouble(arg,CultureInfo.InvariantCulture));
+         if (!(arg is double))
+         {
+          Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numerical values",new Location("file","line","column")));
+         }
+         else return context.Trig_functions["sqrt"](Convert.ToDouble(arg,CultureInfo.InvariantCulture));
       }
       else if (node.Type==Node.NodeType.Log)
       {
          object base_of = GeneralEvaluation(node.Branches[0]);
          object arg = GeneralEvaluation(node.Branches[1]);
-         return context.Log["log"](Convert.ToDouble(base_of,CultureInfo.InvariantCulture),Convert.ToDouble(arg,CultureInfo.InvariantCulture));
+         if (!(arg is double)|| !(base_of is double))
+         {
+          Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numerical values",new Location("file","line","column")));
+         }
+         else return context.Log["log"](Convert.ToDouble(base_of,CultureInfo.InvariantCulture),Convert.ToDouble(arg,CultureInfo.InvariantCulture));
       }
       else if (node.Type==Node.NodeType.PI)
       {
@@ -859,8 +890,10 @@ public class Evaluator
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numeric or measure values",new Location("file","line","column")));
          }
-         min.Evaluate(left,right);
+         else
+         {min.Evaluate(left,right);
          return min.Value!;
+         }
       }
       else if (node.Type==Node.NodeType.Major)
       {
@@ -871,8 +904,10 @@ public class Evaluator
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numeric or measure values",new Location("file","line","column")));
          }
-         maj.Evaluate(left,right);
+         else
+         {maj.Evaluate(left,right);
          return maj.Value!;
+         }
       }
       else if (node.Type==Node.NodeType.Equal_Major)
       {
@@ -883,8 +918,10 @@ public class Evaluator
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numeric or measure values",new Location("file","line","column")));
          }
-         emaj.Evaluate(left,right);
+         else
+         {emaj.Evaluate(left,right);
          return emaj.Value!;
+         }
       }
       else if (node.Type==Node.NodeType.Equal_Minor)
       {
@@ -895,9 +932,284 @@ public class Evaluator
          {
             Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"numeric or measure values",new Location("file","line","column")));
          }
-         emin.Evaluate(left,right);
+         else
+         {emin.Evaluate(left,right);
          return emin.Value!;
+         }
       }
+      else if (node.Type==Node.NodeType.Or)
+      {
+         Or or =new Or();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+          if ((left is null) && (right is null))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
+         }
+         else
+         {or.Evaluate(left!,right!);
+         return or.Value!;
+         }
+      }
+      else if (node.Type==Node.NodeType.And)
+      {
+         And and =new And();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+        if ((left is null) && (right is null))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
+         }
+         else
+         {and.Evaluate(left!,right!);
+         return and.Value!;
+         }
+      }
+      else if (node.Type==Node.NodeType.Equal)
+      {
+         Equal eq =new Equal();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+          if ((left is null) && (right is null))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
+         }
+         else
+         {eq.Evaluate(left!,right!);
+         return eq.Value!;
+         }
+      }
+      else if (node.Type==Node.NodeType.Diferent)
+      {
+         Diferent dif =new Diferent();
+         object left = GeneralEvaluation(node.Branches[0]);
+         object right=GeneralEvaluation(node.Branches[1]);
+          if ((left is null) && (right is null))
+         {
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid values to operate",new Location("file","line","column")));
+         }
+         else
+         {dif.Evaluate(left!,right!);
+         return dif.Value!;
+         }
+      }
+      else if (node.Type==Node.NodeType.Conditional)
+      {
+        object condition = GeneralEvaluation(node.Branches[0]);
+            if ((condition is null))
+            {
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid value",new Location("file","line","column")));
+                return null!;
+            }
+            Ternary Conditional = new Ternary();
+            if (CheckTrueORFalse.Check(condition))
+            {
+                object if_part = GeneralEvaluation(node.Branches[1]);
+                Conditional.Evaluate(condition, if_part, -1);
+                return Conditional.Value!;
+            }
+            else
+            {
+                object else_part = GeneralEvaluation(node.Branches[2]);
+                Conditional.Evaluate(condition, -1, else_part);
+                return Conditional.Value!;
+            }
+
+            
+      }
+      else if (node.Type==Node.NodeType.Circle_Fuc)
+      {
+        object center=GeneralEvaluation(node.Branches[0]);
+        object radio=GeneralEvaluation(node.Branches[1]);
+        if (!(center is Point) || !(radio is Measure || radio is double))
+        {
+          Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"a valid center point and distance",new Location("file","line","column")));
+        }
+        else
+        {
+          if (radio is Measure)
+          {
+            Circle temp=new Circle((Point)center,((Measure)radio).Value);
+            context.ExistingCircles.Add(temp);
+            return temp;
+          }
+          else
+          {
+            Circle temp=new Circle((Point)center,(double)radio);
+            context.ExistingCircles.Add(temp);
+            return temp;
+          }
+        }
+      }
+      else if (node.Type==Node.NodeType.Line_Fuc)
+      {
+        object p1=GeneralEvaluation(node.Branches[0]);
+        object p2=GeneralEvaluation(node.Branches[1]);
+        if (!(p1 is Point) || !(p2 is Point))
+        {
+          Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid points to declare a line",new Location("file","line","column")));
+        }
+        else
+        {
+            Line temp=new Line((Point)p1,(Point)p2);
+            context.ExistingLines.Add(temp);
+            return temp;
+        }
+      }
+       else if (node.Type==Node.NodeType.Segment_Fuc)
+      {
+        object p1=GeneralEvaluation(node.Branches[0]);
+        object p2=GeneralEvaluation(node.Branches[1]);
+        if (!(p1 is Point) || !(p2 is Point))
+        {
+          Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid points to declare a segment",new Location("file","line","column")));
+        }
+        else
+        {
+            Segment temp=new Segment((Point)p1,(Point)p2);
+            context.ExistingSegments.Add(temp);
+            return temp;
+        }
+      }
+      else if (node.Type==Node.NodeType.Ray_Fuc)
+      {
+        object p1=GeneralEvaluation(node.Branches[0]);
+        object p2=GeneralEvaluation(node.Branches[1]);
+        if (!(p1 is Point) || !(p2 is Point))
+        {
+          Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid points to declare a ray",new Location("file","line","column")));
+        }
+        else
+        {
+            Ray temp=new Ray((Point)p1,(Point)p2);
+            context.ExistingRays.Add(temp);
+            return temp;
+        }
+      }
+      else if (node.Type==Node.NodeType.Measure_Fuc)
+      {
+        object p1=GeneralEvaluation(node.Branches[0]);
+        object p2=GeneralEvaluation(node.Branches[1]);
+        if (!(p1 is Point) || !(p2 is Point))
+        {
+          Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid points to declare a measure",new Location("file","line","column")));
+        }
+        else
+        {
+            Measure temp=new Measure((Point)p1,(Point)p2);
+            return temp;
+        }
+      }
+      else if (node.Type==Node.NodeType.Arc)
+      {
+        object p1=GeneralEvaluation(node.Branches[0]);
+        object p2=GeneralEvaluation(node.Branches[1]);
+        object p3=GeneralEvaluation(node.Branches[2]);
+        object m=GeneralEvaluation(node.Branches[3]);
+        if (!(p1 is Point) || !(p2 is Point)|| !(p3 is Point) || !(m is Measure || m is double))
+        {
+          Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error,Error.ErrorCode.Expected,"valid points and distance to declare an arc",new Location("file","line","column")));
+        }
+        else
+        {
+           if (m is Measure)
+           {
+            Arc temp=new Arc((Point)p1,(Point)p2,(Point)p3,((Measure)m).Value);
+            return temp;
+           }
+           else if (m is double)
+           {
+            Arc temp=new Arc((Point)p1,(Point)p2,(Point)p3,(double)m);
+            return temp;
+           }
+            
+        }
+      }
+      else if (node.Type==Node.NodeType.Declared_Fuc)
+      {
+        string dfunc_name = node.Branches[0].NodeExpression!.ToString()!;
+            Node func_parameters = node.Branches[1];
+            bool exist = false;
+            //Se comprueba si la función fue declarada con anterioridad
+            foreach (var function in context.Available_Functions)
+            {
+                if (function.Name == dfunc_name)
+                {
+                    exist = true;
+                }
+            }
+            int index = -1;
+            if (exist)
+            {
+                Scope func_scope = CurrentScope.Child();
+                CurrentScope=func_scope;
+                currentcontext!.Add(func_scope);
+
+                for (int i = 0; i < context.Available_Functions.Count; i++)
+                {
+                    //Se accede a los detalles de la función guardada
+                    if (context.Available_Functions[i].Name == dfunc_name)
+                    {
+                        //Se comprueba si tienen la misma cantidad de argumentos
+                        if (context.Available_Functions[i].Functions_Arguments.Count == func_parameters.Branches.Count)
+                        {
+                            //Se agregan los argumentos dados a el scope del cuerpo de la función
+                            foreach (var p_name in currentcontext[currentcontext.Count - 2].Variables.Keys)
+                            {
+                                currentcontext[currentcontext.Count - 1].Variables.Add(p_name, currentcontext[currentcontext.Count - 2].Variables[p_name]);
+                            }
+                            int param_number = 0;
+                            foreach (var p_name in context.Available_Functions[i].Functions_Arguments.Keys)
+                            {
+                                //Se asignan los argumentos dados a su correspondiente en los declarados por la función
+                                context.Available_Functions[i].Functions_Arguments[p_name] = func_parameters.Branches[param_number].NodeExpression!;
+                                //Se evaluan estos argumentos
+                                if (currentcontext[currentcontext.Count - 1].Variables.ContainsKey(p_name))
+                                {
+
+                                    currentcontext[currentcontext.Count - 1].Variables[p_name] = GeneralEvaluation((Node)func_parameters.Branches[param_number].NodeExpression!);
+                                    param_number++;
+                                }
+                                else
+                                {
+                                    object par_value = GeneralEvaluation((Node)func_parameters.Branches[param_number].NodeExpression!);
+                                    currentcontext[currentcontext.Count - 1].Variables.Add(p_name, par_value);
+                                    param_number++;
+                                }
+
+                            }
+                            index = i;
+                            //Se evalua la función solicitada
+                            object value = GeneralEvaluation(context.Available_Functions[index].Code);
+                            //Se elimina el contexto creado para la función
+                            currentcontext!.Remove(currentcontext[currentcontext.Count - 1]);
+
+                            return value;
+
+                        }
+                        else
+                        {
+                            //Se lanza un error si el número de parámetros no coincide
+                            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, $"{context.Available_Functions[i].Functions_Arguments.Count} parameters but received {func_parameters.Branches.Count}"));
+                        }
+
+                    }
+
+                }
+
+            }
+            else
+            {
+                //Se lanza error si se está llamando a una función que no existe
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "name,function has not been declared"));
+                index = -1;
+            }
+
+
+
+      }
+      
+
 
     }
 

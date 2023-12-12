@@ -20,8 +20,8 @@ public class Context
         Available_Functions=new List<Fuction>();
         GlobalConstant=new Dictionary<string, object>();
         Trig_functions = new Dictionary<string, Func<double,double>>();
-        Trig_functions.Add("sin",(double argument)=>Math.Sin(argument));
-        Trig_functions.Add("cos",(double argument)=>Math.Cos(argument));
+        Trig_functions.Add("sin",(double argument)=>Sin(argument));
+        Trig_functions.Add("cos",(double argument)=>Cos(argument));
         Trig_functions.Add("sqrt",(double argument)=>Math.Sqrt(argument));
         Math_value = new Dictionary<string, Func<double>>();
         Math_value.Add("PI",()=>Math.PI);
@@ -93,4 +93,37 @@ public class Context
             yield return point;
         }
     }
-}
+    double Cos(double argument)
+        {
+           if (Math.Abs(Math.Cos(argument))<0.0000001)
+           {
+             return 0;
+           }
+           else if (1-Math.Cos(argument)<0.0000001)
+           {
+             return 1;
+           }
+           else if (1+Math.Cos(argument)<0.0000001)
+           {
+             return -1;
+           }
+           else return Math.Cos(argument);
+        }
+        double Sin(double argument)
+        {
+           if (Math.Abs(Math.Sin(argument))<0.0000001)
+           {
+             return 0;
+           }
+           else if (1-Math.Sin(argument)<0.0000001)
+           {
+             return 1;
+           }
+           else if (1+Math.Sin(argument)<0.0000001)
+           {
+             return -1;
+           }
+           else return Math.Sin(argument);
+        }
+
+    }

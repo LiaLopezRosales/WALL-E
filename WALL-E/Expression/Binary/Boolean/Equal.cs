@@ -31,13 +31,24 @@ public class Equal:Binary
             }
         }
        
-        if(left is string && right is string)
+        else if(left is string && right is string)
         {
             if(left.ToString() == right.ToString())
             {
                 Value=1;
             }
             else Value=0;
+        }
+        else
+        {
+            if (left.Equals(right))
+            {
+                Value=1;
+            }
+            else
+            {
+                Value=0;
+            }
         }
         
         

@@ -11,7 +11,7 @@ public class Ternary : Expression
     public override object? Value { get; set; }
     public override void Evaluate(object condition, object If, object Else)
     {
-        if ((bool)condition)
+        if (CheckTrueORFalse.Check(condition))
         {
             Value = If;
         }

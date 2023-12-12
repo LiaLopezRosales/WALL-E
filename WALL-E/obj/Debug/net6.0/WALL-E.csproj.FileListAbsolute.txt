@@ -21,3 +21,10 @@
 /home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/WALL-E.dll
 /home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/ref/WALL-E.dll
 /home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/WALL-E.pdb
+/home/lia/Escritorio/Wall-E/WALL-E/bin/Debug/net6.0/WALL-E
+/home/lia/Escritorio/Wall-E/WALL-E/bin/Debug/net6.0/WALL-E.deps.json
+/home/lia/Escritorio/Wall-E/WALL-E/bin/Debug/net6.0/WALL-E.runtimeconfig.json
+/home/lia/Escritorio/Wall-E/WALL-E/bin/Debug/net6.0/WALL-E.dll
+/home/lia/Escritorio/Wall-E/WALL-E/bin/Debug/net6.0/ref/WALL-E.dll
+/home/lia/Escritorio/Wall-E/WALL-E/bin/Debug/net6.0/WALL-E.pdb
+/home/lia/Escritorio/Wall-E/WALL-E/obj/Debug/net6.0/WALL-E.genruntimeconfig.cache
