@@ -15,6 +15,14 @@ public class Scope
     {
         Scope child = new Scope();
         child.Parent = this;
+        foreach (var variable in this.Variables)
+        {
+            child.Variables.Add(variable.Key,variable.Value);
+        }
+        foreach (var func in this.TemporalFunctions)
+        {
+            child.TemporalFunctions.Add(func.Key,func.Value);
+        }
         return child;
     }
 }

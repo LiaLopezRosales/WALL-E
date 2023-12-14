@@ -15,6 +15,7 @@ public class Context
      public List<Line>ExistingLines{get;set;}
      public List<Ray>ExistingRays{get;set;}
      public Stack<string> UtilizedColors{get;set;}
+     public bool issuedcontext{get;set;}
     public Context()
     {
         Available_Functions=new List<Fuction>();
@@ -42,6 +43,7 @@ public class Context
         ExistingSegments=new List<Segment>();
         UtilizedColors=new Stack<string>();
         UtilizedColors.Push("black");
+        issuedcontext=false;
     }
 
     private IEnumerable<double> GenerateRandoms()
