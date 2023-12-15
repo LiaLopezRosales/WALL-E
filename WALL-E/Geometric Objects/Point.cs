@@ -1,4 +1,4 @@
-public class Point:IEquatable<Point>
+public class Point:Figure,IEquatable<Point>
 {
     public double x {get;set;}
     public double y {get;set;}
@@ -57,6 +57,134 @@ public class Point:IEquatable<Point>
         {
             return false;
         }
+    }
+    public override bool ContainPoint(Point p)
+    {
+        if(this.Equals(p))return true;
+        else return false;
+    }
+    public override GenericSequence<Point> FigurePoints()
+    {
+        List<Point> points=new List<Point>(){this};
+        return new Finite_Sequence<Point>(points);
+    }
+    public override Finite_Sequence<Point> Intersect(Figure fig)
+    {
+        if (fig is Point)
+        {
+            return this.IntersectPoint((Point)fig);
+        }
+        else if (fig is Line)
+        {
+            return this.IntersectLine((Line)fig);
+        }
+        else if (fig is Segment)
+        {
+            return this.IntersectSegment((Segment)fig);
+        }
+        else if (fig is Ray)
+        {
+            return this.IntersectRay((Ray)fig);
+        }
+        else if (fig is Circle)
+        {
+            return this.IntersectCircle((Circle)fig);
+        }
+        else if (fig is Arc)
+        {
+            return this.IntersectArc((Arc)fig);
+        }
+        return new Finite_Sequence<Point>(new List<Point>());
+        
+    }
+    private Finite_Sequence<Point> IntersectPoint(Point p)
+    {
+        if (this.ContainPoint(p))
+        {
+            return new Finite_Sequence<Point>(new List<Point>(){p});
+        }
+        else return new Finite_Sequence<Point>(new List<Point>());
+    }
+    private Finite_Sequence<Point> IntersectLine(Line l)
+    {
+        var new_y=GeometricTools.FindY(GeometricTools.Pendient(l.generalpoint1,l.generalpoint2),GeometricTools.N_of_Equation(l.generalpoint1,l.generalpoint2),this.x);
+        var original_y=this.y;
+        double aprox_range=0.3;
+        if (Math.Abs(new_y-original_y)<=aprox_range)
+        {
+            return new Finite_Sequence<Point>(new List<Point>(){this});
+        }
+        else return new Finite_Sequence<Point>(new List<Point>());
+    }
+    private Finite_Sequence<Point> IntersectSegment(Segment s)
+    {
+        var new_y=GeometricTools.FindY(GeometricTools.Pendient(s.StartIn,s.EndsIn),GeometricTools.N_of_Equation(s.StartIn,s.EndsIn),this.x);
+        var original_y=this.y;
+        double aprox_range=0.3;
+        if (Math.Abs(new_y-original_y)<=aprox_range && GeometricTools.BelongToSegment(s.StartIn,s.EndsIn,this.x))
+        {
+            return new Finite_Sequence<Point>(new List<Point>(){this});
+        }
+        else return new Finite_Sequence<Point>(new List<Point>());
+    }
+    private Finite_Sequence<Point> IntersectRay(Ray r)
+    {
+        double x_of_new_end=0;
+        double y_of_new_end=0;
+        if (r.StartIn.x<=r.PassFor.x)
+        {
+            x_of_new_end=r.PassFor.x+5000;
+        }
+        else
+        {
+            x_of_new_end=r.PassFor.x-5000;
+        }
+        double m=GeometricTools.Pendient(r.StartIn,r.PassFor);
+        y_of_new_end=GeometricTools.FindY(m,GeometricTools.N_of_Equation(r.StartIn,r.PassFor),x_of_new_end);
+        if (double.IsInfinity(m))
+        {
+            x_of_new_end=r.StartIn.x;
+            if (r.StartIn.y<=r.PassFor.y)
+            {
+                y_of_new_end=r.PassFor.y+5000;
+            }
+            else y_of_new_end=r.PassFor.y-5000;
+        }
+
+        Segment segment_of_r=new Segment(r.StartIn,new Point(x_of_new_end,y_of_new_end));
+        return this.IntersectSegment(segment_of_r);
+    }
+    private Finite_Sequence<Point> IntersectCircle(Circle c)
+    {
+        double distance=GeometricTools.PointsDistance(this,c.center);
+        double aprox_range=0.3;
+        if (Math.Abs(distance-c.radio)<=aprox_range)
+        {
+            return new Finite_Sequence<Point>(new List<Point>(){this});
+        }
+        else return new Finite_Sequence<Point>(new List<Point>());
+    }
+    private Finite_Sequence<Point> IntersectArc(Arc arc)
+    {
+        double distance=GeometricTools.PointsDistance(this,arc.center);
+        double radio=arc.measure;
+        double aprox_range=0.3;
+        if (Math.Abs(distance-radio)>aprox_range)
+        {
+            return new Finite_Sequence<Point>(new List<Point>());
+        }
+        Segment fromcenter=new Segment(arc.center,this);
+        Segment cord=new Segment(arc.CircleRay1_Intersection,arc.CircleRay2Intersection);
+        bool intersect=cord.Intersect(fromcenter).count>0;
+        if (Math.Abs(arc.SweepAngle)>=180 && !intersect)
+        {
+            return new Finite_Sequence<Point>(new List<Point>(){this});
+        }
+        if (Math.Abs(arc.SweepAngle)<180 && intersect)
+        {
+            return new Finite_Sequence<Point>(new List<Point>(){this});
+        }
+        return new Finite_Sequence<Point>(new List<Point>());
     }
 
     

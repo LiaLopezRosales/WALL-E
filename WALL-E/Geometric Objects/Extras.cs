@@ -17,103 +17,117 @@ public static class RandomExtensions
         }
     }
 
-    // public class Intercept
-    // {
-    //     public static Point PointCircle(Point p,Circle c)
-    //     {
-    //         double distance=Math.Sqrt(Math.Pow(p.x-c.center.x,2)+Math.Pow(p.y-c.center.y,2));
-    //         if (distance==c.radio)
-    //         {
-    //             return p;
-    //         }
-    //         else return null!;
-    //     }
-
-    //     public static Point PointLine(Point p,Line l)
-    //     {
-    //         double m=(l.generalpoint2.y-l.generalpoint1.y)/(l.generalpoint2.x-l.generalpoint1.x);
-    //         double b=l.generalpoint1.y-m*l.generalpoint1.x;
-    //         if ((p.y-m*p.x)-b==0)
-    //         {
-    //             return p;
-    //         }
-    //         else return null!;
-    //     }
-
-    //     public static Point PointSegment(Point p,Segment l)
-    //     {
-    //         double m=(l.EndsIn.y-l.StartIn.y)/(l.EndsIn.x-l.StartIn.x);
-    //         double b=l.StartIn.y-m*l.StartIn.x;
-    //         if ((p.y-m*p.x)-b==0)
-    //         {
-    //             double minX=Math.Min(l.StartIn.x,l.EndsIn.x);
-    //             double maxX=Math.Max(l.StartIn.x,l.EndsIn.x);
-    //             double minY=Math.Min(l.StartIn.y,l.EndsIn.y);
-    //             double maxY=Math.Min(l.StartIn.y,l.EndsIn.y);
-    //             if (p.x>=minX&&p.x<=maxX&&p.y>=minY&&p.y<=maxY)
-    //             {
-    //                 return p;
-    //             }
-    //         }
-    //         return null!;
-    //     }
-        
-    //      public static Point PointRay(Point p,Ray l)
-    //     {
-    //         double m=(l.PassFor.y-l.StartIn.y)/(l.PassFor.x-l.StartIn.x);
-    //         double b=l.StartIn.y-m*l.StartIn.x;
-    //         if ((p.y-m*p.x)-b==0)
-    //         {
-    //             if (l.StartIn.x<=l.PassFor.x)
-    //             {
-    //                 if (l.StartIn.y<=l.PassFor.y)
-    //                 {
-    //                     if (p.x>=l.StartIn.x&&p.y>=l.PassFor.y)
-    //                     {
-    //                         return p;
-    //                     }
-    //                 }
-    //                 else
-    //                 {
-    //                     if (p.x>=l.StartIn.x&&p.y<=l.PassFor.y)
-    //                     {
-    //                         return p;
-    //                     }
-    //                 }
-    //             }
-    //             else
-    //             {
-    //                 if (l.StartIn.y<=l.PassFor.y)
-    //                 {
-    //                     if (p.x<=l.StartIn.x&&p.y>=l.PassFor.y)
-    //                     {
-    //                         return p;
-    //                     }
-    //                 }
-    //                 else
-    //                 {
-    //                     if (p.x<=l.StartIn.x&&p.y<=l.PassFor.y)
-    //                     {
-    //                         return p;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         return null!;
-    //     }  
-
-    //     //Check this
-    //     public static Point PointArc(Point p,Arc a)
-    //     {
-    //         double angle=(Math.Atan2(p.y - a.point_of_semirect1.y,p.x - a.point_of_semirect1.x)-Math.Atan2(a.point_of_semirect2.y-a.point_of_semirect1.y,a.point_of_semirect2.x-a.point_of_semirect1.x))*180/Math.PI;
-    //         if (angle==a.measure)
-    //         {
-    //             return p;
-    //         }
-    //         else
-    //         {
-    //             return null!;
-    //         }
-    //     }
-
-    //}
+    public static class GeometricTools
+    {
+        public static double Pendient(Point p1,Point p2)
+        {
+            return (p1.y-p2.y)/(p1.x-p2.x);
+        }
+        public static double N_of_Equation(Point p1,Point p2)
+        {
+            double m=Pendient(p1,p2);
+            return p1.y - m*p1.x;
+        }
+        public static bool BelongToSegment(Point p1,Point p2,double x_cd)
+        {
+            double aprox_range=0.3;
+            if (Math.Abs(x_cd - p2.x)<=aprox_range || Math.Abs(x_cd - p1.x)<=aprox_range)
+            {
+                return true;
+            }
+            double reason=(x_cd - p1.x)/(p2.x - x_cd);
+            return reason >=0;
+        }
+        public static double PointsDistance(Point p1,Point p2)
+        {
+            double distance=Math.Sqrt(Math.Pow(p1.x-p2.x,2)+Math.Pow(p1.y-p2.y,2));
+            return distance;
+        }
+        public static double Point_LineDistance(Point p,Line line)
+        {
+            double num=Math.Abs(Pendient(line.generalpoint1,line.generalpoint2)*p.x-p.y+N_of_Equation(line.generalpoint1,line.generalpoint2));
+            double den=Math.Sqrt(Math.Pow(Pendient(line.generalpoint1,line.generalpoint2),2)+1);
+            return num/den;
+        }
+        public static double VectorsAngle(Point c,Point p1,Point p2)
+        {
+            double vector1_x=p1.x-c.x;
+            double vector1_y=p1.y-c.y;
+            double vector2_x=p2.x-c.x;
+            double vector2_y=p2.y-c.y;
+            double product=EscalarProduct(vector1_x,vector1_y,vector2_x,vector2_y);
+            double centerdistance1=PointsDistance(c,p1);
+            double centerdistance2=PointsDistance(c,p2);
+            double angle=Math.Acos(product/(centerdistance1*centerdistance2));
+            angle=(angle/Math.PI)*180;
+            return angle;
+        }
+        public static double EscalarProduct(double x1,double y1,double x2,double y2)
+        {
+            return x1*x2+y1*y2;
+        }
+        public static int Quadrant(Point center,double radio,Point p)
+        {
+            Point rightside=new Point(center.x+radio,center.y);
+            Point upside=new Point(center.x,center.y-radio);
+            if (p.x==upside.x)
+            {
+                if (p.y==upside.y)
+                {
+                    return 4;
+                }
+                else return 2;
+            }
+            else if (p.y==rightside.y)
+            {
+                if (p.x==rightside.x)
+                {
+                    return 1;
+                }
+                else return 3;
+            }
+            else if (p.x>upside.x)
+            {
+                if (p.y>upside.y)
+                {
+                    return 1;
+                }
+                else return 4;
+            }
+            else if (p.y>rightside.y)
+            {
+                return 2;
+            }
+            else return 3;
+        }
+        public static double FindY(double m,double n,double x)
+        {
+            double y=m*x+n;
+            if (double.IsFinite(m))
+            {
+                Random random=new Random();
+                y=RandomExtensions.NextDouble(random,0,120);
+            }
+            return y;
+        }
+        public static Point CircleRay_Intersection(Point center,Point end_of_ray,double radio,double m,double n)
+        {
+            double a=Math.Pow(m,2)+1;
+            double b=2*(center.x-m*(n-center.y));
+            double c=Math.Pow(n-center.y,2)-Math.Pow(radio,2)+Math.Pow(center.x,2);
+            double d=Math.Pow(b,2)-4*a*c;
+            double x1=(b+Math.Sqrt(d))/(2*a);
+            double x2=(b-Math.Sqrt(d))/(2*a);
+            if (BelongToSegment(center,end_of_ray,x1))
+            {
+                double y1=FindY(m,n,x1);
+                return new Point(x1,y1);
+            }
+            else if (BelongToSegment(center,end_of_ray,x2))
+            {
+                double y2=FindY(m,n,x2);
+                return new Point(x2,y2);
+            }
+            return new Point(0,0);
+        }
+    }
