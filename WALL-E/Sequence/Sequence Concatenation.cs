@@ -1,17 +1,26 @@
 public class Sequence_Concatenation<T>
 {
-   public GenericSequence<T> right{get;set;}
-   public GenericSequence<T> left{get;set;}
-   public IEnumerable<T> Result{protected get;set;}
+   public AbsSequence right{get;set;}
+   public AbsSequence left{get;set;}
+   public long count{get;protected set;}
+   public IEnumerable<T> Result{ get;protected set;}
 
    public Sequence_Concatenation(GenericSequence<T> r,GenericSequence<T> l)
    {
       right=r;
       left=l;
       Result=GenerateNewSequence(right,left);
+      if (left.count<0 || right.count<0)
+      {
+         count=-1;
+      }
+      else
+      {
+         count=left.count+right.count;
+      }
    }
 
-   private IEnumerable<T> GenerateNewSequence(GenericSequence<T> r,GenericSequence<T> l)
+   private IEnumerable<T> GenerateNewSequence(AbsSequence r,AbsSequence l)
    {
       foreach (T item in r.Sequence!)
       {

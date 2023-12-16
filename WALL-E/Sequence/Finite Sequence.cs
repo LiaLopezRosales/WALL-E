@@ -12,6 +12,12 @@ public class Finite_Sequence<T>:GenericSequence<T>
       Sequence=GenerateSequence(values);
       type=SeqType.no_declared;
     }
+    public Finite_Sequence(IEnumerable<T> seq,long c)
+    {
+      values=new List<T>();
+      Sequence=seq;
+      count=c;
+    }
 
     private IEnumerable<T> GenerateSequence(List<T> items)
     {

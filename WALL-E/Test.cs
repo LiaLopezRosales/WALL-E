@@ -1,25 +1,25 @@
 //string test="point p1; circle c1; draw{p1,c1}; color yellow; let a=4 ; b=5 ;in a+b; if let a=4; b=5;in a+b then 1 else 2;";
 //string test="Fib(n) = if n<=1 then 1 else Fib(n - 1) + Fib(n - 2);Fib(5);";
-string test="let a=let b=4; in b+2; in a+5;";
+string test="circle c;line l;intersect(c,l);";
 //string test="let a=let b=4; in b+2; in a+5;";
 GeneralLexer l=new GeneralLexer(test,"MainFile");
 List<string> r=l.lines;
-// foreach (var item in r)
-// {
-//     Console.WriteLine(item);
-// }
+foreach (var item in r)
+{
+    Console.WriteLine(item);
+}
 List<List<Token>> p=l.Process(r);
-// Console.WriteLine(p.Count);
-// int index=0;
-// foreach (var item in p)
-// {
-//     Console.WriteLine("{0} tokens in line {1}",item.Count,index);
-//     foreach (var line in item)
-//     {
-//         Console.WriteLine(line);
-//     }
-//     index++;
-// }
+Console.WriteLine(p.Count);
+int index=0;
+foreach (var item in p)
+{
+    Console.WriteLine("{0} tokens in line {1}",item.Count,index);
+    foreach (var line in item)
+    {
+        Console.WriteLine(line);
+    }
+    index++;
+}
 GeneralParser e=new GeneralParser(p,"MainFile");
 List<Node> f=e.ParseArchive();
 List<List<Error>> t=e.ParserErrors();

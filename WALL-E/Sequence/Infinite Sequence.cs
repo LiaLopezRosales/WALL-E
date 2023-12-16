@@ -1,13 +1,19 @@
 public class Infinite_Sequence:GenericSequence<long>
 {
     public long StartsAd{get;set;}
-    public new IEnumerable<long> Sequence{protected get;set;} 
+    public new IEnumerable<long> Sequence{ get;set;} 
+    
 
     public Infinite_Sequence(long start)
     {
        StartsAd=start;
        count=-1;
        Sequence=GenerateSequence(StartsAd);
+    }
+    public Infinite_Sequence(IEnumerable<long> seq)
+    {
+        Sequence=seq;
+        count=-1;
     }
 
     private IEnumerable<long> GenerateSequence(long start)

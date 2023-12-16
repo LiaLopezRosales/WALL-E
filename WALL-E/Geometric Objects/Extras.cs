@@ -10,10 +10,31 @@ public static class RandomExtensions
     {
         public static bool Check(object x)
         {
-            if (x.Equals(0)||x.Equals("{}")||x.Equals("undefined"))
+            if (x is double)
             {
-                return false;
+                if (((double)x)==0)
+                {
+                    return false;
+                }
             }
+            if (x is string)
+            {
+                if (((string)x)=="undefined")
+                {
+                    return false;
+                }
+            }
+            if (x is Finite_Sequence<object>)
+            {
+                if (((Finite_Sequence<object>)x).Sequence.Count()==0)
+                {
+                    return false;
+                }
+            }
+            // if (x.Equals("{}")||x.Equals("undefined"))
+            // {
+            //     return false;
+            // }
             return true;
         }
     }

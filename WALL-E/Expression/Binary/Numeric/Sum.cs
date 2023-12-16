@@ -23,7 +23,15 @@ public class Sum:Binary
         else if (left is GenericSequence<object> && right is GenericSequence<object>)
         {
             Sequence_Concatenation<object> sum=new Sequence_Concatenation<object>((GenericSequence<object>)left,(GenericSequence<object>)right);
-            Value=sum;
+            if (sum.count<0)
+            {
+                Value=new Infinite_Sequence((IEnumerable<long>)sum.Result);
+            }
+            else
+            {
+                Value=new Finite_Sequence<object>(sum.Result,sum.count);
+            }
+            
         }
     }
     public override string ToString()

@@ -660,7 +660,7 @@ public class Evaluator
             Sum sum = new Sum();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is string) && !(left is Measure) && !(left is GenericSequence<object>)))
+            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is string) && !(left is Measure) && !(left is Finite_Sequence<object>) && !(left is Finite_Sequence<Point>) && !(left is Enclosed_Infinite_Sequence) && !(left is Infinite_Sequence) && !(left is InfiniteDoubleSequence) && !(left is InfinitePointSequence)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));
             }
@@ -840,7 +840,7 @@ public class Evaluator
         else if (node.Type == Node.NodeType.Count)
         {
             object arg = GeneralEvaluation(node.Branches[0]);
-            if (arg is GenericSequence<object>)
+            if (arg as GenericSequence<object> !=null)
             {
                 long c = ((GenericSequence<object>)arg).count;
                 if (c < 0)
@@ -849,8 +849,63 @@ public class Evaluator
                 }
                 return c;
             }
+            else if (arg is Finite_Sequence<Point>)
+            {
+                long c = ((Finite_Sequence<Point>)arg).count;
+                if (c < 0)
+                {
+                    return "undefined";
+                }
+                return c;
+            }
+            else if (arg is Finite_Sequence<object>)
+            {
+                long c = ((Finite_Sequence<object>)arg).count;
+                if (c < 0)
+                {
+                    return "undefined";
+                }
+                return c;
+            }
+            else if (arg is Infinite_Sequence)
+            {
+                long c = ((Infinite_Sequence)arg).count;
+                if (c < 0)
+                {
+                    return "undefined";
+                }
+                return c;
+            }
+            else if (arg is InfinitePointSequence)
+            {
+                long c = ((InfinitePointSequence)arg).count;
+                if (c < 0)
+                {
+                    return "undefined";
+                }
+                return c;
+            }
+            else if (arg is InfiniteDoubleSequence)
+            {
+                long c = ((InfiniteDoubleSequence)arg).count;
+                if (c < 0)
+                {
+                    return "undefined";
+                }
+                return c;
+            }
+            else if (arg is Enclosed_Infinite_Sequence)
+            {
+                long c = ((Enclosed_Infinite_Sequence)arg).count;
+                if (c < 0)
+                {
+                    return "undefined";
+                }
+                return c;
+            }
             else
             {
+                Console.WriteLine(arg.GetType());
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "argument,must be a sequence", new Location("line", "file", "column")));
             }
 

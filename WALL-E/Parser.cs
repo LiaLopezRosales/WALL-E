@@ -34,6 +34,14 @@ public class Parser
         {
             return SCircle();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.point && tokens[tokenstream.Position() + 1].Type == Token.TokenType.sequence)
+        {
+            return PointSequence();
+        }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.line && tokens[tokenstream.Position() + 1].Type == Token.TokenType.sequence)
+        {
+            return LineSequence();
+        }
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.point)
         {
             return SPoint();
@@ -50,14 +58,7 @@ public class Parser
         {
             return SRay();
         }
-        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.point && tokens[tokenstream.Position() + 1].Type == Token.TokenType.sequence)
-        {
-            return PointSequence();
-        }
-        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.line && tokens[tokenstream.Position() + 1].Type == Token.TokenType.sequence)
-        {
-            return LineSequence();
-        }
+        
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Value == "=")
         {
             return GlobalVar();
@@ -1256,6 +1257,7 @@ public class Parser
             Node temp=new Node();
             temp.Type=Node.NodeType.Undefined;
             temp.NodeExpression="undefined";
+            tokenstream.MoveForward(1);
             return temp;
         }
         else if(tokenstream.tokens[tokenstream.Position()]==null)
