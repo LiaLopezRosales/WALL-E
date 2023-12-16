@@ -123,4 +123,71 @@ public class Ray:Figure,IEquatable<Ray>
         }
         return new Point(x_of_new_end,y_of_new_end);
     }
+    public override GenericSequence<Point> FigurePoints()
+    {
+        IEnumerable<Point> Line_PointsSeq()
+        {
+            while (true)
+            {
+                Random random = new Random();
+                double x = RandomExtensions.NextDouble(random, Math.Min(StartIn.x, PassFor.x), Math.Max(StartIn.x, PassFor.x));
+                while (!GeometricTools.BelongToSegment(StartIn, PassFor, x))
+                {
+                    x = RandomExtensions.NextDouble(random, Math.Min(StartIn.x, PassFor.x), Math.Max(StartIn.x, PassFor.x));
+                }
+                double y = GeometricTools.FindY(GeometricTools.Pendient(StartIn, PassFor), GeometricTools.N_of_Equation(StartIn, PassFor), x);
+                yield return new Point(x,y);
+            }
+
+        }
+        IEnumerable<Point> seq=Line_PointsSeq();
+        return new InfinitePointSequence(seq);
+    }
+    public override Finite_Sequence<Point> Intersect(Figure fig)
+    {
+        if (fig is Point)
+        {
+            return ((Point)fig).Intersect(this);
+        }
+        else if (fig is Line)
+        {
+            return ((Line)fig).Intersect(this);
+        }
+        else if (fig is Segment)
+        {
+            return ((Segment)fig).Intersect(this);
+        }
+        else if (fig is Ray)
+        {
+            return this.IntersectRay((Ray)fig);
+        }
+        else if (fig is Circle)
+        {
+            return this.IntersectCircle((Circle)fig);
+        }
+        else if (fig is Arc)
+        {
+            return this.IntersectArc((Arc)fig);
+        }
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>());
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
+        
+    }
+    private Finite_Sequence<Point> IntersectRay(Ray r)
+    {
+        Segment s1=new Segment(this.StartIn,this.CreateRelativeEnd());
+        Segment s2=new Segment(r.StartIn,r.CreateRelativeEnd());
+        return s1.Intersect(s2);
+    }
+    private Finite_Sequence<Point> IntersectCircle(Circle c)
+    {
+        Segment relativesegment=new Segment(this.StartIn,this.CreateRelativeEnd());
+        return relativesegment.Intersect(c);
+    }
+    private Finite_Sequence<Point> IntersectArc(Arc arc)
+    {
+        Segment relativesegment=new Segment(this.StartIn,this.CreateRelativeEnd());
+        return relativesegment.Intersect(arc);
+    }
 }

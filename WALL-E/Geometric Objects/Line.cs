@@ -78,6 +78,7 @@ public class Line : Figure, IEquatable<Line>
                     x = RandomExtensions.NextDouble(random, Math.Min(generalpoint1.x, generalpoint2.x), Math.Max(generalpoint1.x, generalpoint2.x));
                 }
                 double y = GeometricTools.FindY(GeometricTools.Pendient(generalpoint1, generalpoint2), GeometricTools.N_of_Equation(generalpoint1, generalpoint2), x);
+                yield return new Point(x,y);
             }
 
         }
@@ -110,7 +111,9 @@ public class Line : Figure, IEquatable<Line>
         {
             return this.IntersectArc((Arc)fig);
         }
-        return new Finite_Sequence<Point>(new List<Point>());
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>());
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
         
     }
     private Finite_Sequence<Point> IntersectLine(Line l)
@@ -125,7 +128,9 @@ public class Line : Figure, IEquatable<Line>
         double n2=GeometricTools.N_of_Equation(l.generalpoint1, l.generalpoint2);
         if (m1==m2||double.IsInfinity(m1)||double.IsInfinity(m2))
         {
-            return new Finite_Sequence<Point>(new List<Point>());
+            Finite_Sequence<Point> temp1=new Finite_Sequence<Point>(new List<Point>());
+        temp1.type=Finite_Sequence<Point>.SeqType.point;
+        return temp1;
         }
         double m=m1;
         double n=n1;
@@ -141,7 +146,10 @@ public class Line : Figure, IEquatable<Line>
             else x=l.generalpoint1.x;
         }
         double y=GeometricTools.FindY(m,n,x);
-        return new Finite_Sequence<Point>(new List<Point>{new Point(x,y)});
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>{new Point(x,y)});
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
+        
     }
     private Finite_Sequence<Point> IntersectSegment(Segment s)
     {
@@ -156,10 +164,14 @@ public class Line : Figure, IEquatable<Line>
         var point=seq.ReturnValue();
         if (GeometricTools.BelongToSegment(s.StartIn,s.EndsIn,point.x))
         {
-            return new Finite_Sequence<Point>(new List<Point>(){point});
+            Finite_Sequence<Point> temp1=new Finite_Sequence<Point>(new List<Point>(){point});
+        temp1.type=Finite_Sequence<Point>.SeqType.point;
+        return temp1;
         }
       }
-      return new Finite_Sequence<Point>(new List<Point>());
+      Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>());
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
     }
     private Finite_Sequence<Point> IntersectRay(Ray r)
     {
@@ -171,7 +183,9 @@ public class Line : Figure, IEquatable<Line>
         double distance=GeometricTools.Point_LineDistance(cir.center,this);
         if (distance>cir.radio)
         {
-            return new Finite_Sequence<Point>(new List<Point>());
+            Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>());
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
         }
         double m=GeometricTools.Pendient(generalpoint1, generalpoint2);
         double n=GeometricTools.N_of_Equation(generalpoint1, generalpoint2);
@@ -184,12 +198,16 @@ public class Line : Figure, IEquatable<Line>
         Point p1=new Point(x1,y1);
         if (d==0)
         {
-            return new Finite_Sequence<Point>(new List<Point>(){p1});
+            Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>(){p1});
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
         }
         double x2=(-b-Math.Sqrt(d))/(2*a);
         double y2=GeometricTools.FindY(m,n,x2);
         Point p2=new Point(x2,y2);
-        return new Finite_Sequence<Point>(new List<Point>(){p1,p2});
+        Finite_Sequence<Point> temp1=new Finite_Sequence<Point>(new List<Point>(){p1,p2});
+        temp1.type=Finite_Sequence<Point>.SeqType.point;
+        return temp1;
     }
     private Finite_Sequence<Point> IntersectArc(Arc arc)
     {
@@ -207,6 +225,8 @@ public class Line : Figure, IEquatable<Line>
                 }
             }
         }
-        return new Finite_Sequence<Point>(points);
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(points);
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
     }
 }

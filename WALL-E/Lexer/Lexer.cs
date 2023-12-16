@@ -31,7 +31,8 @@ public class Lexer
                 lexererrors.Add(new Error(Error.TypeError.Lexical_Error,Error.ErrorCode.Invalid,"token",temporal.TokenLocation));
             }
             possibletokens.Add(temporal);
-        } 
+        }
+        possibletokens.Add(new Token(Token.TokenType.EOL,";",File,Line,possibletokens.Count.ToString())); 
         return possibletokens;
     }
 

@@ -12,14 +12,15 @@ public class GeneralEvaluation
     
     public Context EvaluateArchive(Context basecontext)
     {
-        Evaluator evaluate=new Evaluator(basecontext,false);
-        
+        Evaluator evaluate=new Evaluator(basecontext);
+        int actualcounterror=0;
        foreach (var item in Lines)
        {
           object value=evaluate.GeneralEvaluation(item);
-          if (evaluate.AllTheSemantic_Errors().Count>0)
+          if (evaluate.AllTheSemantic_Errors().Count>actualcounterror)
           {
             SemanticErrors.Add(evaluate.AllTheSemantic_Errors());
+            actualcounterror=SemanticErrors.Count;
           }
           else if(SemanticErrors.Count==0)
           {

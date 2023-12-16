@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.RegularExpressions;
 public class GeneralLexer
 {
     public string code{get;set;}
@@ -12,30 +13,40 @@ public class GeneralLexer
         errors=new List<List<Error>>();
         string[] lines=code.Split(new[] {";"},StringSplitOptions.None);
         int index=-1;
+        int amount_of_open_let=0;
         //Check this
         for (int i = 0; i < lines.Length; i++)
         {  
             if (index>=0 && !(lines[i].Contains("in")))
             {
-                lines[index]=lines[index]+" "+lines[i];
+                lines[index]=lines[index]+";"+lines[i];
                 lines[i]="";
             }
             else if (index>=0 && (lines[i].Contains("in")))
             {
-                lines[index]=lines[index]+" "+lines[i];
-                index=-1;
+                lines[index]=lines[index]+";"+lines[i];
+                
+                amount_of_open_let--;
+                if (amount_of_open_let==0)
+                {
+                    index=-1;
+                }
+                
                 lines[i]="";
             }
-            else if (lines[i].Contains("let"))
+            if (lines[i].Contains("let"))
             {
+                int amount=Amount_of_Lets(lines[i]);
+                
                 index=i;
+                amount_of_open_let=amount_of_open_let+amount;
                 continue;
             }  
         }
         this.lines=new List<string>();
         for (int i = 0; i < lines.Length; i++)
         {
-            if (lines[i]=="")
+            if (lines[i]==" " || lines[i]=="" || lines[i]=="  ")
             {
                 continue;
             }
@@ -69,6 +80,11 @@ public class GeneralLexer
     public List<List<Error>> LexicalErrors()
     {
         return errors;
+    }
+    private int Amount_of_Lets(string s)
+    {
+        MatchCollection matches=Regex.Matches(s,"\\blet\\b",RegexOptions.IgnoreCase);
+        return matches.Count;
     }
     
 }

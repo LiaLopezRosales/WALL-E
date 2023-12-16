@@ -102,4 +102,111 @@ public class Circle:Figure,IEquatable<Circle>
             }
             else return false;
     }
+    public override GenericSequence<Point> FigurePoints()
+    {
+        IEnumerable<Point> Circle_PointsSeq()
+        {
+            while (true)
+            {
+                Random random = new Random();
+                double x = RandomExtensions.NextDouble(random,center.x-radio-1,center.x+radio+1);
+                int one_or_two=random.Next(2);
+                double y = FindYofXinCircle(x)[one_or_two];
+                yield return new Point(x,y);
+            }
+
+        }
+        IEnumerable<Point> seq=Circle_PointsSeq();
+        return new InfinitePointSequence(seq);
+    }
+    public List<double> FindYofXinCircle(double x)
+    {
+        double atdistance1=(Math.Sqrt(Math.Pow(this.radio,2)-Math.Pow(x-this.center.x,2)))+this.center.y;
+        double atdistance2=(-Math.Sqrt(Math.Pow(this.radio,2)-Math.Pow(x-this.center.x,2)))+this.center.y;
+        return new List<double>(){atdistance1,atdistance2};
+    }
+    public override Finite_Sequence<Point> Intersect(Figure fig)
+    {
+        if (fig is Point)
+        {
+            return ((Point)fig).Intersect(this);
+        }
+        else if (fig is Line)
+        {
+            return ((Line)fig).Intersect(this);
+        }
+        else if (fig is Segment)
+        {
+            return ((Segment)fig).Intersect(this);
+        }
+        else if (fig is Ray)
+        {
+            return ((Ray)fig).Intersect(this);
+        }
+        else if (fig is Circle)
+        {
+            return this.IntersectCircle((Circle)fig);
+        }
+        else if (fig is Arc)
+        {
+            return this.IntersectArc((Arc)fig);
+        }
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>());
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
+        
+    }
+    private Finite_Sequence<Point> IntersectCircle(Circle c)
+    {
+        if (this.Equals(c))
+        {
+            return null!;
+        }
+        double distance=GeometricTools.PointsDistance(this.center,c.center);
+        double radiosum=this.radio+c.radio;
+        if (distance>radiosum||distance<Math.Abs(this.radio-c.radio))
+        {
+            Finite_Sequence<Point> temp1=new Finite_Sequence<Point>(new List<Point>());
+        temp1.type=Finite_Sequence<Point>.SeqType.point;
+            return temp1;
+        }
+        double a=(Math.Pow(this.radio,2)-Math.Pow(c.radio,2)+Math.Pow(distance,2))/(distance*2);
+        double h=Math.Sqrt(Math.Pow(this.radio,2)-Math.Pow(a,2));
+        double x3=this.center.x+a*(c.center.x-this.center.x)/distance;
+        double y3=this.center.y+a*(c.center.y-this.center.y)/distance;
+        double x1=(x3+h*(c.center.y-this.center.y))/distance;
+        double y1=(y3-h*(c.center.x-this.center.x))/distance;
+        double x2=(x3-h*(c.center.y-this.center.y))/distance;
+        double y2=(y3+h*(c.center.x-this.center.x))/distance;
+        Point first=new Point(x1,y1);
+        Point second=new Point(x2,y2);
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>(){first,second});
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
+    }
+    private Finite_Sequence<Point> IntersectArc(Arc arc)
+    {
+        if (arc.center.Equals(this.center)&&arc.measure==this.radio)
+        {
+            return null!;
+        }
+        List<Point> points=new List<Point>();
+        Circle relativecircle=new Circle(arc.center,arc.measure);
+        var intersect=this.IntersectCircle(relativecircle);
+        if (intersect.count>0)
+        {
+            foreach (var item in intersect.Sequence)
+            {
+                var pointarcintersect=item.Intersect(arc);
+                if (pointarcintersect.count>0)
+                {
+                    points.Add(item);
+                }
+            }
+            
+        }
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(points);
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
+    }
 }

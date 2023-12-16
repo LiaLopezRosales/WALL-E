@@ -7,15 +7,13 @@ public class Evaluator
     private Context context { get; set; }
     // private List<Scope>? currentcontext{get;set;}
     public List<Error> Semantic_Errors { get; set; }
-    public bool PreviusLineWasImport { get; }
 
-    public Evaluator(Context context, bool previuslineisimport)
+    public Evaluator(Context context)
     {
         this.context = context;
         scope = new Scope();
         Semantic_Errors = new List<Error>();
         AST = new Node();
-        PreviusLineWasImport = previuslineisimport;
         CurrentScope = scope;
     }
 
@@ -32,7 +30,7 @@ public class Evaluator
     }
     public Context ResultingContext()
     {
-      return context;
+        return context;
     }
     public List<Error> AllTheSemantic_Errors()
     {
@@ -184,6 +182,7 @@ public class Evaluator
                 context.ExistingPoints.Add(temp);
             }
             Finite_Sequence<Point> pts = new Finite_Sequence<Point>(elements);
+            pts.type=Finite_Sequence<Point>.SeqType.point;
             if (CurrentScope.Parent == null)
             {
                 if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
@@ -219,6 +218,7 @@ public class Evaluator
                 context.ExistingLines.Add(l);
             }
             Finite_Sequence<Line> pts = new Finite_Sequence<Line>(elements);
+            pts.type=Finite_Sequence<Line>.SeqType.line;
             if (CurrentScope.Parent == null)
             {
                 if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
@@ -270,7 +270,7 @@ public class Evaluator
             {
                 context.UtilizedColors.Push(node.NodeExpression!.ToString()!);
             }
-            return ("color changed to {0}", node.NodeExpression!.ToString()!);
+            return $"Color changed to {node.NodeExpression!.ToString()!}";
         }
         else if (node.Type == Node.NodeType.Restore)
         {
@@ -278,12 +278,16 @@ public class Evaluator
             {
                 context.UtilizedColors.Pop();
             }
-            return ("Used color has been restore to {0}", context.UtilizedColors.Peek());
+            return $"Used color has been restore to {context.UtilizedColors.Peek()}";
         }
         else if (node.Type == Node.NodeType.Draw)
         {
             object value = GeneralEvaluation(node.Branches[0]);
-            string tag = GeneralEvaluation(node.Branches[1]).ToString()!;
+            string tag=" ";
+            if (node.Branches[1].Type!=Node.NodeType.Indefined)
+            {
+                tag = GeneralEvaluation(node.Branches[1]).ToString()!;
+            }
             DrawObject d = new DrawObject(value, tag, context.UtilizedColors.Peek());
             if (!d.CheckValidType())
             {
@@ -745,11 +749,17 @@ public class Evaluator
         }
         else if (node.Type == Node.NodeType.Var)
         {
-            if (!CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!))
+            if (!context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "variable", new Location("file", "line", "column")));
+                if (!CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!))
+                {
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "variable", new Location("file", "line", "column")));
+                }
+                else return CurrentScope.Variables[node.NodeExpression!.ToString()!];
             }
-            else return CurrentScope.Variables[node.NodeExpression!.ToString()!];
+            else return context.GlobalConstant[node.NodeExpression!.ToString()!];
+
+
         }
         else if (node.Type == Node.NodeType.Declared_FucName)
         {
@@ -839,6 +849,10 @@ public class Evaluator
                 }
                 return c;
             }
+            else
+            {
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "argument,must be a sequence", new Location("line", "file", "column")));
+            }
 
         }
         else if (node.Type == Node.NodeType.Undefined)
@@ -900,6 +914,45 @@ public class Evaluator
                 valuesofseq.Add(value);
             }
             Finite_Sequence<object> seq = new Finite_Sequence<object>(valuesofseq);
+            
+            if (firstvalue is System.Double)
+            {
+                seq.type=Finite_Sequence<object>.SeqType.number;
+            }
+            else if (firstvalue is System.String)
+            {
+                seq.type=Finite_Sequence<object>.SeqType.text;
+            }
+            else if (firstvalue is Point)
+            {
+                seq.type=Finite_Sequence<object>.SeqType.point;
+            }
+            else if (firstvalue is Line)
+            {
+                seq.type=Finite_Sequence<object>.SeqType.line;
+            }
+            else if (firstvalue is Segment)
+            {
+                seq.type=Finite_Sequence<object>.SeqType.segment;
+            }
+            else if (firstvalue is Ray)
+            {
+                seq.type=Finite_Sequence<object>.SeqType.ray;
+            }
+            else if (firstvalue is Circle)
+            {
+                seq.type=Finite_Sequence<object>.SeqType.circle;
+            }
+            else if (firstvalue is Arc)
+            {
+                seq.type=Finite_Sequence<object>.SeqType.arc;
+            }
+            else if (firstvalue is GenericSequence<object>)
+            {
+                seq.type=Finite_Sequence<object>.SeqType.sequence;
+            }
+            else seq.type=Finite_Sequence<object>.SeqType.other;
+
             return seq;
         }
         else if (node.Type == Node.NodeType.Negation)
@@ -1176,13 +1229,7 @@ public class Evaluator
                     exist = true;
                 }
             }
-            foreach (var function in CurrentScope.TemporalFunctions)
-            {
-                if (function.Key == dfunc_name)
-                {
-                    exist = true;
-                }
-            }
+
 
             int index = -1;
             if (exist)
@@ -1248,9 +1295,81 @@ public class Evaluator
             }
             else
             {
-                //Se lanza error si se está llamando a una función que no existe
+                foreach (var function in CurrentScope.TemporalFunctions)
+                {
+                    if (function.Key == dfunc_name)
+                    {
+                        exist = true;
+                    }
+                }
+                if (exist)
+                {
+                    Scope func_scope = CurrentScope.Child();
+                    CurrentScope = func_scope;
+                    index=0;
+                    // currentcontext!.Add(func_scope);
+
+                    foreach(var function in CurrentScope.TemporalFunctions)
+                    {
+                        //Se accede a los detalles de la función guardada
+                        if (function.Key == dfunc_name)
+                        {
+                            //Se comprueba si tienen la misma cantidad de argumentos
+                            if (CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments.Count == func_parameters.Branches.Count)
+                            {
+                                //Se agregan los argumentos dados a el scope del cuerpo de la función
+                                // foreach (var p_name in CurrentScope.Parent!.Variables.Keys)
+                                // {
+                                //     CurrentScope.Variables.Add(p_name, CurrentScope.Parent!.Variables[p_name]);
+                                // }
+                                int param_number = 0;
+                                foreach (var p_name in CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments.Keys)
+                                {
+                                    //Se asignan los argumentos dados a su correspondiente en los declarados por la función
+                                    CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments[p_name] = func_parameters.Branches[param_number].NodeExpression!;
+                                    //Se evaluan estos argumentos
+                                    if (CurrentScope.Variables.ContainsKey(p_name))
+                                    {
+
+                                        CurrentScope.Variables[p_name] = GeneralEvaluation((Node)func_parameters.Branches[param_number].NodeExpression!);
+                                        param_number++;
+                                    }
+                                    else
+                                    {
+                                        object par_value = GeneralEvaluation((Node)func_parameters.Branches[param_number].NodeExpression!);
+                                        CurrentScope.Variables.Add(p_name, par_value);
+                                        param_number++;
+                                    }
+
+                                }
+                                
+                                //Se evalua la función solicitada
+                                object value = GeneralEvaluation(CurrentScope.TemporalFunctions[dfunc_name].Code);
+                                //Se elimina el contexto creado para la función
+                                Scope parent = CurrentScope.Parent!;
+                                CurrentScope = parent;
+                                // currentcontext!.Remove(currentcontext[currentcontext.Count - 1]);
+
+                                return value;
+
+                            }
+                            else
+                            {
+                                //Se lanza un error si el número de parámetros no coincide
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, $"{CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments.Count} parameters but received {func_parameters.Branches.Count}", new Location("file", "line", "column")));
+                            }
+
+                        }
+                        index++;
+
+                    }
+
+                }
+                else
+                {//Se lanza error si se está llamando a una función que no existe
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "name,function has not been declared", new Location("file", "line", "column")));
                 index = -1;
+                }
             }
 
 
@@ -1271,29 +1390,76 @@ public class Evaluator
         }
         else if (node.Type == Node.NodeType.Intersect)
         {
+           object f1=GeneralEvaluation(node.Branches[0]);
+           object f2=GeneralEvaluation(node.Branches[1]);
+           Finite_Sequence<Point> result=new Finite_Sequence<Point>(new List<Point>());
+           if (f2 is Figure)
+           {
+             if (f1 is Point)
+             {
+                result=((Point)f1).Intersect((Figure)f2);
+             }
+             else if (f1 is Line)
+             {
+                 result=((Line)f1).Intersect((Figure)f2);
+             }
+             else if (f1 is Segment)
+             {
+                 result=((Segment)f1).Intersect((Figure)f2);
+             }
+             else if (f1 is Ray)
+             {
+                 result=((Ray)f1).Intersect((Figure)f2);
+             }
+             else if (f1 is Circle)
+             {
+                 result=((Circle)f1).Intersect((Figure)f2);
+             }
+             else if (f1 is Arc)
+             {
+                 result=((Arc)f1).Intersect((Figure)f2);
+             }
+             else if(!(f1 is Figure))
+             {
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "figure", new Location("file", "line", "column")));
+                return result=null!;
+             }
+             if (result is null)
+             {
+                return "undefined";
+             }
+             else
+             {
+                return result;
+             }
 
-        }
-        else if (node.Type == Node.NodeType.Import)
-        {
-           string archivename=node.NodeExpression!.ToString()!;
-           string partialrute=Directory.GetParent(Path.Combine(Directory.GetCurrentDirectory()))!.FullName!;
-           string rute=Path.Combine(partialrute,"Librerías de Geo");
-           string[] archive=Directory.GetFiles(rute,archivename);
-           if (archive.Length>1)
-           {
-            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "file name,name must be unique", new Location("file", "line", "column")));
-           }
-           else if (archive.Length<=0)
-           {
-            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "file name,file must exist", new Location("file", "line", "column")));
            }
            else
            {
-            string code=File.ReadAllText(archive[0]);
-            ArchiveAnalysis procesingfile=new ArchiveAnalysis(code,archivename);
-            context=procesingfile.Analyze(context);
-            return ("File {0} procesed",archivename);
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "figure", new Location("file", "line", "column")));
            }
+        }
+        else if (node.Type == Node.NodeType.Import)
+        {
+            string archivename = node.NodeExpression!.ToString()!;
+            string partialrute = Directory.GetParent(Path.Combine(Directory.GetCurrentDirectory()))!.FullName!;
+            string rute = Path.Combine(partialrute, "Librerías de Geo");
+            string[] archive = Directory.GetFiles(rute, archivename);
+            if (archive.Length > 1)
+            {
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "file name,name must be unique", new Location("file", "line", "column")));
+            }
+            else if (archive.Length <= 0)
+            {
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "file name,file must exist", new Location("file", "line", "column")));
+            }
+            else
+            {
+                string code = File.ReadAllText(archive[0]);
+                ArchiveAnalysis procesingfile = new ArchiveAnalysis(code, archivename);
+                context = procesingfile.Analyze(context);
+                return ("File {0} procesed", archivename);
+            }
         }
         else
         {

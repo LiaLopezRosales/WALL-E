@@ -12,6 +12,42 @@ public class DrawObject
     }
     public bool CheckValidType()
     {
-        throw new NotImplementedException();
+        if (Figures is Figure || Figures is Finite_Sequence<object> || Figures is InfinitePointSequence)
+        {
+            if (Figures is Finite_Sequence<object>)
+            {
+                foreach (var item in ((Finite_Sequence<object>)Figures).Sequence)
+                {
+                    if (!(DrawObject.CheckValidDrawType(item)))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            else return true;
+        }
+        else return false;
     }
+    public static bool CheckValidDrawType(object x)
+    {
+        if (x is Figure || x is Finite_Sequence<object> || x is InfinitePointSequence)
+        {
+            if (x is Finite_Sequence<object>)
+            {
+
+                foreach (var item in ((Finite_Sequence<object>)x).Sequence)
+                {
+                    if (!(DrawObject.CheckValidDrawType(item)))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            else return true;
+        }
+        else return false;
+    }
+     public override string ToString() => string.Format("{0} {1} in {2}",Figures,Tag,UsedColor);
 }

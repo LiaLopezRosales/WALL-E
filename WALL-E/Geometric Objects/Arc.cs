@@ -142,4 +142,102 @@ public class Arc:Figure,IEquatable<Arc>
         return (startangle,sweepangle);
 
     }
+    public override GenericSequence<Point> FigurePoints()
+    {
+        IEnumerable<Point> Arc_PointsSeq()
+        {
+            while (true)
+            {
+                Random random = new Random();
+                double x = RandomExtensions.NextDouble(random,center.x-measure-1,center.x+measure+1);
+                double y1 =FindYofXinCircle(x)[0];
+                double y2 = FindYofXinCircle(x)[1];
+                Point p1=new Point(x,y1);
+                Point p2=new Point(x,y2);
+                var intersect1=p1.Intersect(this);
+                var intersect2=p2.Intersect(this);
+                if (intersect1.count>0)
+                {
+                    yield return p1;
+                }
+                else if (intersect2.count>0)
+                {
+                    yield return p2;
+                }
+            }
+
+        }
+        IEnumerable<Point> seq=Arc_PointsSeq();
+        return new InfinitePointSequence(seq);
+    }
+    public List<double> FindYofXinCircle(double x)
+    {
+        double atdistance1=(Math.Sqrt(Math.Pow(this.measure,2)-Math.Pow(x-this.center.x,2)))+this.center.y;
+        double atdistance2=(-Math.Sqrt(Math.Pow(this.measure,2)-Math.Pow(x-this.center.x,2)))+this.center.y;
+        return new List<double>(){atdistance1,atdistance2};
+    }
+    public override Finite_Sequence<Point> Intersect(Figure fig)
+    {
+        if (fig is Point)
+        {
+            return ((Point)fig).Intersect(this);
+        }
+        else if (fig is Line)
+        {
+            return ((Line)fig).Intersect(this);
+        }
+        else if (fig is Segment)
+        {
+            return ((Segment)fig).Intersect(this);
+        }
+        else if (fig is Ray)
+        {
+            return ((Ray)fig).Intersect(this);
+        }
+        else if (fig is Circle)
+        {
+            return ((Circle)fig).Intersect(this);
+        }
+        else if (fig is Arc)
+        {
+            return this.IntersectArc((Arc)fig);
+        }
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>());
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
+        
+    }
+    private Finite_Sequence<Point> IntersectArc(Arc arc)
+    {
+        if (this.Equals(arc))
+        {
+            return null!;
+        }
+        List<Point> points=new List<Point>();
+        Circle thisrelativecircle=new Circle(this.center,this.measure);
+        Circle relativecircle=new Circle(arc.center,arc.measure);
+        var intersect=thisrelativecircle.Intersect(relativecircle);
+        if (intersect is null)
+        {
+            Segment s1=new Segment(this.point_of_semirect1,this.point_of_semirect2);
+            Segment s2=new Segment(arc.point_of_semirect1,arc.point_of_semirect2);
+            var secondintersect=s1.Intersect(s2);
+            return (secondintersect.count>0)?null!:new Finite_Sequence<Point>(new List<Point>());
+        }
+        else if (intersect.count>0)
+        {
+            foreach (var item in intersect.Sequence)
+            {
+                var p1=item.Intersect(this);
+                var p2=item.Intersect(arc);
+                if (p1.count>0 && p2.count>0)
+                {
+                    points.Add(item);
+                }
+            }
+        }
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(points);
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
+    }
 }
