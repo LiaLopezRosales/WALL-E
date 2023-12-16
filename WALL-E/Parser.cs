@@ -95,10 +95,10 @@ public class Parser
         {
             return IF_ElSE();
         }
-        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
-        {
-            return Exp_Fuc();
-        }
+        // if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
+        // {
+        //     return Exp_Fuc();
+        // }
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.circle && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
         {
             return PCircle();
@@ -150,6 +150,11 @@ public class Parser
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,import order must contain only the name of the file",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return value;
+        }
+        tokenstream.MoveForward(1);
         return value;
 
     }
@@ -169,10 +174,10 @@ public class Parser
                     errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
                     break;
                 }
-                Node arg=new Node();
-                arg.Type=Node.NodeType.ParName;
-                Node val = ParseExpression();
-                arg.NodeExpression=val;
+                Node arg=ParseExpression();
+                // arg.Type=Node.NodeType.ParName;
+                // Node val = ParseExpression();
+                // arg.NodeExpression=val;
                 Arguments.Branches.Add(arg);
             } while (tokenstream.tokens[tokenstream.Position()].Value == ",");
             if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
@@ -205,6 +210,11 @@ public class Parser
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return value;
+        }
+        tokenstream.MoveForward(1);
         return value;
 
     }
@@ -223,6 +233,11 @@ public class Parser
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return value;
+        }
+        tokenstream.MoveForward(1);
         return value;
 
     }
@@ -241,6 +256,11 @@ public class Parser
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return value;
+        }
+        tokenstream.MoveForward(1);
         return value;
 
     }
@@ -259,6 +279,11 @@ public class Parser
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return value;
+        }
+        tokenstream.MoveForward(1);
         return value;
 
     }
@@ -277,6 +302,11 @@ public class Parser
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the figure",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return value;
+        }
+        tokenstream.MoveForward(1);
         return value;
 
     }
@@ -295,6 +325,11 @@ public class Parser
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the sequence",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return value;
+        }
+        tokenstream.MoveForward(1);
         return value;
 
     }
@@ -313,6 +348,11 @@ public class Parser
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only an identifier for the sequence",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return value;
+        }
+        tokenstream.MoveForward(1);
         return value;
 
     }
@@ -331,6 +371,11 @@ public class Parser
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement,must declare only a color",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return value;
+        }
+        tokenstream.MoveForward(1);
         return value;
 
     }
@@ -343,6 +388,11 @@ public class Parser
         }
         Node value = new Node();
         value.Type = Node.NodeType.Restore;
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return value;
+        }
+        tokenstream.MoveForward(1);
         return value;
     }
     public Node GlobalVar()
@@ -360,6 +410,11 @@ public class Parser
         }
         globalvar.Branches = new List<Node> { var_name, value };
         //Revisar si hay que comprobar si la expresion continua
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return globalvar;
+        }
+        tokenstream.MoveForward(1);
         return globalvar;
     }
     public Node GlobalSeq()
@@ -422,7 +477,13 @@ public class Parser
              errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "text",tokenstream.tokens[tokenstream.Position()].TokenLocation));
           }
         }
+        
         draw.Branches=new List<Node>{mainvalue,text};
+        if (tokenstream.Position()==tokens.Count-1)
+        {
+            return draw;
+        }
+        tokenstream.MoveForward(1);
         return draw;
     }
 
@@ -636,6 +697,7 @@ public class Parser
     //Revisar este 
     public Node Let_In()
     {
+        tokenstream.MoveForward(1);
         Node let_exp = new Node();
         let_exp.Type = Node.NodeType.Let_exp;
         Node instructions = new Node();
@@ -647,14 +709,20 @@ public class Parser
                 errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "let-in expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
                 break;
             }
-            Node instruction = new Node();
-            instruction.NodeExpression = ParseStatement();
+            Console.WriteLine("tere");
+            Node instruction = ParseStatement();
+            //instruction.NodeExpression = ParseStatement();
+            Console.WriteLine(instruction.Type);
             instructions.Branches.Add(instruction);
+            Console.WriteLine(tokenstream.tokens[tokenstream.Position()].Value);
         } while (tokenstream.tokens[tokenstream.Position()].Value != "in");
+        //tokenstream.MoveForward(1);
         Node assigment_exp = new Node();
         assigment_exp.Type = Node.NodeType.Assigment;
         tokenstream.MoveForward(1);
-        assigment_exp.NodeExpression = ParseExpression();
+        Console.WriteLine(tokenstream.tokens[tokenstream.Position()].Value);
+        Node assig=ParseExpression();
+        assigment_exp.Branches = new List<Node>{assig};
         let_exp.Branches = new List<Node> { instructions, assigment_exp };
         return let_exp;
     }
@@ -675,11 +743,11 @@ public class Parser
                     errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
                     break;
                 }
-                Node arg=new Node();
+                Node arg=ParseExpression();
                 //Cambiar este type
-                arg.Type=Node.NodeType.ParName;
-                Node val = ParseExpression();
-                arg.NodeExpression=val;
+                // arg.Type=Node.NodeType.ParName;
+                // Node val = ParseExpression();
+                // arg.NodeExpression=val;
                 Arguments.Branches.Add(arg);
             } while (tokenstream.tokens[tokenstream.Position()].Value == ",");
             if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
@@ -698,11 +766,13 @@ public class Parser
             function_name.NodeExpression = name;
             tokenstream.MoveForward(1);
             Node body = ParseExpression();
+            Console.WriteLine(Arguments.Branches.Count);
+            Console.WriteLine(Arguments.Branches[0].Type);
             foreach (var item in Arguments.Branches)
             {
                 if (item.Type!=Node.NodeType.Var)
                 {
-                    errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"argument",(Location)item.Branches[0].NodeExpression!));
+                    errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"argument",tokenstream.tokens[tokenstream.Position()].TokenLocation));
                 }
             }
             function.Branches = new List<Node> { function_name, Arguments, body };
@@ -907,7 +977,7 @@ public class Parser
             negation.Branches=new List<Node>{value};
             return negation;
         }
-
+     
         if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.number)
         {
             double value = (Convert.ToDouble(tokenstream.tokens[tokenstream.Position()].Value,CultureInfo.InvariantCulture));
@@ -925,6 +995,10 @@ public class Parser
            temp.NodeExpression=value;
            tokenstream.MoveForward(1);
            return temp;
+        }
+        if (tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
+        {
+            return Exp_Fuc();
         }
         else if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.PI)
         {

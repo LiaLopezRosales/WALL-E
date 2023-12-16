@@ -11,20 +11,29 @@ public class GeneralLexer
     {
         this.code=code;
         errors=new List<List<Error>>();
-        string[] lines=code.Split(new[] {";"},StringSplitOptions.None);
+        string[] lines=code.Split(new[] {";"},StringSplitOptions.RemoveEmptyEntries);
         int index=-1;
         int amount_of_open_let=0;
+        // for (int i = 0; i < lines.Length; i++)
+        // {
+        //     Console.WriteLine(lines[i]);
+        // }
+        // Console.WriteLine(lines.Length);
         //Check this
         for (int i = 0; i < lines.Length; i++)
         {  
-            if (index>=0 && !(lines[i].Contains("in")))
+            // Console.WriteLine(lines[i].Contains("in"));
+            if (index>=0 && !(ContainIn(lines[i])))
             {
                 lines[index]=lines[index]+";"+lines[i];
                 lines[i]="";
             }
-            else if (index>=0 && (lines[i].Contains("in")))
+            else if (index>=0 && (ContainIn(lines[i])))
             {
+                // Console.WriteLine(lines[i]);
+                // Console.WriteLine("eeee");
                 lines[index]=lines[index]+";"+lines[i];
+                //Console.WriteLine(lines[index]);
                 
                 amount_of_open_let--;
                 if (amount_of_open_let==0)
@@ -34,7 +43,7 @@ public class GeneralLexer
                 
                 lines[i]="";
             }
-            if (lines[i].Contains("let"))
+            if (lines[i].Contains("let "))
             {
                 int amount=Amount_of_Lets(lines[i]);
                 
@@ -43,6 +52,7 @@ public class GeneralLexer
                 continue;
             }  
         }
+        //Console.WriteLine(lines.Count());
         this.lines=new List<string>();
         for (int i = 0; i < lines.Length; i++)
         {
@@ -85,6 +95,11 @@ public class GeneralLexer
     {
         MatchCollection matches=Regex.Matches(s,"\\blet\\b",RegexOptions.IgnoreCase);
         return matches.Count;
+    }
+    private bool ContainIn(string s)
+    {
+        MatchCollection matches=Regex.Matches(s,"\\bin\\b",RegexOptions.IgnoreCase);
+        return matches.Count>0;
     }
     
 }

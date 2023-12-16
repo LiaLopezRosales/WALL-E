@@ -1261,11 +1261,13 @@ public class Evaluator
                                 {
 
                                     CurrentScope.Variables[p_name] = GeneralEvaluation((Node)func_parameters.Branches[param_number].NodeExpression!);
+                                    //CurrentScope.Variables[p_name] =func_parameters.Branches[param_number].NodeExpression!;
                                     param_number++;
                                 }
                                 else
                                 {
                                     object par_value = GeneralEvaluation((Node)func_parameters.Branches[param_number].NodeExpression!);
+                                    //object par_value = func_parameters.Branches[param_number].NodeExpression!;
                                     CurrentScope.Variables.Add(p_name, par_value);
                                     param_number++;
                                 }
@@ -1383,7 +1385,7 @@ public class Evaluator
                 //Check this
                 GeneralEvaluation(instruction);
             }
-            object value = GeneralEvaluation(node.Branches[1]);
+            object value = GeneralEvaluation(node.Branches[1].Branches[0]);
             Scope parent = CurrentScope.Parent!;
             CurrentScope = parent;
             return value;

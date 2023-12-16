@@ -1,5 +1,7 @@
 //string test="point p1; circle c1; draw{p1,c1}; color yellow; let a=4 ; b=5 ;in a+b; if let a=4; b=5;in a+b then 1 else 2;";
-string test="if 5==4 then 3 else 2";
+//string test="Fib(n) = if n<=1 then 1 else Fib(n - 1) + Fib(n - 2);Fib(5);";
+string test="let a=let b=4; in b+2; in a+5;";
+//string test="let a=let b=4; in b+2; in a+5;";
 GeneralLexer l=new GeneralLexer(test,"MainFile");
 List<string> r=l.lines;
 // foreach (var item in r)
@@ -80,21 +82,21 @@ foreach (var item in c.GlobalConstant)
     }
     else Console.WriteLine(item.Value);
 }
-// foreach (var item in c.GlobalConstant)
-// {
-//     if (item.Value is List<Point>)
-//     {
-//         foreach (var item1 in ((List<Point>)item.Value))
-//         {
-//             Console.WriteLine(item1);
-//         }
-//     }
-// }
-// foreach (var item in c.ToDraw)
-// {
-//     Console.WriteLine(item);
-// }
-// while (c.UtilizedColors.Count>0)
-// {
-//     Console.WriteLine(c.UtilizedColors.Pop());
-// }
+foreach (var item in c.GlobalConstant)
+{
+    if (item.Value is List<Point>)
+    {
+        foreach (var item1 in ((List<Point>)item.Value))
+        {
+            Console.WriteLine(item1);
+        }
+    }
+}
+foreach (var item in c.ToDraw)
+{
+    Console.WriteLine(item);
+}
+while (c.UtilizedColors.Count>0)
+{
+    Console.WriteLine(c.UtilizedColors.Pop());
+}
