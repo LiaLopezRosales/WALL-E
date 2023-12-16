@@ -13,8 +13,8 @@ public class Point : Figure, IEquatable<Point>
         Random generator = new Random();
         if (existingpoints.Count == 0)
         {
-            x = generator.Next();
-            y = generator.Next();
+            x = generator.Next(1,20);
+            y = generator.Next(1,20);
         }
         else
         {
@@ -226,6 +226,6 @@ public class Point : Figure, IEquatable<Point>
         temp1.type = Finite_Sequence<Point>.SeqType.point;
         return temp1;
     }
-
+    public override string ToString() => string.Format("Point in {0} {1} ",x,y);
 
 }

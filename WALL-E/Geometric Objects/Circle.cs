@@ -209,4 +209,5 @@ public class Circle:Figure,IEquatable<Circle>
         temp.type=Finite_Sequence<Point>.SeqType.point;
         return temp;
     }
+    public override string ToString() => string.Format("Circle with Center in {0} and radio {1} ",center,radio);
 }

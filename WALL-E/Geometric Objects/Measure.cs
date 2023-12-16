@@ -67,4 +67,5 @@ public class Measure
         double newY=point1.y+(p2.y-point1.y)*factor;
         return new Point(newX,newY);
     }
+    public override string ToString() => string.Format("Measure is {0}",Value);
 }

@@ -1,5 +1,5 @@
 //string test="point p1; circle c1; draw{p1,c1}; color yellow; let a=4 ; b=5 ;in a+b; if let a=4; b=5;in a+b then 1 else 2;";
-string test="point p1; point p2; color blue; draw line(p1,p2); restore; draw p1; draw p2;";
+string test="if 5==4 then 3 else 2";
 GeneralLexer l=new GeneralLexer(test,"MainFile");
 List<string> r=l.lines;
 // foreach (var item in r)
@@ -7,17 +7,17 @@ List<string> r=l.lines;
 //     Console.WriteLine(item);
 // }
 List<List<Token>> p=l.Process(r);
-Console.WriteLine(p.Count);
-int index=0;
-foreach (var item in p)
-{
-    Console.WriteLine("{0} tokens in line {1}",item.Count,index);
-    foreach (var line in item)
-    {
-        Console.WriteLine(line);
-    }
-    index++;
-}
+// Console.WriteLine(p.Count);
+// int index=0;
+// foreach (var item in p)
+// {
+//     Console.WriteLine("{0} tokens in line {1}",item.Count,index);
+//     foreach (var line in item)
+//     {
+//         Console.WriteLine(line);
+//     }
+//     index++;
+// }
 GeneralParser e=new GeneralParser(p,"MainFile");
 List<Node> f=e.ParseArchive();
 List<List<Error>> t=e.ParserErrors();
@@ -65,6 +65,31 @@ foreach (var item in v)
         Console.WriteLine(a);
     }
 }
+foreach (var item in c.GlobalConstant)
+{
+    if (item.Value is Circle)
+    {
+        Console.WriteLine(item.Value);
+    }
+    else if (item.Value is Finite_Sequence<object>)
+    {
+        foreach (var item1 in ((Finite_Sequence<object>)item.Value).Sequence)
+        {
+            Console.WriteLine(item1);
+        }
+    }
+    else Console.WriteLine(item.Value);
+}
+// foreach (var item in c.GlobalConstant)
+// {
+//     if (item.Value is List<Point>)
+//     {
+//         foreach (var item1 in ((List<Point>)item.Value))
+//         {
+//             Console.WriteLine(item1);
+//         }
+//     }
+// }
 // foreach (var item in c.ToDraw)
 // {
 //     Console.WriteLine(item);

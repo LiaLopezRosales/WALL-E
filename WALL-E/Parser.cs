@@ -367,10 +367,17 @@ public class Parser
         Node globalseq = new Node();
         globalseq.Type = Node.NodeType.GlobalSeq;
         Node Arguments = new Node();
+        int count=0;
         do
         {
+            if (count>0)
+            {
+                tokenstream.MoveForward(1);
+            }
+            //Console.WriteLine(tokenstream.tokens[tokenstream.Position()].Type);
             if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier && tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.low_hyphen)
             {
+                
                 errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "constant name or (_) symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             Node arg = new Node();
@@ -386,6 +393,7 @@ public class Parser
             }
             tokenstream.MoveForward(1);
             Arguments.Branches.Add(arg);
+            count++;
         } while (tokenstream.tokens[tokenstream.Position()].Value == ",");
         if (tokenstream.tokens[tokenstream.Position()].Value != "=")
         {
@@ -565,9 +573,9 @@ public class Parser
         }
         else tokenstream.MoveForward(1);
         Node arguments = new Node();
-        // arguments.Type = Node.NodeType.Intersect;
+        arguments.Type = Node.NodeType.Intersect;
         Node f1 = ParseExpression();
-        f1.NodeExpression = ParseExpression();
+        //f1.NodeExpression = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
@@ -875,8 +883,6 @@ public class Parser
     {
         if (tokenstream.Position()>=tokenstream.tokens.Count)
         {
-            Console.WriteLine(tokenstream.Position());
-            Console.WriteLine(tokenstream.tokens.Count);
             errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
         }
         Token current = tokenstream.tokens[tokenstream.Position()];
