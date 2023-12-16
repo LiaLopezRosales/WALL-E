@@ -315,6 +315,7 @@ public class Evaluator
                     exist = true;
                 }
             }
+            
             if (CurrentScope.Parent == null)
             {
                 if (exist)
@@ -657,9 +658,12 @@ public class Evaluator
         }
         else if (node.Type == Node.NodeType.Sum)
         {
+           
             Sum sum = new Sum();
             object left = GeneralEvaluation(node.Branches[0]);
+            
             object right = GeneralEvaluation(node.Branches[1]);
+            
             if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is string) && !(left is Measure) && !(left is Finite_Sequence<object>) && !(left is Finite_Sequence<Point>) && !(left is Enclosed_Infinite_Sequence) && !(left is Infinite_Sequence) && !(left is InfiniteDoubleSequence) && !(left is InfinitePointSequence)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));
@@ -905,7 +909,7 @@ public class Evaluator
             }
             else
             {
-                Console.WriteLine(arg.GetType());
+                
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "argument,must be a sequence", new Location("line", "file", "column")));
             }
 
@@ -1141,6 +1145,7 @@ public class Evaluator
         }
         else if (node.Type == Node.NodeType.Conditional)
         {
+            
             object condition = GeneralEvaluation(node.Branches[0]);
             if ((condition is null))
             {
@@ -1148,14 +1153,17 @@ public class Evaluator
                 return null!;
             }
             Ternary Conditional = new Ternary();
+            
             if (CheckTrueORFalse.Check(condition))
             {
+                
                 object if_part = GeneralEvaluation(node.Branches[1]);
                 Conditional.Evaluate(condition, if_part, -1);
                 return Conditional.Value!;
             }
             else
             {
+                
                 object else_part = GeneralEvaluation(node.Branches[2]);
                 Conditional.Evaluate(condition, -1, else_part);
                 return Conditional.Value!;
@@ -1310,18 +1318,18 @@ public class Evaluator
                             foreach (var p_name in context.Available_Functions[i].Functions_Arguments.Keys)
                             {
                                 //Se asignan los argumentos dados a su correspondiente en los declarados por la función
-                                context.Available_Functions[i].Functions_Arguments[p_name] = func_parameters.Branches[param_number].NodeExpression!;
+                                context.Available_Functions[i].Functions_Arguments[p_name] = func_parameters.Branches[param_number];
                                 //Se evaluan estos argumentos
                                 if (CurrentScope.Variables.ContainsKey(p_name))
                                 {
 
-                                    CurrentScope.Variables[p_name] = GeneralEvaluation((Node)func_parameters.Branches[param_number].NodeExpression!);
+                                    CurrentScope.Variables[p_name] = GeneralEvaluation(func_parameters.Branches[param_number]);
                                     //CurrentScope.Variables[p_name] =func_parameters.Branches[param_number].NodeExpression!;
                                     param_number++;
                                 }
                                 else
                                 {
-                                    object par_value = GeneralEvaluation((Node)func_parameters.Branches[param_number].NodeExpression!);
+                                    object par_value = GeneralEvaluation(func_parameters.Branches[param_number]);
                                     //object par_value = func_parameters.Branches[param_number].NodeExpression!;
                                     CurrentScope.Variables.Add(p_name, par_value);
                                     param_number++;
@@ -1383,17 +1391,17 @@ public class Evaluator
                                 foreach (var p_name in CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments.Keys)
                                 {
                                     //Se asignan los argumentos dados a su correspondiente en los declarados por la función
-                                    CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments[p_name] = func_parameters.Branches[param_number].NodeExpression!;
+                                    CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments[p_name] = func_parameters.Branches[param_number];
                                     //Se evaluan estos argumentos
                                     if (CurrentScope.Variables.ContainsKey(p_name))
                                     {
 
-                                        CurrentScope.Variables[p_name] = GeneralEvaluation((Node)func_parameters.Branches[param_number].NodeExpression!);
+                                        CurrentScope.Variables[p_name] = GeneralEvaluation(func_parameters.Branches[param_number]);
                                         param_number++;
                                     }
                                     else
                                     {
-                                        object par_value = GeneralEvaluation((Node)func_parameters.Branches[param_number].NodeExpression!);
+                                        object par_value = GeneralEvaluation(func_parameters.Branches[param_number]);
                                         CurrentScope.Variables.Add(p_name, par_value);
                                         param_number++;
                                     }

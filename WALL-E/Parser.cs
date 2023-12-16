@@ -79,7 +79,7 @@ public class Parser
         {
             return Draw();
         }
-         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
+         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket && (tokenstream.Contains("=")))
         {
             return Function();
         }
@@ -162,7 +162,7 @@ public class Parser
     public Node Exp_Fuc()
     {
         string name = tokenstream.tokens[tokenstream.Position()].Value;
-        tokenstream.MoveForward(2);
+        tokenstream.MoveForward(1);
         Node Arguments = new Node();
         Node function = new Node();
 
@@ -170,11 +170,13 @@ public class Parser
         {
             do
             {
+                tokenstream.MoveForward(1);
                 if (tokenstream.Position() >= tokens.Count - 1)
                 {
                     errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
                     break;
                 }
+                
                 Node arg=ParseExpression();
                 // arg.Type=Node.NodeType.ParName;
                 // Node val = ParseExpression();
@@ -710,18 +712,18 @@ public class Parser
                 errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "let-in expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
                 break;
             }
-            Console.WriteLine("tere");
+            
             Node instruction = ParseStatement();
             //instruction.NodeExpression = ParseStatement();
-            Console.WriteLine(instruction.Type);
+            
             instructions.Branches.Add(instruction);
-            Console.WriteLine(tokenstream.tokens[tokenstream.Position()].Value);
+            
         } while (tokenstream.tokens[tokenstream.Position()].Value != "in");
         //tokenstream.MoveForward(1);
         Node assigment_exp = new Node();
         assigment_exp.Type = Node.NodeType.Assigment;
         tokenstream.MoveForward(1);
-        Console.WriteLine(tokenstream.tokens[tokenstream.Position()].Value);
+       
         Node assig=ParseExpression();
         assigment_exp.Branches = new List<Node>{assig};
         let_exp.Branches = new List<Node> { instructions, assigment_exp };
@@ -731,7 +733,8 @@ public class Parser
     public Node Function()
     {
         string name = tokenstream.tokens[tokenstream.Position()].Value;
-        tokenstream.MoveForward(2);
+        int original_index=tokenstream.Position();
+        tokenstream.MoveForward(1);
         Node Arguments = new Node();
         Node function = new Node();
 
@@ -739,6 +742,7 @@ public class Parser
         {
             do
             {
+                tokenstream.MoveForward(1);
                 if (tokenstream.Position() >= tokens.Count - 1)
                 {
                     errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
@@ -759,16 +763,18 @@ public class Parser
 
         }
         else tokenstream.MoveForward(1);
-        if (tokenstream.tokens[tokenstream.Position()].Value == "=")
+        if (tokenstream.tokens[tokenstream.Position()].Value != "=")
         {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'=' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
             function.Type = Node.NodeType.Fuction;
             Node function_name = new Node();
             function_name.Type = Node.NodeType.FucName;
             function_name.NodeExpression = name;
-            tokenstream.MoveForward(1);
             Node body = ParseExpression();
-            Console.WriteLine(Arguments.Branches.Count);
-            Console.WriteLine(Arguments.Branches[0].Type);
+            // Console.WriteLine(Arguments.Branches.Count);
+            // Console.WriteLine(Arguments.Branches[0].Type);
             foreach (var item in Arguments.Branches)
             {
                 if (item.Type!=Node.NodeType.Var)
@@ -782,16 +788,17 @@ public class Parser
                 errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             return function;
-        }
-        else
-        {
-            function.Type = Node.NodeType.Declared_Fuc;
-            Node func_name = new Node();
-            func_name.Type = Node.NodeType.Declared_FucName;
-            func_name.NodeExpression = name;
-            function.Branches = new List<Node> { func_name, Arguments };
-            return function;
-        }
+
+        // else
+        // {
+            
+        //     // function.Type = Node.NodeType.Declared_Fuc;
+        //     // Node func_name = new Node();
+        //     // func_name.Type = Node.NodeType.Declared_FucName;
+        //     // func_name.NodeExpression = name;
+        //     // function.Branches = new List<Node> { func_name, Arguments };
+        //     // return function;
+        // }
     }
 
     public Node ParseOP()

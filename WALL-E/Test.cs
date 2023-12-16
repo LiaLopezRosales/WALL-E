@@ -1,7 +1,8 @@
 //string test="point p1; circle c1; draw{p1,c1}; color yellow; let a=4 ; b=5 ;in a+b; if let a=4; b=5;in a+b then 1 else 2;";
-//string test="Fib(n) = if n<=1 then 1 else Fib(n - 1) + Fib(n - 2);Fib(5);";
-string test="circle c;line l;intersect(c,l);";
+string test="Fib(n) = if n<=1 then 1 else Fib(n - 1) + Fib(n - 2);Fib(5);";
+//string test="Sum(x,y,z)=x+y - z;Sum(2,3,2)*Sum(2,4,2);";
 //string test="let a=let b=4; in b+2; in a+5;";
+//string test="Comp(n)=n<=1;Comp(3);";
 GeneralLexer l=new GeneralLexer(test,"MainFile");
 List<string> r=l.lines;
 foreach (var item in r)
@@ -49,7 +50,13 @@ else
         {
             Console.WriteLine(item3.Type);
             Console.WriteLine("level 3");
+            foreach (var item4 in item3.Branches)
+        {
+            Console.WriteLine(item4.Type);
+            Console.WriteLine("level 4");
             
+
+        }
 
         }
 

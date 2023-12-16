@@ -24,6 +24,18 @@ public class TokenStream:IEnumerable<Token>
         }
         else return false;
     }
+    public bool Contains(string s)
+    {
+        bool contain=false;
+        foreach (var token in tokens)
+        {
+            if (token.Value==s)
+            {
+                contain=true;
+            }
+        }
+        return contain;
+    }
 
     public void MoveForward(int i)
     {

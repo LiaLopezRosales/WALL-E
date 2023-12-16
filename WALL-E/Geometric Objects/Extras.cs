@@ -10,15 +10,32 @@ public static class RandomExtensions
     {
         public static bool Check(object x)
         {
-            if (x is double)
+            Console.WriteLine("inside checking");
+            if (x is double )
             {
+                Console.WriteLine("inside double");
                 if (((double)x)==0)
+                {
+                    return false;
+                }
+            }
+            if (x is int )
+            {
+                if (((int)x)==0)
+                {
+                    return false;
+                }
+            }
+            if (x is long )
+            {
+                if (((long)x)==0)
                 {
                     return false;
                 }
             }
             if (x is string)
             {
+                Console.WriteLine("inside string");
                 if (((string)x)=="undefined")
                 {
                     return false;
