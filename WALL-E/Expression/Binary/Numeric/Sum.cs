@@ -20,9 +20,9 @@ public class Sum:Binary
         {
             Value=((Measure)left).Sum((Measure)right);
         }
-        else if (left is GenericSequence<object> && right is GenericSequence<object>)
+        else if (left is AbsSequence && right is AbsSequence)
         {
-            Sequence_Concatenation<object> sum=new Sequence_Concatenation<object>((GenericSequence<object>)left,(GenericSequence<object>)right);
+            Sequence_Concatenation<object> sum=new Sequence_Concatenation<object>((AbsSequence)left,(AbsSequence)right);
             if (sum.count<0)
             {
                 Value=new Infinite_Sequence((IEnumerable<long>)sum.Result);
@@ -32,6 +32,18 @@ public class Sum:Binary
                 Value=new Finite_Sequence<object>(sum.Result,sum.count);
             }
             
+        }
+        else if (left is AbsSequence && right is string && (((string)right)=="undefined"))
+        {
+            Sequence_Concatenation<object> sum=new Sequence_Concatenation<object>((AbsSequence)left,(string)right);
+            if (sum.count<0)
+            {
+                Value=new Infinite_Sequence((IEnumerable<long>)sum.Result);
+            }
+            else
+            {
+                Value=new Finite_Sequence<object>(sum.Result,sum.count);
+            }
         }
     }
     public override string ToString()

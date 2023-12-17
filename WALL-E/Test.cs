@@ -3,7 +3,7 @@
 //string test="Sum(x,y,z)=x+y - z;Sum(2,3,2)*Sum(2,4,2);";
 //string test="let a=let b=4; in b+2; in a+5;";
 //string test="a,b,_=randoms(); c,d,_=randoms();";
-string test="{1,2} + {5,6}";
+string test="a,rest={1,2,3}+undefined;";
 //  Finite_Sequence<object> seq=new Finite_Sequence<object>(new List<object>(){1,2,3});
 //  object firstvalue=seq.ReturnValue();
 //  object secondvalue=seq.ReturnValue();

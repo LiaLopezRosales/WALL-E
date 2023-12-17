@@ -811,7 +811,18 @@ public class Evaluator
             object left = GeneralEvaluation(node.Branches[0]);
             
             object right = GeneralEvaluation(node.Branches[1]);
-            
+            if (left is string)
+            {
+                if (((string)left)=="undefined" && right is AbsSequence)
+                {
+                    return "undefined";
+                }
+            }
+            if (left is AbsSequence && right is string && (((string)right)=="undefined"))
+            {
+                sum.Evaluate(left, right);
+                return sum.Value!;
+            }
             if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is string) && !(left is Measure) && !(left is Finite_Sequence<object>) && !(left is Finite_Sequence<Point>) && !(left is Enclosed_Infinite_Sequence) && !(left is Infinite_Sequence) && !(left is InfiniteDoubleSequence) && !(left is InfinitePointSequence)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));

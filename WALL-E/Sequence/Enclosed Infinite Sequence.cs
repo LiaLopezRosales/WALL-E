@@ -2,7 +2,7 @@ public class Enclosed_Infinite_Sequence:GenericSequence<long>
 {
     public long StartsAd {get;set;}
     public long EndsAd {get;set;}
-    public new IEnumerable<long> Sequence{protected get;set;}
+    public new IEnumerable<long> Sequence{ get;set;}
     private IEnumerator<long> enumerator{get;set;}
     public Enclosed_Infinite_Sequence(long start,long end)
     {
