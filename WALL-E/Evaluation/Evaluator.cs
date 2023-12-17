@@ -323,7 +323,7 @@ public class Evaluator
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "function name, already exist a preexistent function with the same name", new Location("file", "line", "column")));
                 }
                 else context.Available_Functions.Add(func);
-                return ("{0} Function created and saved", name);
+                return $"{name} Function created and saved";
             }
             else
             {
@@ -339,7 +339,7 @@ public class Evaluator
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "function name, already exist a preexistent function with the same name", new Location("file", "line", "column")));
                 }
                 else CurrentScope.TemporalFunctions.Add(name, func);
-                return ("{0} Function created and saved", name);
+                return $"{name} Function created and saved";
             }
 
         }
@@ -1669,7 +1669,12 @@ public class Evaluator
             string archivename = node.NodeExpression!.ToString()!;
             string partialrute = Directory.GetParent(Path.Combine(Directory.GetCurrentDirectory()))!.FullName!;
             string rute = Path.Combine(partialrute, "Librerías de Geo");
-            string[] archive = Directory.GetFiles(rute, archivename);
+            string name=archivename.Remove(0,1);;
+            //name=name.Remove(0,1);
+            name=name.Remove(name.Length-1,1);
+            
+            Console.WriteLine(name);
+            string[] archive = Directory.GetFiles(rute, name);
             if (archive.Length > 1)
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "file name,name must be unique", new Location("file", "line", "column")));
@@ -1683,7 +1688,7 @@ public class Evaluator
                 string code = File.ReadAllText(archive[0]);
                 ArchiveAnalysis procesingfile = new ArchiveAnalysis(code, archivename);
                 context = procesingfile.Analyze(context);
-                return ("File {0} procesed", archivename);
+                return $"File {name} procesed";
             }
         }
         else

@@ -141,7 +141,7 @@ public class Parser
         Node value = new Node();
         value.Type = Node.NodeType.Import;
         value.NodeExpression = tokenstream.tokens[tokenstream.Position()].Value;
-        if (!(tokenstream.tokens[tokenstream.Position()].Value.EndsWith(".geo")))
+        if (!(tokenstream.tokens[tokenstream.Position()].Value.EndsWith(".geo\"")))
         {
             errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Invalid,"file named,must end with .geo extension",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
