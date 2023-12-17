@@ -346,8 +346,14 @@ public class Evaluator
         else if (node.Type == Node.NodeType.GlobalSeq)
         {
             object value = GeneralEvaluation(node.Branches[1]);
+            // foreach (var item in ((Finite_Sequence<object>)value).Sequence)
+            // {
+            //     Console.WriteLine(item);
+            // }
+            Console.WriteLine("ending elements");
             Type type = value.GetType();
             long amount_of_elements = node.Branches[0].Branches.Count;
+            Console.WriteLine(amount_of_elements);
             long index = 0;
             List<object> AlternativeSeq = new List<object>();
             if (value is Finite_Sequence<object>)
@@ -357,6 +363,8 @@ public class Evaluator
 
                     if (subnode.Type == Node.NodeType.Low_Hyphen)
                     {
+                        object valueofarg = ((Finite_Sequence<object>)value).ReturnValue();
+                        index++;
                         continue;
                     }
                     if (index == amount_of_elements - 1)
@@ -423,6 +431,7 @@ public class Evaluator
                     {
                         string name = GeneralEvaluation(subnode).ToString()!;
                         object valueofarg = ((Finite_Sequence<object>)value).ReturnValue();
+                        index++;
                         if (valueofarg == default(object))
                         {
                             valueofarg = "undefined";
@@ -487,6 +496,8 @@ public class Evaluator
 
                     if (subnode.Type == Node.NodeType.Low_Hyphen)
                     {
+                         object valueofarg = ((Enclosed_Infinite_Sequence)value).ReturnValue();
+                        index++;
                         continue;
                     }
                     if (index == amount_of_elements - 1)
@@ -546,6 +557,7 @@ public class Evaluator
                     {
                         string name = GeneralEvaluation(subnode).ToString()!;
                         object valueofarg = ((Enclosed_Infinite_Sequence)value).ReturnValue();
+                        index++;
                         if (valueofarg.Equals(long.MinValue))
                         {
                             valueofarg = "undefined";
@@ -578,6 +590,8 @@ public class Evaluator
 
                     if (subnode.Type == Node.NodeType.Low_Hyphen)
                     {
+                        object valueofarg = ((Infinite_Sequence)value).ReturnValue();
+                        index++;
                         continue;
                     }
                     if (index == amount_of_elements - 1)
@@ -613,6 +627,7 @@ public class Evaluator
                     {
                         string name = GeneralEvaluation(subnode).ToString()!;
                         object valueofarg = ((Infinite_Sequence)value).ReturnValue();
+                        index++;
                         if (CurrentScope.Parent == null)
                         {
                             if (context.GlobalConstant.Keys.Contains(name))
@@ -634,6 +649,139 @@ public class Evaluator
                     }
                 }
             }
+            else if (value is InfinitePointSequence)
+            {
+                foreach (var subnode in node.Branches[0].Branches)
+                {
+
+                    if (subnode.Type == Node.NodeType.Low_Hyphen)
+                    {
+                        object valueofarg = ((InfinitePointSequence)value).ReturnValue();
+                        index++;
+                        continue;
+                    }
+                    if (index == amount_of_elements - 1)
+                    {
+                        string name = GeneralEvaluation(subnode).ToString()!;
+                        object valueofarg = ((InfinitePointSequence)value).ReturnValue();
+
+                        Point newstart = (Point)valueofarg;
+                        InfinitePointSequence rest = new InfinitePointSequence(newstart);
+                        valueofarg = rest;
+                        if (CurrentScope.Parent == null)
+                        {
+                            if (context.GlobalConstant.Keys.Contains(name))
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                            }
+                            else
+                                context.GlobalConstant.Add(name, valueofarg);
+                        }
+                        else
+                        {
+                            if (CurrentScope.Variables.Keys.Contains(name))
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                            }
+                            else
+                                CurrentScope.Variables.Add(name, valueofarg);
+                        }
+
+
+                    }
+                    else if (subnode.Type == Node.NodeType.VarName && index != amount_of_elements - 1)
+                    {
+                        string name = GeneralEvaluation(subnode).ToString()!;
+                        object valueofarg = ((InfinitePointSequence)value).ReturnValue();
+                        index++;
+                        if (CurrentScope.Parent == null)
+                        {
+                            if (context.GlobalConstant.Keys.Contains(name))
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                            }
+                            else
+                                context.GlobalConstant.Add(name, valueofarg);
+                        }
+                        else
+                        {
+                            if (CurrentScope.Variables.Keys.Contains(name))
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                            }
+                            else
+                                CurrentScope.Variables.Add(name, valueofarg);
+                        }
+                    }
+                }
+            }
+                        else if (value is InfiniteDoubleSequence)
+            {
+                foreach (var subnode in node.Branches[0].Branches)
+                {
+
+                    if (subnode.Type == Node.NodeType.Low_Hyphen)
+                    {
+                        object valueofarg = ((InfiniteDoubleSequence)value).ReturnValue();
+                        index++;
+                        continue;
+                    }
+                    if (index == amount_of_elements - 1)
+                    {
+                        string name = GeneralEvaluation(subnode).ToString()!;
+                        object valueofarg = ((InfiniteDoubleSequence)value).ReturnValue();
+
+                        double newstart = Convert.ToDouble(valueofarg);
+                        InfiniteDoubleSequence rest = new InfiniteDoubleSequence(newstart);
+                        valueofarg = rest;
+                        if (CurrentScope.Parent == null)
+                        {
+                            if (context.GlobalConstant.Keys.Contains(name))
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                            }
+                            else
+                                context.GlobalConstant.Add(name, valueofarg);
+                        }
+                        else
+                        {
+                            if (CurrentScope.Variables.Keys.Contains(name))
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                            }
+                            else
+                                CurrentScope.Variables.Add(name, valueofarg);
+                        }
+
+
+                    }
+                    else if (subnode.Type == Node.NodeType.VarName && index != amount_of_elements - 1)
+                    {
+                        string name = GeneralEvaluation(subnode).ToString()!;
+                        object valueofarg = ((InfiniteDoubleSequence)value).ReturnValue();
+                        index++;
+                        if (CurrentScope.Parent == null)
+                        {
+                            if (context.GlobalConstant.Keys.Contains(name))
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                            }
+                            else
+                                context.GlobalConstant.Add(name, valueofarg);
+                        }
+                        else
+                        {
+                            if (CurrentScope.Variables.Keys.Contains(name))
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                            }
+                            else
+                                CurrentScope.Variables.Add(name, valueofarg);
+                        }
+                    }
+                }
+            }
+            
             return "Requested values seted";
         }
         else if (node.Type == Node.NodeType.FucName)
@@ -962,6 +1110,7 @@ public class Evaluator
             {
                 if (index == 0)
                 {
+                    index++;
                     continue;
                 }
                 object value = GeneralEvaluation(item);

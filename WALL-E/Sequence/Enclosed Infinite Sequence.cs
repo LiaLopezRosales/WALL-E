@@ -3,13 +3,14 @@ public class Enclosed_Infinite_Sequence:GenericSequence<long>
     public long StartsAd {get;set;}
     public long EndsAd {get;set;}
     public new IEnumerable<long> Sequence{protected get;set;}
-
+    private IEnumerator<long> enumerator{get;set;}
     public Enclosed_Infinite_Sequence(long start,long end)
     {
         StartsAd=start;
         EndsAd=end;
         count=end-start+1;
         Sequence=GenerateSequence(StartsAd,EndsAd);
+        enumerator =Sequence.GetEnumerator();
     }
 
     private IEnumerable<long> GenerateSequence(long start,long end)
@@ -23,7 +24,6 @@ public class Enclosed_Infinite_Sequence:GenericSequence<long>
 
     public override long ReturnValue()
     {
-       var enumerator= Sequence.GetEnumerator();
        if (enumerator.MoveNext())
        {
          return enumerator.Current;
@@ -32,6 +32,7 @@ public class Enclosed_Infinite_Sequence:GenericSequence<long>
        {
         return long.MinValue;
        }
+      
        
     }
 }

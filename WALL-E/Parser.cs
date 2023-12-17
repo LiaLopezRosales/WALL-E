@@ -63,7 +63,7 @@ public class Parser
         {
             return GlobalVar();
         }
-        if ((tokenstream.Position() < tokens.Count) && (tokens[tokenstream.Position()].Type == Token.TokenType.identifier || tokens[tokenstream.Position()].Type ==Token.TokenType.low_hyphen) && tokens[tokenstream.Position() + 1].Value == ",")
+        if ((tokenstream.Position() < tokens.Count) && ((tokens[tokenstream.Position()].Type ==Token.TokenType.low_hyphen) || (tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Value == ",")))
         {
             return GlobalSeq();
         }
@@ -458,6 +458,7 @@ public class Parser
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, " = symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
+        ///Console.WriteLine(tokenstream.tokens[tokenstream.Position()].Value);
         Node value = ParseExpression();
         globalseq.Branches = new List<Node> { Arguments, value };
         return globalseq;
@@ -1231,9 +1232,9 @@ public class Parser
             }
             else if (tokenstream.tokens[tokenstream.Position()].Value == ",")
             {
-                tokenstream.MoveForward(1);
+                
                 do
-                {
+                {   tokenstream.MoveForward(1);
                     if(tokenstream.Position() >= tokens.Count - 1)
                    {
                     errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
@@ -1249,6 +1250,11 @@ public class Parser
                }
                else tokenstream.MoveForward(1);
                sequence.Type=Node.NodeType.Finite_Seq;
+               return sequence;
+            }
+            else if (tokenstream.tokens[tokenstream.Position()].Type == Token.TokenType.right_key)
+            {   tokenstream.MoveForward(1);
+                sequence.Type=Node.NodeType.Finite_Seq;
                return sequence;
             }
             else if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_key)

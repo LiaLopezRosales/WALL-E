@@ -1,8 +1,18 @@
 //string test="point p1; circle c1; draw{p1,c1}; color yellow; let a=4 ; b=5 ;in a+b; if let a=4; b=5;in a+b then 1 else 2;";
-string test="Fib(n) = if n<=1 then 1 else Fib(n - 1) + Fib(n - 2);Fib(5);";
+//string test="Fib(n) = if n<=1 then 1 else Fib(n - 1) + Fib(n - 2);Fib(5);";
 //string test="Sum(x,y,z)=x+y - z;Sum(2,3,2)*Sum(2,4,2);";
 //string test="let a=let b=4; in b+2; in a+5;";
-//string test="Comp(n)=n<=1;Comp(3);";
+//string test="a,b,_=randoms(); c,d,_=randoms();";
+string test="{1,2} + {5,6}";
+//  Finite_Sequence<object> seq=new Finite_Sequence<object>(new List<object>(){1,2,3});
+//  object firstvalue=seq.ReturnValue();
+//  object secondvalue=seq.ReturnValue();
+//  Console.WriteLine(firstvalue);
+//  Console.WriteLine(secondvalue);
+//  foreach (var item in seq.Sequence)
+//  {
+//     Console.WriteLine(item);
+//  }
 GeneralLexer l=new GeneralLexer(test,"MainFile");
 List<string> r=l.lines;
 foreach (var item in r)
@@ -76,6 +86,7 @@ foreach (var item in v)
 }
 foreach (var item in c.GlobalConstant)
 {
+    Console.WriteLine(item.Key);
     if (item.Value is Circle)
     {
         Console.WriteLine(item.Value);
@@ -89,21 +100,22 @@ foreach (var item in c.GlobalConstant)
     }
     else Console.WriteLine(item.Value);
 }
-foreach (var item in c.GlobalConstant)
-{
-    if (item.Value is List<Point>)
-    {
-        foreach (var item1 in ((List<Point>)item.Value))
-        {
-            Console.WriteLine(item1);
-        }
-    }
-}
-foreach (var item in c.ToDraw)
-{
-    Console.WriteLine(item);
-}
-while (c.UtilizedColors.Count>0)
-{
-    Console.WriteLine(c.UtilizedColors.Pop());
-}
+// foreach (var item in c.GlobalConstant)
+// {
+//     if (item.Value is List<Point>)
+//     {
+//         Console.WriteLine(item.Key);
+//         foreach (var item1 in ((List<Point>)item.Value))
+//         {
+//             Console.WriteLine(item1);
+//         }
+//     }
+// }
+// foreach (var item in c.ToDraw)
+// {
+//     Console.WriteLine(item);
+// }
+// while (c.UtilizedColors.Count>0)
+// {
+//     Console.WriteLine(c.UtilizedColors.Pop());
+// }
