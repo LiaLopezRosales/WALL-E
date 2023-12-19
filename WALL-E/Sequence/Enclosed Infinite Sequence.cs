@@ -1,5 +1,5 @@
 public class Enclosed_Infinite_Sequence:GenericSequence<long>
-{
+{   //Una secuencia acotada tiene que ser entera pues avanza de uno en uno desde un valor inicial auno final
     public long StartsAd {get;set;}
     public long EndsAd {get;set;}
     public new IEnumerable<long> Sequence{ get;set;}

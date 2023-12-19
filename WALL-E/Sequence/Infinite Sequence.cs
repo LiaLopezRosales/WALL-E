@@ -1,5 +1,5 @@
 public class Infinite_Sequence:GenericSequence<long>
-{
+{   //La secuencia infinita habitual debe ser entera pues de similar manera a la acotado avanza de uno en uno
     public long StartsAd{get;set;}
     public new IEnumerable<long> Sequence{ get;set;} 
      private IEnumerator<long> enumerator{get;set;}
@@ -40,6 +40,8 @@ public class Infinite_Sequence:GenericSequence<long>
        
     }
 }
+//Se definen dos clases alternativas que también son secuencias infinitas
+//Estas son resultado de funciones del lenguaje y no pueden ser declaradas manualmente
 public class InfinitePointSequence:GenericSequence<Point>
 {
     public Point StartsAd{get;set;}

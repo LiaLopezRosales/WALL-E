@@ -1,5 +1,5 @@
 public class Sequence_Concatenation<T>
-{
+{   //Concatenar secuencias no es más que recorrer la secuencia de la primera y cuando acabe(si acaba) recorrer la segunda 
     public AbsSequence right { get; set; }
     public AbsSequence left { get; set; }
     public long count { get; protected set; }
@@ -19,6 +19,7 @@ public class Sequence_Concatenation<T>
             count = left.count + right.count;
         }
     }
+    //Sobrecarga para cuando se suma una secuencia con undefined
     public Sequence_Concatenation(AbsSequence l, string undefined)
     {
         left = l;

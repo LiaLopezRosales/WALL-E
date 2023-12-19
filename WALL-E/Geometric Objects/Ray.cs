@@ -1,5 +1,5 @@
 public class Ray:Figure,IEquatable<Ray>
-{
+{   //Clase que describe un rayo
     public Point StartIn{get;set;}
     public Point PassFor{get;set;}
 
@@ -8,7 +8,7 @@ public class Ray:Figure,IEquatable<Ray>
         StartIn=start;
         PassFor=pass;
     }
-     
+     //Genera un rayo aleatorio
     public void RandomRay(List<Ray>existingrays,List<Point>points)
     {
        Random generator=new Random();
@@ -55,6 +55,7 @@ public class Ray:Figure,IEquatable<Ray>
             return false;
         }
     }
+    //Determina si el punto pertenece al rayo
     public override bool ContainPoint(Point p)
     {
        double m=(this.PassFor.y-this.StartIn.y)/(this.PassFor.x-this.StartIn.x);

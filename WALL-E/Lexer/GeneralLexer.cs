@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 public class GeneralLexer
-{
+{    //Divide un código en expresiones y declaraciones
     public string code{get;set;}
     List<List<Error>> errors{get;set;}
     public List<string> lines{get;private set;}
@@ -11,18 +11,14 @@ public class GeneralLexer
     {
         this.code=code;
         errors=new List<List<Error>>();
+        //Se dividen las expresiones por ;
         string[] lines=code.Split(new[] {";"},StringSplitOptions.RemoveEmptyEntries);
         int index=-1;
         int amount_of_open_let=0;
-        // for (int i = 0; i < lines.Length; i++)
-        // {
-        //     Console.WriteLine(lines[i]);
-        // }
-        //Console.WriteLine(lines.Length);
-        //Check this
+        //Para tratar el caso especial del let-in se recorren las expresiones separadas existentes
         for (int i = 0; i < lines.Length; i++)
         {  
-            // Console.WriteLine(lines[i].Contains("in"));
+            //Si el índice es mayor que 0 hay un let abierto  se concatenan las dos líneas
             if (index>=0 && !(ContainIn(lines[i])))
             {
                 if (lines[i].Contains("let "))
@@ -33,18 +29,15 @@ public class GeneralLexer
                 lines[index]=lines[index]+";"+lines[i];
                 lines[i]="";
             }
-            // Console.WriteLine(lines[i].Contains("let "));
-            // Console.WriteLine(ContainIn(lines[i]));
+             //Si hay lets abiertos y la línea contiene a 'in' se concatena la línea y se cierra un let
              if (index>=0 && (ContainIn(lines[i])))
             {
-                //Console.WriteLine(lines[i]);
-                //  Console.WriteLine("eeee");
+                
                 lines[index]=lines[index]+";"+lines[i];
-                //Console.WriteLine(lines[index]);
-                // Console.WriteLine(amount_of_open_let);
+                
                 amount_of_open_let--;
                 amount_of_open_let=amount_of_open_let+Amount_of_Lets(lines[i]);
-                //  Console.WriteLine($"{amount_of_open_let} en {index} de {lines[index]}");
+                //Si no hay más lets abiertos se coloca el índice en -1
                 if (amount_of_open_let==0)
                 {
                     index=-1;
@@ -52,11 +45,10 @@ public class GeneralLexer
                
                 lines[i]="";
             }
-            
+            //Si una linea contiene expresión let,se busca cuantos hay y se modifica el índice y la cantidad de lets abiertos
             if (lines[i].Contains("let "))
             {
                 int amount=Amount_of_Lets(lines[i]);
-                // Console.WriteLine("ffff");
                 if (amount==0)
                 {
                     amount=1;
@@ -66,9 +58,9 @@ public class GeneralLexer
                 // continue;
             }  
         }
-        // Console.WriteLine(amount_of_open_let);
-        //Console.WriteLine(lines.Count());
+        
         this.lines=new List<string>();
+        //Se eliminan las lineas que quedaron vacías luego de concatenar
         for (int i = 0; i < lines.Length; i++)
         {
             if (lines[i]==" " || lines[i]=="" || lines[i]=="  ")
@@ -88,11 +80,12 @@ public class GeneralLexer
     {
         List<List<Token>> tokens=new List<List<Token>>();
         long count=0;
-    
+        //Se divide en tokens cada línea
             foreach (var line in group_of_lines)
             {
             Lexer lexer=new Lexer(File,count.ToString());
             tokens.Add(lexer.Tokens(line));
+            //Se van acumulando los errore léxicos
             if (lexer.Lexic_Errors().Count>0)
             {
                 errors.Add(lexer.Lexic_Errors());
