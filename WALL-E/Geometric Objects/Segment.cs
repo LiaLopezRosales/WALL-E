@@ -1,5 +1,5 @@
 public class Segment:Figure,IEquatable<Segment>
-{
+{   //Clase que define un segmento
     public Point StartIn{get;set;}
     public Point EndsIn{get;set;}
 
@@ -8,7 +8,7 @@ public class Segment:Figure,IEquatable<Segment>
         StartIn=start;
         EndsIn=ends;
     }
-     
+     //Genera un segmento aleatorio(funciona igual que el generador de pntos y de lineas)
     public void RandomSegment(List<Segment>existingsegments,List<Point>points)
     {
        Random generator=new Random();
@@ -43,6 +43,7 @@ public class Segment:Figure,IEquatable<Segment>
             }
         }
     }
+    //Igualdad de segmentos
     public bool Equals(Segment? s)
     {
         if ((StartIn.Equals(s!.StartIn)&&EndsIn.Equals(s!.EndsIn))||(StartIn.Equals(s!.EndsIn)&&EndsIn.Equals(s!.StartIn)))
@@ -54,6 +55,7 @@ public class Segment:Figure,IEquatable<Segment>
             return false;
         }
     }
+    //Punto pertenece a segmento
     public override bool ContainPoint(Point p)
     {
         double m=(this.EndsIn.y-this.StartIn.y)/(this.EndsIn.x-this.StartIn.x);
@@ -71,6 +73,7 @@ public class Segment:Figure,IEquatable<Segment>
             }
             return false;
     }
+    //Puntos del segmento
     public override GenericSequence<Point> FigurePoints()
     {
         IEnumerable<Point> Line_PointsSeq()
@@ -91,6 +94,7 @@ public class Segment:Figure,IEquatable<Segment>
         IEnumerable<Point> seq=Line_PointsSeq();
         return new InfinitePointSequence(seq);
     }
+    //Intersección del segmento con otra figura
     public override Finite_Sequence<Point> Intersect(Figure fig)
     {
         if (fig is Point)

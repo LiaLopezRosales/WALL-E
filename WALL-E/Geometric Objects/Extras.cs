@@ -1,19 +1,20 @@
 public static class RandomExtensions
-    {
+    {   //Modifica al random habitual para que devuelva valores dobles además de enteros
         public static double NextDouble(this Random random,double min,double max)
         {
             //return min +(random.NextDouble()*(max-min));
             return random.NextDouble()*(max-min)+min;
         }
     }
+
     public static class CheckTrueORFalse
-    {
+    {   //Método que revisa si un resultado evalua true o false
         public static bool Check(object x)
         {
-            Console.WriteLine("inside checking");
+            
             if (x is double )
             {
-                Console.WriteLine("inside double");
+               
                 if (((double)x)==0)
                 {
                     return false;
@@ -35,7 +36,7 @@ public static class RandomExtensions
             }
             if (x is string)
             {
-                Console.WriteLine("inside string");
+                
                 if (((string)x)=="undefined")
                 {
                     return false;
@@ -55,7 +56,7 @@ public static class RandomExtensions
             return true;
         }
     }
-
+    //Métodos auxiliares para ayudar en el cálculo de intercepciones
     public static class GeometricTools
     {
         public static double Pendient(Point p1,Point p2)

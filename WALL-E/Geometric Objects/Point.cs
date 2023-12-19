@@ -1,16 +1,18 @@
 public class Point : Figure, IEquatable<Point>
-{
+{   //Clase que describe un punto en el plano
     public double x { get; set; }
     public double y { get; set; }
-
+    //Crea un punto con las coordenadas indicadas
     public Point(double x1, double y1)
     {
         x = x1;
         y = y1;
     }
+    //Método que genera un punto aleatorio dependiendo del último punto generado
     public void RandomPoint(List<Point> existingpoints)
     {
         Random generator = new Random();
+        //Si es el primer punto a generar sus coordenadas serán enteras
         if (existingpoints.Count == 0)
         {
             x = generator.Next(1,20);
@@ -19,13 +21,15 @@ public class Point : Figure, IEquatable<Point>
         else
         {
             bool existing = true;
+            //Sino se crea un ciclo donde se generan nuevas coordenadas en un radio determinado de las del último punto
             while (existing)
             {
                 existing = false;
                 x = generator.NextDouble(existingpoints.Last().x + 1, existingpoints.Last().x + 13);
                 y = generator.NextDouble(existingpoints.Last().y + 1, existingpoints.Last().y + 13);
+                //Se comprueba si estas coordenadas nuevas coinciden con un punto existente
                 foreach (Point point in existingpoints)
-                {
+                {   //Si coinciden se continua en el ciclo hasta generar coordenadas únicas 
                     if (point.x == x && point.y == y)
                     {
                         existing = true;
@@ -40,6 +44,7 @@ public class Point : Figure, IEquatable<Point>
             }
         }
     }
+    //Método auxiliar para crear un punto a una distancia de coordenadas determinadas de uno existente
     public Point IncrementCoordinate(double x1, double y1)
     {
         double x2 = x + x1;
@@ -47,6 +52,7 @@ public class Point : Figure, IEquatable<Point>
         return new Point(x2, y2);
 
     }
+    //Se define la igualdad entre puntos
     public bool Equals(Point? p)
     {
         if (x.Equals(p!.x) && y.Equals(p!.y))
@@ -58,11 +64,13 @@ public class Point : Figure, IEquatable<Point>
             return false;
         }
     }
+    //Método de la clase Figura(todas las figuras deben poder definir si contienen a un punto indicado)
     public override bool ContainPoint(Point p)
     {
         if (this.Equals(p)) return true;
         else return false;
     }
+    //Debería ser un generador de puntos de la figura en cuestión(heredado de Figure no cumple mucho objetivo en Point)
     public override GenericSequence<Point> FigurePoints()
     {
         List<Point> points = new List<Point>() { this };
@@ -70,6 +78,7 @@ public class Point : Figure, IEquatable<Point>
         temp.type = Finite_Sequence<Point>.SeqType.point;
         return temp;
     }
+    //Método que dado una figura indica la intersección con esta
     public override Finite_Sequence<Point> Intersect(Figure fig)
     {
         if (fig is Point)
@@ -101,6 +110,7 @@ public class Point : Figure, IEquatable<Point>
         return temp;
 
     }
+    //Métodos auxiliares se define la intersección con cada tipo de figura existente("funciona"?)
     private Finite_Sequence<Point> IntersectPoint(Point p)
     {
         if (this.ContainPoint(p))

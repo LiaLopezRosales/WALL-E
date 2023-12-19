@@ -1,5 +1,6 @@
 public class Line : Figure, IEquatable<Line>
-{
+{ //Clase que define una recta
+    //Contiene dos puntos cualesquiera por donde pasa la recta 
     public Point generalpoint1 { get; set; }
     public Point generalpoint2 { get; set; }
 
@@ -8,7 +9,7 @@ public class Line : Figure, IEquatable<Line>
         generalpoint1 = p1;
         generalpoint2 = p2;
     }
-
+    //Genera una recta aleatoria(combinación de dos puntos aleatorios única,funciona de forma análoga a la de los puntos)
     public void RandomLine(List<Line> existinglines, List<Point> points)
     {
         Random generator = new Random();
@@ -43,6 +44,7 @@ public class Line : Figure, IEquatable<Line>
             }
         }
     }
+    //Definición de igualdad de rectas(no del todo absoluta)
     public bool Equals(Line? l)
     {
         if ((generalpoint1.Equals(l!.generalpoint1) && generalpoint2.Equals(l!.generalpoint2)) || (generalpoint1.Equals(l!.generalpoint2) && generalpoint2.Equals(l!.generalpoint1)))
@@ -54,7 +56,7 @@ public class Line : Figure, IEquatable<Line>
             return false;
         }
     }
-
+    //Determina si un punto pertenece a la recta
     public override bool ContainPoint(Point p)
     {
         double m = (this.generalpoint2.y - this.generalpoint1.y) / (this.generalpoint2.x - this.generalpoint1.x);
@@ -65,6 +67,7 @@ public class Line : Figure, IEquatable<Line>
         }
         else return false;
     }
+    //Genera puntos pertenecientes a la recta(debería) 
     public override GenericSequence<Point> FigurePoints()
     {
         IEnumerable<Point> Line_PointsSeq()
@@ -85,6 +88,7 @@ public class Line : Figure, IEquatable<Line>
         IEnumerable<Point> seq=Line_PointsSeq();
         return new InfinitePointSequence(seq);
     }
+    //Busca el tipo de intersección
     public override Finite_Sequence<Point> Intersect(Figure fig)
     {
         if (fig is Point)
@@ -116,6 +120,7 @@ public class Line : Figure, IEquatable<Line>
         return temp;
         
     }
+    //Métodos de intersección auxiliares(no hay con un punto pq este método ya está contenido en clase Point)
     private Finite_Sequence<Point> IntersectLine(Line l)
     {
         if (this.Equals(l))

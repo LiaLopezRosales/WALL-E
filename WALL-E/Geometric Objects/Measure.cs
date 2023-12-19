@@ -1,5 +1,5 @@
 public class Measure
-{
+{   //Medida entre dos puntos
     public Point point1{get;set;}
     public Point point2{get;set;}
     public double Value{get;protected set;}
@@ -10,7 +10,7 @@ public class Measure
        point2=p2;
        Value=Math.Sqrt(Math.Pow((point2.x - point1.x),2)+Math.Pow((point2.y - point1.y),2));
     }
-
+    //Se crea una medida que sea la suma de los valores de dos medidas
     public Measure Sum(Measure m)
     {
         Point p2=m.point1;
@@ -18,7 +18,7 @@ public class Measure
         Point newp2=this.PointAtDistance(p2,distance);
         return new Measure(point1,newp2);
     }
-
+    //Medida que es a la resta de los valores de dos medidas
     public Measure Rest(Measure m)
     {
         Point p2=m.point1;
@@ -26,14 +26,14 @@ public class Measure
         Point newp2=this.PointAtDistance(p2,distance);
         return new Measure(point1,newp2);
     }
-
+    //n veces una medida
     public Measure Product(double n)
     {
         n=Math.Abs(Convert.ToInt64(n));
         Point newp2=this.PointAtDistance(this.point2,this.Value*n);
         return new Measure(point1,newp2);
     }
-
+    //Cuantas veces cave una medida dentro de otra
     public long Division(Measure m)
     {
        return Convert.ToInt64(this.Value/m.Value);

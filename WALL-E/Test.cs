@@ -2,9 +2,9 @@
 //string test="Fib(n) = if n<=1 then 1 else Fib(n - 1) + Fib(n - 2);Fib(5);";
 //string test="Sum(x,y,z)=x+y - z;Sum(2,3,2)*Sum(2,4,2);";
 //string test="let a=5; b=let a=4; in a+2;in a+b;";
-string test= "media(p1,p2)=let l1=line(p1,p2); point p1; point p2; m=measure(p1,p2); c1=circle(p1,m); c2=circle(p2,m); a,b,_=intersect(c1,c2);l2=line(a,b); in l2; point p1; point p2; media(p1,p2);";
+//string test= "media(p1,p2)=let l1=line(p1,p2); point p1; point p2; m=measure(p1,p2); c1=circle(p1,m); c2=circle(p2,m); a,b,_=intersect(c1,c2);l2=line(a,b); in l2; point p1; point p2; media(p1,p2);";
 //string test="let a,b,_={1,2,3,4}; in a+b;";
-//string test="point p1; a,b,rest={p1};";
+string test="point p1;circle c2;{1,p1,c2,3};";
 //string test="a,b,_=randoms(); c,d,_=randoms();";
 //string test="a,rest={1,2,3}+undefined;";
 //string test="import \"try.geo\";"; 
