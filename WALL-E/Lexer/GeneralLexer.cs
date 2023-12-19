@@ -18,40 +18,55 @@ public class GeneralLexer
         // {
         //     Console.WriteLine(lines[i]);
         // }
-        // Console.WriteLine(lines.Length);
+        //Console.WriteLine(lines.Length);
         //Check this
         for (int i = 0; i < lines.Length; i++)
         {  
             // Console.WriteLine(lines[i].Contains("in"));
             if (index>=0 && !(ContainIn(lines[i])))
             {
+                if (lines[i].Contains("let "))
+                {
+                    int amount=Amount_of_Lets(lines[i]);
+                    amount_of_open_let=amount_of_open_let+amount;
+                }
                 lines[index]=lines[index]+";"+lines[i];
                 lines[i]="";
             }
-            else if (index>=0 && (ContainIn(lines[i])))
+            // Console.WriteLine(lines[i].Contains("let "));
+            // Console.WriteLine(ContainIn(lines[i]));
+             if (index>=0 && (ContainIn(lines[i])))
             {
-                // Console.WriteLine(lines[i]);
-                // Console.WriteLine("eeee");
+                //Console.WriteLine(lines[i]);
+                //  Console.WriteLine("eeee");
                 lines[index]=lines[index]+";"+lines[i];
                 //Console.WriteLine(lines[index]);
-                
+                // Console.WriteLine(amount_of_open_let);
                 amount_of_open_let--;
+                amount_of_open_let=amount_of_open_let+Amount_of_Lets(lines[i]);
+                //  Console.WriteLine($"{amount_of_open_let} en {index} de {lines[index]}");
                 if (amount_of_open_let==0)
                 {
                     index=-1;
                 }
-                
+               
                 lines[i]="";
             }
+            
             if (lines[i].Contains("let "))
             {
                 int amount=Amount_of_Lets(lines[i]);
-                
+                // Console.WriteLine("ffff");
+                if (amount==0)
+                {
+                    amount=1;
+                }
                 index=i;
                 amount_of_open_let=amount_of_open_let+amount;
-                continue;
+                // continue;
             }  
         }
+        // Console.WriteLine(amount_of_open_let);
         //Console.WriteLine(lines.Count());
         this.lines=new List<string>();
         for (int i = 0; i < lines.Length; i++)

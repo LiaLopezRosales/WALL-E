@@ -12,10 +12,12 @@ public class GeneralEvaluation
     
     public Context EvaluateArchive(Context basecontext)
     {
-        Evaluator evaluate=new Evaluator(basecontext);
+        Evaluator evaluate=new Evaluator(basecontext,file);
         int actualcounterror=0;
+        int count=0;
        foreach (var item in Lines)
        {
+          evaluate.line=count.ToString();
           object value=evaluate.GeneralEvaluation(item);
           if (evaluate.AllTheSemantic_Errors().Count>actualcounterror)
           {
@@ -26,6 +28,7 @@ public class GeneralEvaluation
           {
             Console.WriteLine(value);
           }
+          count++;
        }
        return evaluate.ResultingContext();
     }

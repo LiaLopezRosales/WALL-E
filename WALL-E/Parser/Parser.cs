@@ -426,8 +426,9 @@ public class Parser
         globalseq.Type = Node.NodeType.GlobalSeq;
         Node Arguments = new Node();
         int count=0;
+        
         do
-        {
+        {   
             if (count>0)
             {
                 tokenstream.MoveForward(1);
@@ -439,6 +440,7 @@ public class Parser
                 errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "constant name or (_) symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             Node arg = new Node();
+           
             if (tokenstream.tokens[tokenstream.Position()].Type == Token.TokenType.low_hyphen)
             {
                 arg.Type = Node.NodeType.Low_Hyphen;
@@ -449,6 +451,7 @@ public class Parser
                 arg.Type = Node.NodeType.VarName;
                 arg.NodeExpression = tokenstream.tokens[tokenstream.Position()].Value;
             }
+            Console.WriteLine(tokenstream.tokens[tokenstream.Position()].Value);
             tokenstream.MoveForward(1);
             Arguments.Branches.Add(arg);
             count++;
@@ -458,9 +461,11 @@ public class Parser
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, " = symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
-        ///Console.WriteLine(tokenstream.tokens[tokenstream.Position()].Value);
+        
         Node value = ParseExpression();
         globalseq.Branches = new List<Node> { Arguments, value };
+        
+        tokenstream.MoveForward(1);
         return globalseq;
     }
 
@@ -703,6 +708,7 @@ public class Parser
     {
         tokenstream.MoveForward(1);
         Node let_exp = new Node();
+        
         let_exp.Type = Node.NodeType.Let_exp;
         Node instructions = new Node();
         instructions.Type = Node.NodeType.Instructions;
@@ -713,7 +719,7 @@ public class Parser
                 errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "let-in expression",new Location(tokenstream.tokens[0].TokenLocation.File,tokenstream.tokens[0].TokenLocation.Line,((tokens.Count)-1).ToString())));
                 break;
             }
-            
+           
             Node instruction = ParseStatement();
             //instruction.NodeExpression = ParseStatement();
             

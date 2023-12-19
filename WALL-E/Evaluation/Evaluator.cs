@@ -7,14 +7,18 @@ public class Evaluator
     private Context context { get; set; }
     // private List<Scope>? currentcontext{get;set;}
     public List<Error> Semantic_Errors { get; set; }
+    public string file{get;set;}
+    public string line{get;set;}
 
-    public Evaluator(Context context)
+    public Evaluator(Context context,string f)
     {
         this.context = context;
         scope = new Scope();
         Semantic_Errors = new List<Error>();
         AST = new Node();
         CurrentScope = scope;
+        file=f;
+        line="0";
     }
 
     public void Tree_Reader(Node root)
@@ -49,7 +53,7 @@ public class Evaluator
             {
                 if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else context.GlobalConstant.Add(node.NodeExpression!.ToString()!, c);
             }
@@ -57,7 +61,7 @@ public class Evaluator
             {
                 if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, c);
             }
@@ -72,7 +76,7 @@ public class Evaluator
             {
                 if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     context.GlobalConstant.Add(node.NodeExpression!.ToString()!, p);
@@ -81,7 +85,7 @@ public class Evaluator
             {
                 if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, p);
@@ -99,7 +103,7 @@ public class Evaluator
             {
                 if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     context.GlobalConstant.Add(node.NodeExpression!.ToString()!, l);
@@ -108,7 +112,7 @@ public class Evaluator
             {
                 if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, l);
@@ -126,7 +130,7 @@ public class Evaluator
             {
                 if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     context.GlobalConstant.Add(node.NodeExpression!.ToString()!, s);
@@ -135,7 +139,7 @@ public class Evaluator
             {
                 if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, s);
@@ -153,7 +157,7 @@ public class Evaluator
             {
                 if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     context.GlobalConstant.Add(node.NodeExpression!.ToString()!, r);
@@ -162,7 +166,7 @@ public class Evaluator
             {
                 if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, r);
@@ -187,7 +191,7 @@ public class Evaluator
             {
                 if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     context.GlobalConstant.Add(node.NodeExpression!.ToString()!, pts);
@@ -196,7 +200,7 @@ public class Evaluator
             {
                 if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, pts);
@@ -223,7 +227,7 @@ public class Evaluator
             {
                 if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     context.GlobalConstant.Add(node.NodeExpression!.ToString()!, pts);
@@ -232,7 +236,7 @@ public class Evaluator
             {
                 if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, pts);
@@ -247,7 +251,7 @@ public class Evaluator
             {
                 if (context.GlobalConstant.Keys.Contains(name))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     context.GlobalConstant.Add(name, value);
@@ -256,7 +260,7 @@ public class Evaluator
             {
                 if (CurrentScope.Variables.Keys.Contains(name))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
                 else
                     CurrentScope.Variables.Add(name, value);
@@ -291,7 +295,7 @@ public class Evaluator
             DrawObject d = new DrawObject(value, tag, context.UtilizedColors.Peek());
             if (!d.CheckValidType())
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "type,this type of object can't be draw", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "type,this type of object can't be draw", new Location(file, line, "column")));
             }
             else context.ToDraw.Add(d);
             return "Function to draw added";
@@ -320,10 +324,10 @@ public class Evaluator
             {
                 if (exist)
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "function name, already exist a preexistent function with the same name", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "function name, already exist a preexistent function with the same name", new Location(file, line, "column")));
                 }
                 else context.Available_Functions.Add(func);
-                return $"{name} Function created and saved";
+                return $"{node.Branches[0].NodeExpression!.ToString()!} Function created and saved";
             }
             else
             {
@@ -336,10 +340,10 @@ public class Evaluator
                 }
                 if (exist)
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "function name, already exist a preexistent function with the same name", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "function name, already exist a preexistent function with the same name", new Location(file, line, "column")));
                 }
                 else CurrentScope.TemporalFunctions.Add(name, func);
-                return $"{name} Function created and saved";
+                return $"{node.Branches[0].NodeExpression!.ToString()!} Function created and saved";
             }
 
         }
@@ -378,7 +382,7 @@ public class Evaluator
                             {
                                 if (context.GlobalConstant.Keys.Contains(name))
                                 {
-                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
                                 else
                                     context.GlobalConstant.Add(name, valueofarg);
@@ -387,7 +391,7 @@ public class Evaluator
                             {
                                 if (CurrentScope.Variables.Keys.Contains(name))
                                 {
-                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
                                 else
                                     CurrentScope.Variables.Add(name, valueofarg);
@@ -410,7 +414,7 @@ public class Evaluator
                             {
                                 if (context.GlobalConstant.Keys.Contains(name))
                                 {
-                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
                                 else
                                     context.GlobalConstant.Add(name, valueofarg);
@@ -419,7 +423,7 @@ public class Evaluator
                             {
                                 if (CurrentScope.Variables.Keys.Contains(name))
                                 {
-                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
                                 else
                                     CurrentScope.Variables.Add(name, valueofarg);
@@ -440,7 +444,7 @@ public class Evaluator
                         {
                             if (context.GlobalConstant.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 context.GlobalConstant.Add(name, valueofarg);
@@ -449,7 +453,7 @@ public class Evaluator
                         {
                             if (CurrentScope.Variables.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
@@ -472,7 +476,7 @@ public class Evaluator
                         {
                             if (context.GlobalConstant.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 context.GlobalConstant.Add(name, "undefined");
@@ -481,7 +485,7 @@ public class Evaluator
                         {
                             if (CurrentScope.Variables.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 CurrentScope.Variables.Add(name, "undefined");
@@ -511,7 +515,7 @@ public class Evaluator
                             {
                                 if (context.GlobalConstant.Keys.Contains(name))
                                 {
-                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
                                 else
                                     context.GlobalConstant.Add(name, valueofarg);
@@ -520,7 +524,7 @@ public class Evaluator
                             {
                                 if (CurrentScope.Variables.Keys.Contains(name))
                                 {
-                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
                                 else
                                     CurrentScope.Variables.Add(name, valueofarg);
@@ -536,7 +540,7 @@ public class Evaluator
                             {
                                 if (context.GlobalConstant.Keys.Contains(name))
                                 {
-                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
                                 else
                                     context.GlobalConstant.Add(name, valueofarg);
@@ -545,7 +549,7 @@ public class Evaluator
                             {
                                 if (CurrentScope.Variables.Keys.Contains(name))
                                 {
-                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
                                 else
                                     CurrentScope.Variables.Add(name, valueofarg);
@@ -566,7 +570,7 @@ public class Evaluator
                         {
                             if (context.GlobalConstant.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 context.GlobalConstant.Add(name, valueofarg);
@@ -575,7 +579,7 @@ public class Evaluator
                         {
                             if (CurrentScope.Variables.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
@@ -606,7 +610,7 @@ public class Evaluator
                         {
                             if (context.GlobalConstant.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 context.GlobalConstant.Add(name, valueofarg);
@@ -615,7 +619,7 @@ public class Evaluator
                         {
                             if (CurrentScope.Variables.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
@@ -632,7 +636,7 @@ public class Evaluator
                         {
                             if (context.GlobalConstant.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 context.GlobalConstant.Add(name, valueofarg);
@@ -641,7 +645,7 @@ public class Evaluator
                         {
                             if (CurrentScope.Variables.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
@@ -672,7 +676,7 @@ public class Evaluator
                         {
                             if (context.GlobalConstant.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 context.GlobalConstant.Add(name, valueofarg);
@@ -681,7 +685,7 @@ public class Evaluator
                         {
                             if (CurrentScope.Variables.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
@@ -698,7 +702,7 @@ public class Evaluator
                         {
                             if (context.GlobalConstant.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 context.GlobalConstant.Add(name, valueofarg);
@@ -707,7 +711,7 @@ public class Evaluator
                         {
                             if (CurrentScope.Variables.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
@@ -738,7 +742,7 @@ public class Evaluator
                         {
                             if (context.GlobalConstant.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 context.GlobalConstant.Add(name, valueofarg);
@@ -747,7 +751,7 @@ public class Evaluator
                         {
                             if (CurrentScope.Variables.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
@@ -764,7 +768,7 @@ public class Evaluator
                         {
                             if (context.GlobalConstant.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 context.GlobalConstant.Add(name, valueofarg);
@@ -773,7 +777,7 @@ public class Evaluator
                         {
                             if (CurrentScope.Variables.Keys.Contains(name))
                             {
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
@@ -825,7 +829,7 @@ public class Evaluator
             }
             if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is string) && !(left is Measure) && !(left is Finite_Sequence<object>) && !(left is Finite_Sequence<Point>) && !(left is Enclosed_Infinite_Sequence) && !(left is Infinite_Sequence) && !(left is InfiniteDoubleSequence) && !(left is InfinitePointSequence)))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
             else
             {
@@ -840,7 +844,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
             sub.Evaluate(left, right);
             return sub.Value!;
@@ -852,7 +856,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if (!(left is double && right is Measure) && !(left is Measure && right is double) && !(left is double && right is double))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
             else
             {
@@ -867,17 +871,26 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
             else if ((Convert.ToDouble(right, CultureInfo.InvariantCulture) == 0) || ((Measure)right).Value == 0)
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,can't divide by zero", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,can't divide by zero", new Location(file, line, "column")));
                 return left;
             }
             else
             {
-                div.Evaluate(left, right);
-                return div.Value!;
+                try
+                {
+                   div.Evaluate(left, right);
+                   return div.Value!;
+                }
+                catch (DivideByZeroException)
+                {
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,can't divide by zero", new Location(file, line, "column")));
+                    return left;
+                }
+                
             }
         }
         else if (node.Type == Node.NodeType.Pow)
@@ -887,7 +900,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if (!(left is double) || !(right is double))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
             else
             {
@@ -902,7 +915,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if (!(left is double) || !(right is double))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
             else
             {
@@ -916,7 +929,7 @@ public class Evaluator
             {
                 if (!CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!))
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "variable", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "variable", new Location(file, line, "column")));
                 }
                 else return CurrentScope.Variables[node.NodeExpression!.ToString()!];
             }
@@ -933,7 +946,7 @@ public class Evaluator
             object arg = GeneralEvaluation(node.Branches[0]);
             if (!(arg is double))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
             else return context.Trig_functions["sin"](Convert.ToDouble(arg, CultureInfo.InvariantCulture));
         }
@@ -942,7 +955,7 @@ public class Evaluator
             object arg = GeneralEvaluation(node.Branches[0]);
             if (!(arg is double))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
             else return context.Trig_functions["cos"](Convert.ToDouble(arg, CultureInfo.InvariantCulture));
         }
@@ -951,7 +964,7 @@ public class Evaluator
             object arg = GeneralEvaluation(node.Branches[0]);
             if (!(arg is double))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
             else return context.Trig_functions["sqrt"](Convert.ToDouble(arg, CultureInfo.InvariantCulture));
         }
@@ -961,7 +974,7 @@ public class Evaluator
             object arg = GeneralEvaluation(node.Branches[1]);
             if (!(arg is double) || !(base_of is double))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
             else return context.Log["log"](Convert.ToDouble(base_of, CultureInfo.InvariantCulture), Convert.ToDouble(arg, CultureInfo.InvariantCulture));
         }
@@ -996,7 +1009,7 @@ public class Evaluator
             }
             else
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "argument", new Location("line", "file", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "argument", new Location(file, line, "column")));
             }
 
         }
@@ -1069,7 +1082,7 @@ public class Evaluator
             else
             {
                 
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "argument,must be a sequence", new Location("line", "file", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "argument,must be a sequence", new Location(file, line, "column")));
             }
 
         }
@@ -1093,7 +1106,7 @@ public class Evaluator
             }
             else
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "argument", new Location("line", "file", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "argument", new Location(file, line, "column")));
             }
         }
         else if (node.Type == Node.NodeType.Enclosed_Infinite_Seq)
@@ -1107,7 +1120,7 @@ public class Evaluator
             }
             else
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "boundries", new Location("line", "file", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "boundries", new Location(file, line, "column")));
             }
         }
         else if (node.Type == Node.NodeType.Finite_Seq)
@@ -1127,7 +1140,7 @@ public class Evaluator
                 object value = GeneralEvaluation(item);
                 if (firstvalue.GetType() != value.GetType())
                 {
-                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "sequence, all values must belong to the same type", new Location("file", "line", "column")));
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "sequence, all values must belong to the same type", new Location(file, line, "column")));
                     return "Invalid sequence";
                 }
                 valuesofseq.Add(value);
@@ -1190,7 +1203,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location(file, line, "column")));
             }
             else
             {
@@ -1205,7 +1218,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location(file, line, "column")));
             }
             else
             {
@@ -1220,7 +1233,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location(file, line, "column")));
             }
             else
             {
@@ -1235,7 +1248,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location(file, line, "column")));
             }
             else
             {
@@ -1250,7 +1263,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if ((left is null) && (right is null))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
             else
             {
@@ -1265,7 +1278,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if ((left is null) && (right is null))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
             else
             {
@@ -1280,7 +1293,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if ((left is null) && (right is null))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
             else
             {
@@ -1295,7 +1308,7 @@ public class Evaluator
             object right = GeneralEvaluation(node.Branches[1]);
             if ((left is null) && (right is null))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
             else
             {
@@ -1309,7 +1322,7 @@ public class Evaluator
             object condition = GeneralEvaluation(node.Branches[0]);
             if ((condition is null))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid value", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid value", new Location(file, line, "column")));
                 return null!;
             }
             Ternary Conditional = new Ternary();
@@ -1337,7 +1350,7 @@ public class Evaluator
             object radio = GeneralEvaluation(node.Branches[1]);
             if (!(center is Point) || !(radio is Measure || radio is double))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "a valid center point and distance", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "a valid center point and distance", new Location(file, line, "column")));
             }
             else
             {
@@ -1361,7 +1374,7 @@ public class Evaluator
             object p2 = GeneralEvaluation(node.Branches[1]);
             if (!(p1 is Point) || !(p2 is Point))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points to declare a line", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points to declare a line", new Location(file, line, "column")));
             }
             else
             {
@@ -1376,7 +1389,7 @@ public class Evaluator
             object p2 = GeneralEvaluation(node.Branches[1]);
             if (!(p1 is Point) || !(p2 is Point))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points to declare a segment", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points to declare a segment", new Location(file, line, "column")));
             }
             else
             {
@@ -1391,7 +1404,7 @@ public class Evaluator
             object p2 = GeneralEvaluation(node.Branches[1]);
             if (!(p1 is Point) || !(p2 is Point))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points to declare a ray", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points to declare a ray", new Location(file, line, "column")));
             }
             else
             {
@@ -1406,7 +1419,7 @@ public class Evaluator
             object p2 = GeneralEvaluation(node.Branches[1]);
             if (!(p1 is Point) || !(p2 is Point))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points to declare a measure", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points to declare a measure", new Location(file, line, "column")));
             }
             else
             {
@@ -1422,7 +1435,7 @@ public class Evaluator
             object m = GeneralEvaluation(node.Branches[3]);
             if (!(p1 is Point) || !(p2 is Point) || !(p3 is Point) || !(m is Measure || m is double))
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points and distance to declare an arc", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points and distance to declare an arc", new Location(file, line, "column")));
             }
             else
             {
@@ -1510,7 +1523,7 @@ public class Evaluator
                         else
                         {
                             //Se lanza un error si el número de parámetros no coincide
-                            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, $"{context.Available_Functions[i].Functions_Arguments.Count} parameters but received {func_parameters.Branches.Count}", new Location("file", "line", "column")));
+                            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, $"{context.Available_Functions[i].Functions_Arguments.Count} parameters but received {func_parameters.Branches.Count}", new Location(file, line, "column")));
                         }
 
                     }
@@ -1581,7 +1594,7 @@ public class Evaluator
                             else
                             {
                                 //Se lanza un error si el número de parámetros no coincide
-                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, $"{CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments.Count} parameters but received {func_parameters.Branches.Count}", new Location("file", "line", "column")));
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, $"{CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments.Count} parameters but received {func_parameters.Branches.Count}", new Location(file, line, "column")));
                             }
 
                         }
@@ -1592,7 +1605,7 @@ public class Evaluator
                 }
                 else
                 {//Se lanza error si se está llamando a una función que no existe
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "name,function has not been declared", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "name,function has not been declared", new Location(file, line, "column")));
                 index = -1;
                 }
             }
@@ -1646,7 +1659,7 @@ public class Evaluator
              }
              else if(!(f1 is Figure))
              {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "figure", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "figure", new Location(file, line, "column")));
                 return result=null!;
              }
              if (result is null)
@@ -1661,7 +1674,7 @@ public class Evaluator
            }
            else
            {
-            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "figure", new Location("file", "line", "column")));
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "figure", new Location(file, line, "column")));
            }
         }
         else if (node.Type == Node.NodeType.Import)
@@ -1677,11 +1690,11 @@ public class Evaluator
             string[] archive = Directory.GetFiles(rute, name);
             if (archive.Length > 1)
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "file name,name must be unique", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "file name,name must be unique", new Location(file, line, "column")));
             }
             else if (archive.Length <= 0)
             {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "file name,file must exist", new Location("file", "line", "column")));
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "file name,file must exist", new Location(file, line, "column")));
             }
             else
             {
@@ -1693,7 +1706,7 @@ public class Evaluator
         }
         else
         {
-            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Unknown, "operation required", new Location("file", "line", "column")));
+            Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Unknown, "operation required", new Location(file, line, "column")));
         }
 
         return "end";
