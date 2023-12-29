@@ -5,6 +5,11 @@
       "taskLabel": "task-view",
       "appliesTo": "view.cs",
       "type": "launch"
+    },
+    {
+      "taskLabel": "task-WALL-E",
+      "appliesTo": "WALL-E/",
+      "type": "launch"
     }
   ]
 }

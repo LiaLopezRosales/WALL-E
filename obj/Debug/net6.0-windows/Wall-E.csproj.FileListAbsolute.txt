@@ -1,0 +1,68 @@
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\bin\Debug\net6.0-windows\Wall-E.exe
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\bin\Debug\net6.0-windows\Wall-E.deps.json
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\bin\Debug\net6.0-windows\Wall-E.runtimeconfig.json
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\bin\Debug\net6.0-windows\Wall-E.dll
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\bin\Debug\net6.0-windows\ref\Wall-E.dll
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\bin\Debug\net6.0-windows\Wall-E.pdb
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\Wall-E.csproj.AssemblyReference.cache
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\Wall_E.Form1.resources
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\Wall-E.csproj.GenerateResource.cache
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\Wall-E.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\Wall-E.AssemblyInfoInputs.cache
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\Wall-E.AssemblyInfo.cs
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\Wall-E.csproj.CoreCompileInputs.cache
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\Wall-E.dll
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\ref\Wall-E.dll
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\Wall-E.pdb
+C:\Users\ariadna\Desktop\Escuela\Probando_WindowForm\Wall-E\obj\Debug\net6.0-windows\Wall-E.genruntimeconfig.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\Wall-E.csproj.AssemblyReference.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\Wall_E.Form1.resources
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\Wall-E.csproj.GenerateResource.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\Wall-E.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\Wall-E.AssemblyInfoInputs.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\Wall-E.AssemblyInfo.cs
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\Wall-E.csproj.CoreCompileInputs.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\ref\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\Wall-E.pdb
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\bin\Debug\net6.0-windows\Wall-E.exe
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\bin\Debug\net6.0-windows\Wall-E.deps.json
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\bin\Debug\net6.0-windows\Wall-E.runtimeconfig.json
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\bin\Debug\net6.0-windows\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\bin\Debug\net6.0-windows\ref\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\bin\Debug\net6.0-windows\Wall-E.pdb
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E (2)\obj\Debug\net6.0-windows\Wall-E.genruntimeconfig.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\bin\Debug\net6.0-windows\Wall-E.exe
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\bin\Debug\net6.0-windows\Wall-E.deps.json
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\bin\Debug\net6.0-windows\Wall-E.runtimeconfig.json
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\bin\Debug\net6.0-windows\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\bin\Debug\net6.0-windows\Wall-E.pdb
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\Wall-E.csproj.AssemblyReference.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\Wall_E.Form1.resources
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\Wall-E.csproj.GenerateResource.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\Wall-E.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\Wall-E.AssemblyInfoInputs.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\Wall-E.AssemblyInfo.cs
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\Wall-E.csproj.CoreCompileInputs.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\ref\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\Wall-E.pdb
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\Wall-E.genruntimeconfig.cache
+C:\Users\ariadna\Source\Repos\WALL-E\Wall-E\obj\Debug\net6.0-windows\refint\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\bin\Debug\net6.0-windows\Wall-E.exe
+C:\Users\ariadna\Source\Repos\WALL-E\bin\Debug\net6.0-windows\Wall-E.deps.json
+C:\Users\ariadna\Source\Repos\WALL-E\bin\Debug\net6.0-windows\Wall-E.runtimeconfig.json
+C:\Users\ariadna\Source\Repos\WALL-E\bin\Debug\net6.0-windows\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\bin\Debug\net6.0-windows\Wall-E.pdb
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.csproj.AssemblyReference.cache
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall_E.Form1.resources
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.csproj.GenerateResource.cache
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.AssemblyInfoInputs.cache
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.AssemblyInfo.cs
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.csproj.CoreCompileInputs.cache
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.pdb
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.genruntimeconfig.cache
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\ref\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\bin\Debug\net6.0-windows\ref\Wall-E.dll
