@@ -9,7 +9,7 @@ namespace Wall_E
         private Pen Lapiz { get; set; }
         private SolidBrush Brush { get; set; }
         private HashSet<Point> PuntosGenerados { get; set; }
-        private Context context { get; set; }
+        private Context Context { get; set; }
         public Form1()
         {
             InitializeComponent();
@@ -17,7 +17,7 @@ namespace Wall_E
             Lapiz = new Pen(Color.Black);
             Brush = new SolidBrush(Color.Black);
             PuntosGenerados = new HashSet<Point>();
-            context = new Context();
+            Context = new Context();
         }
 
         private void ClearButton_Click(object sender, EventArgs e)
@@ -27,42 +27,121 @@ namespace Wall_E
 
         private void ActionButton_Click(object sender, EventArgs e)
         {
-            /* string command = Commands.Text;
+            string command = Commands.Text;
 
             if (command == "")
             {
                 MessageBox.Show("Please introduce al least one line of code in the TextBox", "Suggestion", MessageBoxButtons.OK, MessageBoxIcon.None);
-
             }
 
-
-            string errors = "";
-
-            MessageBox.Show(errors, "Lexical Errors", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            MessageBox.Show(errors, "Sintactic Errors", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            MessageBox.Show(errors, "Semantic Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            */
+            List<List<Error>> errors;
+            string errorsToPrint = "";
 
 
-            Point p1 = Generar_Punto();
-            Point p2 = Generar_Punto();
-            Point p3 = Generar_Punto();
 
-            Change_Color("yellow");
-            //Draw_Point(p3);
 
-            Change_Color("black");
-            Draw_Point(p1, "centro");
-            Draw_Point(p2);
-            Draw_Point(p3);
+            //Ver como paso el File q es el segundo parametro de GeneralLexer
+            GeneralLexer startlexing = new GeneralLexer(command, null);
+            List<List<Token>> tokenizedcode = startlexing.Process(startlexing.lines);
+            errors = startlexing.LexicalErrors();
+            //Se encuentra errores léxicos los imprime e interrumpe el proceso
+            if (errors.Count > 0)
+            {
+                foreach (var item in errors)
+                {
+                    foreach (var error in item)
+                    {
+                        errorsToPrint += String.Format("{0}, {1}, {2} \n", error.Code, error.Argument, error.location);
+                    }
+                }
+                MessageBox.Show(errorsToPrint, "Lexical Errors", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            //De lo contrario procede a realizar el análisis sintáctico
+            else
+            {   //Se realizan procesos similares al léxico para el parser y la evaluación 
+                GeneralParser startparsing = new GeneralParser(tokenizedcode, null);
+                List<Node> parsedcode = startparsing.ParseArchive();
+                errors = startparsing.ParserErrors();
+                if (errors.Count > 0)
+                {
+                    foreach (var item in errors)
+                    {
+                        foreach (var error in item)
+                        {
+                            errorsToPrint += String.Format("{0}, {1}, {2} \n", error.Code, error.Argument, error.location);
+                        }
+                    }
+                    MessageBox.Show(errorsToPrint, "Syntactic Errors", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                else
+                {
+                    GeneralEvaluation startevaluation = new GeneralEvaluation(parsedcode, null);
+                    Context result = startevaluation.EvaluateArchive(Context);
+                    errors = startevaluation.Semantic_Errors();
+                    if (errors.Count > 0)
+                    {
+                        foreach (var item in errors)
+                        {
+                            foreach (var error in item)
+                            {
+                                errorsToPrint += String.Format("{0}, {1}, {2} \n", error.Code, error.Argument, error.location);
+                            }
+                        }
+                        MessageBox.Show(errorsToPrint, "Semantic Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    else
+                    {
+                        List<DrawObject> drawObjects = Context.ToDraw;
+                        if (drawObjects.Count != 0)
+                            DrawFigures(drawObjects);
+                    }
+                }
+            }
+            Context.ToDraw.Clear();
+        }
 
-            //Change_Color("cyan");
-            //Draw_Segment(p1, p2);
-            //Draw_Segment(p1, p3);
+        public void DrawFigures(List<DrawObject> draw)
+        {
+            foreach (var item in draw)
+            {
+                string color = item.UsedColor;
+                string tag = item.Tag;
+                object figure = item.Figures;
 
-            Change_Color("gray");
-            Draw_Circule(p1, 35);
+                Change_Color(color);
 
+                if (figure is Point p)
+                {
+                    Draw_Point(p, tag);
+                }
+                else if (figure is Segment s)
+                {
+                    Draw_Segment(s.StartIn, s.EndsIn, tag);
+                }
+                else if (figure is Line l)
+                {
+                    Draw_Line(l.generalpoint1, l.generalpoint2, tag);
+                }
+                else if (figure is Ray r)
+                {
+                    Draw_Ray(r.StartIn, r.PassFor, tag);
+                }
+                else if (figure is Circle c)
+                {
+                    Draw_Circule(c.center, c.radio, tag);
+                }
+                else if (figure is Arc a)
+                {
+                    Draw_Arc(a.center, a.measure, a.point_of_semirect1, a.point_of_semirect2, tag);
+                }
+                else if (figure is Finite_Sequence<object> f)
+                {
+                    //...
+                }
+            }
 
         }
 
@@ -148,7 +227,7 @@ namespace Wall_E
             Papel.DrawString(name, this.Font, Brushes.Black, (float)p.x + 5, (float)p.y - 5);
         }*/
 
-        public void Draw_Point(Point p)
+        private void Draw_Point(Point p)
         {
             // Dibujar el punto como un circulo
             Papel.FillEllipse(Brush, (float)p.x, (float)p.y, 5, 5);
@@ -156,10 +235,11 @@ namespace Wall_E
         public void Draw_Point(Point p, string name)
         {
             Draw_Point(p);
-            //Mostrar el nombre del punto
-            Papel.DrawString(name, this.Font, Brushes.Black, (float)p.x + 5, (float)p.y - 5);
+            if (name != "")
+                Papel.DrawString(name, this.Font, Brushes.Black, (float)p.x + 5, (float)p.y - 5);
         }
 
+        //Creacion de segmentos sin dar puntos de referencia
         /* public void Draw_Segment()
         {
             Point p1 = Generar_Punto();
@@ -174,14 +254,16 @@ namespace Wall_E
             Papel.DrawString(name, this.Font, Brushes.Black, (float)p1.x + 5, (float)p1.y - 5);
         } */
 
-        public void Draw_Segment(Point p1, Point p2)
+        private void Draw_Segment(Point p1, Point p2)
         {
             Papel.DrawLine(Lapiz, (float)p1.x, (float)p1.y, (float)p2.x, (float)p2.y);
         }
         public void Draw_Segment(Point p1, Point p2, string name)
         {
             Papel.DrawLine(Lapiz, (float)p1.x, (float)p1.y, (float)p2.x, (float)p2.y);
-            Papel.DrawString(name, this.Font, Brushes.Black, (float)p1.x + 5, (float)p1.y - 5);
+            
+            if (name != "")
+                Papel.DrawString(name, this.Font, Brushes.Black, (float)p1.x + 5, (float)p1.y - 5);
         }
 
         public void Draw_Line(Point p1, Point p2)
@@ -202,7 +284,9 @@ namespace Wall_E
         public void Draw_Line(Point p1, Point p2, string name)
         {
             Draw_Line(p1, p2);
-            Papel.DrawString(name, this.Font, Brushes.Black, (float)p1.x + 5, (float)p1.y - 5);
+            
+            if (name != "")
+                Papel.DrawString(name, this.Font, Brushes.Black, (float)p1.x + 5, (float)p1.y - 5);
         }
 
         public void Draw_Ray(Point p1, Point p2)
@@ -237,9 +321,12 @@ namespace Wall_E
         public void Draw_Ray(Point p1, Point p2, string name)
         {
             Draw_Ray(p1, p2);
-            Papel.DrawString(name, this.Font, Brushes.Black, (float)p1.x + 5, (float)p1.y - 5);
+            
+            if (name != "")
+                Papel.DrawString(name, this.Font, Brushes.Black, (float)p1.x + 5, (float)p1.y - 5);
         }
 
+        // Formas de dibujar el circulo a partir de distintos datos
         /* public void Draw_Circule(Point p1, Point p2)
         {
             //El punto p1 es el centro y p2 se encuentra en el borde
@@ -261,19 +348,21 @@ namespace Wall_E
             Papel.DrawEllipse(Lapiz, (float)p1.x, (float)p1.y, size, size);
         }*/
 
-        public void Draw_Circule(Point c, int radio)
+        public void Draw_Circule(Point c, double radio)
         {
             //Calcular las coordenadas del rect'angulo que contiene el circulo
-            float x = (float)c.x - radio;
-            float y = (float)c.y - radio;
-            float m = 2 * radio;
+            float x = (float)c.x - (float)radio;
+            float y = (float)c.y - (float)radio;
+            float m = 2 * (float)radio;
 
             Papel.DrawEllipse(Lapiz, x, y, m, m);
         }
-        public void Draw_Circule(Point c, int radio, string name)
+        public void Draw_Circule(Point c, double radio, string name)
         {
             Draw_Circule(c, radio);
-            Papel.DrawString(name, this.Font, Brushes.Black, (float)c.x + 5, (float)c.y - 5);
+
+            if (name != "")
+                Papel.DrawString(name, this.Font, Brushes.Black, (float)c.x + 5, (float)c.y - 5);
         }
 
         public void Draw_Arc(Point c, double radio, Point p1, Point p2)
@@ -306,10 +395,12 @@ namespace Wall_E
 
             Papel.DrawArc(Lapiz, (float)c.x - (float)radio, (float)c.y - (float)radio, (float)d, (float)d, (float)aInit, (float)(aEnd - aInit));
         }
-        public void Draw_Arc(Point c, int radio, Point p1, Point p2, string name)
+        public void Draw_Arc(Point c, double radio, Point p1, Point p2, string name)
         {
             Draw_Arc(c, radio, p1, p2);
-            Papel.DrawString(name, this.Font, Brushes.Black, (float)c.x + 5, (float)c.y - 15);
+
+            if (name != "")
+                Papel.DrawString(name, this.Font, Brushes.Black, (float)c.x + 5, (float)c.y - 15);
         }
     }
 }

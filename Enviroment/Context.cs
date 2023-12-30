@@ -1,33 +1,33 @@
 ﻿using System;
 public class Context
 {
-	public List<Fuction> Available_Functions{get;set;}
-    public Dictionary<string,Func<double,double>> Trig_functions{get;}
-    public Dictionary<string,Func<double>> Math_value{get;}
-    public Dictionary<string,Func<double,double,double>> Log{get;}
-    public Dictionary<string,object> GlobalConstant{get;set;}
-    public Dictionary<string,Func<IEnumerable<double>>> Randoms {get;}
-    public Dictionary<string,Func<IEnumerable<Point>>> Samples {get;}
-    public Dictionary<string,Func<Circle,IEnumerable<Point>>> Points{get;}
-    public List<DrawObject>ToDraw{get;set;}
-    public List<Circle>ExistingCircles{get;set;}
-    public List<Point>ExistingPoints{get;set;}
-    public List<Segment>ExistingSegments{get;set;}
-    public List<Line>ExistingLines{get;set;}
-    public List<Ray>ExistingRays{get;set;}
-    public Stack<string> UtilizedColors{get;set;}
-    public bool issuedcontext{get;set;}
+	public List<Fuction> Available_Functions{ get; set; }
+    public Dictionary<string,Func<double,double>> Trig_functions{ get; }
+    public Dictionary<string,Func<double>> Math_value{ get; }
+    public Dictionary<string,Func<double,double,double>> Log{ get; }
+    public Dictionary<string,object> GlobalConstant{ get; set; }
+    public Dictionary<string,Func<IEnumerable<double>>> Randoms { get; }
+    public Dictionary<string,Func<IEnumerable<Point>>> Samples { get; }
+    public Dictionary<string,Func<Circle,IEnumerable<Point>>> Points{ get; }
+    public List<DrawObject> ToDraw { get; set; }
+    public List<Circle> ExistingCircles { get; set; }
+    public List<Point> ExistingPoints{ get; set; }
+    public List<Segment> ExistingSegments{ get; set; }
+    public List<Line> ExistingLines { get; set; }
+    public List<Ray> ExistingRays { get; set; }
+    public Stack<string> UtilizedColors { get; set; }
+    public bool issuedcontext { get; set; }
     public Context()
     {
-        Available_Functions=new List<Fuction>();
-        GlobalConstant=new Dictionary<string, object>();
+        Available_Functions = new List<Fuction>();
+        GlobalConstant = new Dictionary<string, object>();
         Trig_functions = new Dictionary<string, Func<double,double>>();
-        Trig_functions.Add("sin",(double argument)=>Sin(argument));
-        Trig_functions.Add("cos",(double argument)=>Cos(argument));
-        Trig_functions.Add("sqrt",(double argument)=>Math.Sqrt(argument));
+        Trig_functions.Add("sin",(double argument) => Sin(argument));
+        Trig_functions.Add("cos",(double argument) => Cos(argument));
+        Trig_functions.Add("sqrt",(double argument) => Math.Sqrt(argument));
         Math_value = new Dictionary<string, Func<double>>();
-        Math_value.Add("PI",()=>Math.PI);
-        Math_value.Add("E",()=>Math.E);
+        Math_value.Add("PI",() => Math.PI);
+        Math_value.Add("E",() => Math.E);
         Log = new Dictionary<string, Func<double, double, double>>();
         Log.Add("log",(double Base,double argument)=> Math.Log(argument,Base));
         Randoms=new Dictionary<string, Func<IEnumerable<double>>>();
