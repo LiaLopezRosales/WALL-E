@@ -1701,6 +1701,10 @@ public class Evaluator
                 string code = File.ReadAllText(archive[0]);
                 ArchiveAnalysis procesingfile = new ArchiveAnalysis(code, archivename);
                 context = procesingfile.Analyze(context);
+                if (context.issuedcontext)
+                {
+                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "file, requested file contains errors, analysis from this point on may not be reliable", new Location(file, line, "column")));
+                }
                 return $"File {name} procesed";
             }
         }

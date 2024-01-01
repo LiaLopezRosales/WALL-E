@@ -25,6 +25,7 @@ public class ArchiveAnalysis : Form
                 errorsToPrint = String.Join("\r\n", item.Select(x => x.ToString()));
             }
             MessageBox.Show(errorsToPrint, "Lexical Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            basecontext.issuedcontext=true;
             return basecontext;
         }
         //De lo contrario procede a realizar el análisis sintáctico
@@ -40,6 +41,7 @@ public class ArchiveAnalysis : Form
                     errorsToPrint = String.Join("\r\n", item.Select(x => x.ToString()));
                 }
                 MessageBox.Show(errorsToPrint, "Syntactic Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                basecontext.issuedcontext=true;
                 return basecontext;
             }
             else
@@ -54,6 +56,7 @@ public class ArchiveAnalysis : Form
                         errorsToPrint = String.Join("\r\n", item.Select(x => x.ToString()));
                     }
                     MessageBox.Show(errorsToPrint, "Semantic Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    basecontext.issuedcontext=true;
                     return basecontext;
                 }
                 else
