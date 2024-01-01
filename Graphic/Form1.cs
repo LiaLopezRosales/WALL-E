@@ -9,7 +9,7 @@ namespace Wall_E
         private Pen Lapiz { get; set; }
         private SolidBrush Brush { get; set; }
         private HashSet<Point> PuntosGenerados { get; set; }
-        private Context Context { get; set; }
+        private bool Continue { get; set; }
         public Form1()
         {
             InitializeComponent();
@@ -17,7 +17,7 @@ namespace Wall_E
             Lapiz = new Pen(Color.Black);
             Brush = new SolidBrush(Color.Black);
             PuntosGenerados = new HashSet<Point>();
-            Context = new Context();
+            Continue = true;
         }
 
         private void ClearButton_Click(object sender, EventArgs e)
@@ -31,120 +31,92 @@ namespace Wall_E
 
             if (command == "")
             {
-                MessageBox.Show("Please introduce al least one line of code in the TextBox", "Suggestion", MessageBoxButtons.OK, MessageBoxIcon.None);
-            }
-
-            List<List<Error>> errors;
-            string errorsToPrint = "";
-
-
-
-
-            //Ver como paso el File q es el segundo parametro de GeneralLexer
-            GeneralLexer startlexing = new GeneralLexer(command, null);
-            List<List<Token>> tokenizedcode = startlexing.Process(startlexing.lines);
-            errors = startlexing.LexicalErrors();
-            //Se encuentra errores léxicos los imprime e interrumpe el proceso
-            if (errors.Count > 0)
-            {
-                foreach (var item in errors)
-                {
-                    foreach (var error in item)
-                    {
-                        errorsToPrint += String.Format("{0}, {1}, {2} \n", error.Code, error.Argument, error.location);
-                    }
-                }
-                MessageBox.Show(errorsToPrint, "Lexical Errors", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Please introduce al least one line of code in the TextBox", "Suggestion", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            //De lo contrario procede a realizar el análisis sintáctico
-            else
-            {   //Se realizan procesos similares al léxico para el parser y la evaluación 
-                GeneralParser startparsing = new GeneralParser(tokenizedcode, null);
-                List<Node> parsedcode = startparsing.ParseArchive();
-                errors = startparsing.ParserErrors();
-                if (errors.Count > 0)
-                {
-                    foreach (var item in errors)
-                    {
-                        foreach (var error in item)
-                        {
-                            errorsToPrint += String.Format("{0}, {1}, {2} \n", error.Code, error.Argument, error.location);
-                        }
-                    }
-                    MessageBox.Show(errorsToPrint, "Syntactic Errors", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                else
-                {
-                    GeneralEvaluation startevaluation = new GeneralEvaluation(parsedcode, null);
-                    Context result = startevaluation.EvaluateArchive(Context);
-                    errors = startevaluation.Semantic_Errors();
-                    if (errors.Count > 0)
-                    {
-                        foreach (var item in errors)
-                        {
-                            foreach (var error in item)
-                            {
-                                errorsToPrint += String.Format("{0}, {1}, {2} \n", error.Code, error.Argument, error.location);
-                            }
-                        }
-                        MessageBox.Show(errorsToPrint, "Semantic Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                    else
-                    {
-                        List<DrawObject> drawObjects = Context.ToDraw;
-                        if (drawObjects.Count != 0)
-                            DrawFigures(drawObjects);
-                    }
-                }
-            }
-            Context.ToDraw.Clear();
-        }
 
-        public void DrawFigures(List<DrawObject> draw)
-        {
-            foreach (var item in draw)
+            ArchiveAnalysis procesador = new(command, "MainFile");
+            Context context = procesador.Analyze(new Context());
+
+            if (!context.issuedcontext)
             {
-                string color = item.UsedColor;
-                string tag = item.Tag;
-                object figure = item.Figures;
-
-                Change_Color(color);
-
-                if (figure is Point p)
+                List<DrawObject> drawObjects = context.ToDraw;
+                List<object> toPrint = context.Results;
+                string result = "All commands have been successfully processed \r\n";
+                if (drawObjects.Count != 0)
                 {
-                    Draw_Point(p, tag);
+                    foreach (DrawObject item in drawObjects)
+                    {
+                        DrawFigures(item);
+                    }
                 }
-                else if (figure is Segment s)
+                else if (toPrint.Count != 0)
                 {
-                    Draw_Segment(s.StartIn, s.EndsIn, tag);
+                    result += String.Join("\r\n", toPrint.Select(x => x.ToString()));
                 }
-                else if (figure is Line l)
-                {
-                    Draw_Line(l.generalpoint1, l.generalpoint2, tag);
-                }
-                else if (figure is Ray r)
-                {
-                    Draw_Ray(r.StartIn, r.PassFor, tag);
-                }
-                else if (figure is Circle c)
-                {
-                    Draw_Circule(c.center, c.radio, tag);
-                }
-                else if (figure is Arc a)
-                {
-                    Draw_Arc(a.center, a.measure, a.point_of_semirect1, a.point_of_semirect2, tag);
-                }
-                else if (figure is Finite_Sequence<object> f)
-                {
-                    //...
-                }
+                MessageBox.Show( result, "Analysis completed", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
 
+            Commands.Clear();
+            Continue = true;
         }
 
+        public void DrawFigures(object figure)
+        {
+            string color = Lapiz.Color.ToString();
+            string tag = "";
+            
+            if (figure is DrawObject draw)
+            {
+                color = draw.UsedColor;
+                tag = draw.Tag;
+                figure = draw.Figures;
+            }
+            
+            Change_Color(color);
+
+            if (figure is Point p)
+            {
+               Draw_Point(p, tag);
+            }
+            else if (figure is Segment s)
+            {
+                Draw_Segment(s.StartIn, s.EndsIn, tag);
+            }
+            else if (figure is Line l)
+            {
+                Draw_Line(l.generalpoint1, l.generalpoint2, tag);
+            }
+            else if (figure is Ray r)
+            {
+                Draw_Ray(r.StartIn, r.PassFor, tag);
+            }
+            else if (figure is Circle c)
+            {
+                Draw_Circule(c.center, c.radio, tag);
+            }
+            else if (figure is Arc a)
+            {
+                Draw_Arc(a.center, a.measure, a.point_of_semirect1, a.point_of_semirect2, tag);
+            }
+            else if (figure is Finite_Sequence<object> f)
+            {
+                foreach (object item in ((Finite_Sequence<object>)f).Sequence)
+                {
+                    DrawFigures(item);
+                }
+            }
+            else if (figure is InfinitePointSequence seq)
+            {
+                while (Continue)
+                {
+                    Point value = seq.ReturnValue();
+                    if (value == default(Point))
+                        break;
+                    Draw_Point(value);
+                }
+            }
+        }
 
         public void Change_Color(string color)
         {
@@ -191,7 +163,7 @@ namespace Wall_E
             }
         }
 
-        private Point Generar_Punto()
+        public Point Generar_Punto()
         {
             Random random = new Random();
             Point nuevoPunto;
@@ -227,7 +199,7 @@ namespace Wall_E
             Papel.DrawString(name, this.Font, Brushes.Black, (float)p.x + 5, (float)p.y - 5);
         }*/
 
-        private void Draw_Point(Point p)
+        public void Draw_Point(Point p)
         {
             // Dibujar el punto como un circulo
             Papel.FillEllipse(Brush, (float)p.x, (float)p.y, 5, 5);
@@ -401,6 +373,11 @@ namespace Wall_E
 
             if (name != "")
                 Papel.DrawString(name, this.Font, Brushes.Black, (float)c.x + 5, (float)c.y - 15);
+        }
+
+        private void Sequence_Click(object sender, EventArgs e)
+        {
+            Continue = false;
         }
     }
 }

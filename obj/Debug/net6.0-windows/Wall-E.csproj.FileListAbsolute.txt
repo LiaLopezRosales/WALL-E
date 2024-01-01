@@ -65,4 +65,5 @@ C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.dll
 C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.pdb
 C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall-E.genruntimeconfig.cache
 C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\ref\Wall-E.dll
-C:\Users\ariadna\Source\Repos\WALL-E\bin\Debug\net6.0-windows\ref\Wall-E.dll
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\Wall_E.Properties.Resources.resources
+C:\Users\ariadna\Source\Repos\WALL-E\obj\Debug\net6.0-windows\refint\Wall-E.dll

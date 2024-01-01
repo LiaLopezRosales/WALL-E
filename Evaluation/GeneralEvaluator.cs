@@ -26,7 +26,7 @@ public class GeneralEvaluation
           }
           else if(SemanticErrors.Count==0)
           {
-            Console.WriteLine(value);
+            basecontext.Results.Add(value);
           }
           count++;
        }

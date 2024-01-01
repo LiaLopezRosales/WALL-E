@@ -16,7 +16,7 @@ public class Circle:Figure,IEquatable<Circle>
         {
             center=new Point(0,0);
             center.RandomPoint(points);
-            radio=generator.NextDouble(1,25);
+            radio=generator.NextDouble(20,50);
         }
         else
         {

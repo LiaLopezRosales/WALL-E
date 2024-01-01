@@ -15,8 +15,8 @@ public class Point : Figure, IEquatable<Point>
         //Si es el primer punto a generar sus coordenadas serán enteras
         if (existingpoints.Count == 0)
         {
-            x = generator.Next(1,20);
-            y = generator.Next(1,20);
+            x = generator.Next(50,310);
+            y = generator.Next(50,310);
         }
         else
         {
@@ -25,8 +25,33 @@ public class Point : Figure, IEquatable<Point>
             while (existing)
             {
                 existing = false;
-                x = generator.NextDouble(existingpoints.Last().x + 1, existingpoints.Last().x + 13);
-                y = generator.NextDouble(existingpoints.Last().y + 1, existingpoints.Last().y + 13);
+                double xEnd;
+                double xStart;
+                double yEnd;
+                double yStart;
+
+                if (existingpoints.Last().x + 20 <= 310)
+                    xStart = existingpoints.Last().x + 20;
+                else
+                    xStart = existingpoints.Last().x - 30;
+                
+                if (existingpoints.Last().x + 100 <= 310)
+                    xEnd = existingpoints.Last().x + 100;
+                else
+                    xEnd = existingpoints.Last().x - 100;
+
+                if (existingpoints.Last().y + 20 <= 310)
+                    yStart = existingpoints.Last().y + 20;
+                else
+                    yStart = existingpoints.Last().y - 30;
+
+                if (existingpoints.Last().y + 100 <= 310)
+                    yEnd = existingpoints.Last().y + 100;
+                else
+                    yEnd = existingpoints.Last().y - 100;
+
+                x = generator.NextDouble(xStart, xEnd);
+                y = generator.NextDouble(existingpoints.Last().y + 20, existingpoints.Last().y + 100);
                 //Se comprueba si estas coordenadas nuevas coinciden con un punto existente
                 foreach (Point point in existingpoints)
                 {   //Si coinciden se continua en el ciclo hasta generar coordenadas únicas 

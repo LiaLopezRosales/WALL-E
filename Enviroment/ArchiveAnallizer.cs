@@ -1,6 +1,6 @@
 //Implementar lógica para recibir el archivo
 //Clase principal que interpreta un archivo recibido
-public class ArchiveAnalysis
+public class ArchiveAnalysis : Form
 {
     string Code { get; set; }
     string File { get; set; }
@@ -16,17 +16,15 @@ public class ArchiveAnalysis
         GeneralLexer startlexing = new GeneralLexer(Code, File);
         List<List<Token>> tokenizedcode = startlexing.Process(startlexing.lines);
         List<List<Error>> lexicalerrors = startlexing.LexicalErrors();
+        string errorsToPrint = "";
         //Se encuentra errores léxicos los imprime e interrumpe el proceso
         if (lexicalerrors.Count > 0)
         {
             foreach (var item in lexicalerrors)
             {
-                foreach (var error in item)
-                {
-                    Console.WriteLine(error.ToString());
-                }
+                errorsToPrint = String.Join("\r\n", item.Select(x => x.ToString()));
             }
-            basecontext.issuedcontext = true;
+            MessageBox.Show(errorsToPrint, "Lexical Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return basecontext;
         }
         //De lo contrario procede a realizar el análisis sintáctico
@@ -39,12 +37,9 @@ public class ArchiveAnalysis
             {
                 foreach (var item in syntacticerrors)
                 {
-                    foreach (var error in item)
-                    {
-                        Console.WriteLine(error.ToString());
-                    }
+                    errorsToPrint = String.Join("\r\n", item.Select(x => x.ToString()));
                 }
-                basecontext.issuedcontext = true;
+                MessageBox.Show(errorsToPrint, "Syntactic Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return basecontext;
             }
             else
@@ -56,12 +51,9 @@ public class ArchiveAnalysis
                 {
                     foreach (var item in semanticerrors)
                     {
-                        foreach (var error in item)
-                        {
-                            Console.WriteLine(error.ToString());
-                        }
+                        errorsToPrint = String.Join("\r\n", item.Select(x => x.ToString()));
                     }
-                    basecontext.issuedcontext = true;
+                    MessageBox.Show(errorsToPrint, "Semantic Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return basecontext;
                 }
                 else
