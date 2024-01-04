@@ -1,6 +1,6 @@
 # GeoWall-E
 
-Es una biblioteca para graficar elementos geometricos como puntos, segmentos y circunferencias. En nuestro proyecto la interfaz gráfica se desarrolla en WindowsForm la que presenta un espacio para graficos o pizarra, un recuadro para introducir los comandos y tres botones en el espacio principal cuyas funciones se especifican más adelante. Esperamos que les resulte útil.
+Es una biblioteca para graficar elementos geométricos como puntos, segmentos y circunferencias. En nuestro proyecto la interfaz gráfica se desarrolla en WindowsForm, esta presenta un espacio para gráficos o pizarra, un recuadro para introducir los comandos y tres botones en el espacio principal cuyas funciones se especifican más adelante. Esperamos que les resulte útil.
 
 
 Funcionamiento básico de GeoWall-E:
@@ -24,5 +24,7 @@ Especificaciones sobre el intérprete de GeoWall-E:
 - Cuando se devuelven los errores encontrados se informa de su tipo, cuál fue el error (pequeña explicación) y su localización. La localización consta de archivo, línea y columna(# del token donde se encontró el problema) aunque los errores semánticos detectados solo informarán de archivo y línea pues el orden de tokens ya no se tiene como referencia para poder determinar en que columna tuvo el error.
 - El procesamiento se hace por etapas y en cada etapa de hace línea por línea, es decir se tokeniza línea por línea y si no hallan errores en ninguna de estas se prosigue a parsear una lista de listas de tokens y así sucesivamente.
 - Al evaluar cada línea se informa algo: si la instrucción tiene valor de retorno (es expresión) se informa del valor obtenido y si no tiene se informa de lo ejecutado por esa acción, por ejemplo:
+  
        - color blue; Color changed to blue
+  
        - point p1; Point created
