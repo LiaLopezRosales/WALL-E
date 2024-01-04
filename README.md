@@ -1,4 +1,4 @@
-#GeoWall-E
+# GeoWall-E
 
 Es una biblioteca para graficar elementos geometricos como puntos, segmentos y circunferencias. En nuestro proyecto la interfaz gráfica se desarrolla en WindowsForm la que presenta un espacio para graficos o pizarra, un recuadro para introducir los comandos y tres botones en el espacio principal cuyas funciones se especifican más adelante. Esperamos que les resulte útil.
 
