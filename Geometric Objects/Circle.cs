@@ -156,7 +156,7 @@ public class Circle:Figure,IEquatable<Circle>
         return temp;
         
     }
-    private Finite_Sequence<Point> IntersectCircle(Circle c)
+    private Finite_Sequence<Point> IntersectCircleB(Circle c)
     {
         if (this.Equals(c))
         {
@@ -184,7 +184,7 @@ public class Circle:Figure,IEquatable<Circle>
         temp.type=Finite_Sequence<Point>.SeqType.point;
         return temp;
     }
-     private Finite_Sequence<Point> IntersectCircleB(Circle c)
+     private Finite_Sequence<Point> IntersectCircle(Circle c)
     {
         if (this.Equals(c))
         {

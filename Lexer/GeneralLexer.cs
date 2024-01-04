@@ -21,7 +21,7 @@ public class GeneralLexer
             //Si el índice es mayor que 0 hay un let abierto  se concatenan las dos líneas
             if (index>=0 && !(ContainIn(lines[i])))
             {
-                if (lines[i].Contains("let "))
+                if (lines[i].Contains("let ")|| lines[i].Contains("let"))
                 {
                     int amount=Amount_of_Lets(lines[i]);
                     amount_of_open_let=amount_of_open_let+amount;
@@ -46,7 +46,7 @@ public class GeneralLexer
                 lines[i]="";
             }
             //Si una linea contiene expresión let,se busca cuantos hay y se modifica el índice y la cantidad de lets abiertos
-            if (lines[i].Contains("let "))
+            if (lines[i].Contains("let ") || lines[i].Contains("let"))
             {
                 int amount=Amount_of_Lets(lines[i]);
                 if (amount==0)
@@ -84,6 +84,13 @@ public class GeneralLexer
             foreach (var line in group_of_lines)
             {
             Lexer lexer=new Lexer(File,count.ToString());
+            
+            List<Token> linetokens= lexer.Tokens(line);
+            if (linetokens.Count==1 && linetokens[0].Type==Token.TokenType.EOL)
+            {
+                continue;
+            }
+            
             tokens.Add(lexer.Tokens(line));
             //Se van acumulando los errore léxicos
             if (lexer.Lexic_Errors().Count>0)

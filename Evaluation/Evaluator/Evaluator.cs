@@ -354,10 +354,10 @@ public class Evaluator
             // {
             //     Console.WriteLine(item);
             // }
-            Console.WriteLine("ending elements");
+          
             Type type = value.GetType();
             long amount_of_elements = node.Branches[0].Branches.Count;
-            Console.WriteLine(amount_of_elements);
+            
             long index = 0;
             List<object> AlternativeSeq = new List<object>();
             if (value is Finite_Sequence<object>)
@@ -437,6 +437,107 @@ public class Evaluator
                         object valueofarg = ((Finite_Sequence<object>)value).ReturnValue();
                         index++;
                         if (valueofarg == default(object))
+                        {
+                            valueofarg = "undefined";
+                        }
+                        if (CurrentScope.Parent == null)
+                        {
+                            if (context.GlobalConstant.Keys.Contains(name))
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                            }
+                            else
+                                context.GlobalConstant.Add(name, valueofarg);
+                        }
+                        else
+                        {
+                            if (CurrentScope.Variables.Keys.Contains(name))
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                            }
+                            else
+                                CurrentScope.Variables.Add(name, valueofarg);
+                        }
+                    }
+                }
+            }
+            if (value is Finite_Sequence<Point>)
+            {
+                foreach (var subnode in node.Branches[0].Branches)
+                {
+
+                    if (subnode.Type == Node.NodeType.Low_Hyphen)
+                    {
+                        object valueofarg = ((Finite_Sequence<Point>)value).ReturnValue();
+                        index++;
+                        continue;
+                    }
+                    if (index == amount_of_elements - 1)
+                    {
+                        string name = GeneralEvaluation(subnode).ToString()!;
+                        object valueofarg = ((Finite_Sequence<Point>)value).ReturnValue();
+                        if (valueofarg == default(Point))
+                        {
+                            valueofarg = "{}";
+                            if (CurrentScope.Parent == null)
+                            {
+                                if (context.GlobalConstant.Keys.Contains(name))
+                                {
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                                }
+                                else
+                                    context.GlobalConstant.Add(name, valueofarg);
+                            }
+                            else
+                            {
+                                if (CurrentScope.Variables.Keys.Contains(name))
+                                {
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                                }
+                                else
+                                    CurrentScope.Variables.Add(name, valueofarg);
+                            }
+                        }
+                        else
+                        {
+                            AlternativeSeq.Add(valueofarg);
+                            while (valueofarg != default(Point))
+                            {
+                                valueofarg = ((Finite_Sequence<Point>)value).ReturnValue();
+                                if (valueofarg != default(Point))
+                                {
+                                    AlternativeSeq.Add(valueofarg);
+                                }
+                            }
+                            Finite_Sequence<object> rest = new Finite_Sequence<object>(AlternativeSeq);
+                            valueofarg = rest;
+                            if (CurrentScope.Parent == null)
+                            {
+                                if (context.GlobalConstant.Keys.Contains(name))
+                                {
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                                }
+                                else
+                                    context.GlobalConstant.Add(name, valueofarg);
+                            }
+                            else
+                            {
+                                if (CurrentScope.Variables.Keys.Contains(name))
+                                {
+                                    Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                                }
+                                else
+                                    CurrentScope.Variables.Add(name, valueofarg);
+                            }
+
+                        }
+                    }
+                    else if (subnode.Type == Node.NodeType.VarName && index != amount_of_elements - 1)
+                    {
+                        string name = GeneralEvaluation(subnode).ToString()!;
+                        object valueofarg = ((Finite_Sequence<Point>)value).ReturnValue();
+                        index++;
+                        if (valueofarg == default(Point))
                         {
                             valueofarg = "undefined";
                         }
@@ -1701,7 +1802,7 @@ public class Evaluator
             //name=name.Remove(0,1);
             name=name.Remove(name.Length-1,1);
             
-            Console.WriteLine(name);
+           
             string[] archive = Directory.GetFiles(rute, name);
             if (archive.Length > 1)
             {

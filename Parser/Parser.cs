@@ -455,7 +455,7 @@ public class Parser
                 arg.Type = Node.NodeType.VarName;
                 arg.NodeExpression = tokenstream.tokens[tokenstream.Position()].Value;
             }
-            Console.WriteLine(tokenstream.tokens[tokenstream.Position()].Value);
+            
             tokenstream.MoveForward(1);
             Arguments.Branches.Add(arg);
             count++;
