@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace Wall_E
 {
@@ -37,11 +38,11 @@ namespace Wall_E
 
             ArchiveAnalysis procesador = new(command, "MainFile");
             Context context = procesador.Analyze(new Context());
+            List<object> toPrint = context.Results;
 
             if (!context.issuedcontext)
             {
                 List<DrawObject> drawObjects = context.ToDraw;
-                List<object> toPrint = context.Results;
                 string result = "All commands have been successfully processed \r\n";
                 if (drawObjects.Count != 0)
                 {
@@ -55,6 +56,12 @@ namespace Wall_E
                     result += String.Join("\r\n", toPrint.Select(x => x.ToString()));
                 }
                 MessageBox.Show( result, "Analysis completed", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            }
+            else if (toPrint.Count != 0)
+            {
+                string s = "The commands processed before the error were: \r\n";
+                s += String.Join("\r\n", toPrint.Select(x => x.ToString()));
+                MessageBox.Show(s, "Analysis stoped", MessageBoxButtons.OK);
             }
 
             Commands.Clear();

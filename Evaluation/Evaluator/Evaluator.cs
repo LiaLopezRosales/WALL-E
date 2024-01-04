@@ -1696,7 +1696,7 @@ public class Evaluator
         {
             string archivename = node.NodeExpression!.ToString()!;
             string partialrute = Directory.GetParent(Path.Combine(Directory.GetCurrentDirectory()))!.FullName!;
-            string rute = Path.Combine(partialrute, "Librerías de Geo");
+            string rute = Path.Combine(partialrute, "GeoLibrary");
             string name=archivename.Remove(0,1);;
             //name=name.Remove(0,1);
             name=name.Remove(name.Length-1,1);
