@@ -1344,6 +1344,21 @@ public class Evaluator
 
 
         }
+        else if (node.Type == Node.NodeType.Point_Fuc)
+        {
+            object x = GeneralEvaluation(node.Branches[0]);
+            object y = GeneralEvaluation(node.Branches[1]);
+            if (!(x is double) || !(y is double))
+            {
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid coordinates for point", new Location(file, line, "column")));
+            }
+            else
+            {
+                Point p=new Point((double)x,(double)y);
+                context.ExistingPoints.Add(p);
+                return p;
+            }
+        }
         else if (node.Type == Node.NodeType.Circle_Fuc)
         {
             object center = GeneralEvaluation(node.Branches[0]);

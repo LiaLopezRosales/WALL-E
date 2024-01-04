@@ -184,6 +184,36 @@ public class Circle:Figure,IEquatable<Circle>
         temp.type=Finite_Sequence<Point>.SeqType.point;
         return temp;
     }
+     private Finite_Sequence<Point> IntersectCircleB(Circle c)
+    {
+        if (this.Equals(c))
+        {
+            return null!;
+        }
+        double distance=GeometricTools.PointsDistance(this.center,c.center);
+        double radiosum=this.radio+c.radio;
+        if (distance>radiosum||distance<Math.Abs(this.radio-c.radio)|| (distance==0 && this.radio==c.radio))
+        {
+            Finite_Sequence<Point> temp1=new Finite_Sequence<Point>(new List<Point>());
+            temp1.type=Finite_Sequence<Point>.SeqType.point;
+            return temp1;
+        }
+        double a=(this.radio*this.radio - c.radio*c.radio)/(2*distance);
+        double h=Math.Sqrt(this.radio*this.radio-a*a);
+        double distance_x=c.center.x-this.center.x;
+        double distance_y=c.center.y-this.center.y;
+        double x2=this.center.x+(distance_x*a/distance);
+        double y2=this.center.y+(distance_y*a/distance);
+        double intersection_x1=x2+h*(distance_y/distance);
+        double intersection_y1=y2-h*(distance_x/distance);
+        double intersection_x2=x2-h*(distance_y/distance);
+        double intersection_y2=y2+h*(distance_x/distance);
+        Point first=new Point(intersection_x1,intersection_y1);
+        Point second=new Point(intersection_x2,intersection_y2);
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>(){first,second});
+        temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
+    }
     private Finite_Sequence<Point> IntersectArc(Arc arc)
     {
         if (arc.center.Equals(this.center)&&arc.measure==this.radio)
