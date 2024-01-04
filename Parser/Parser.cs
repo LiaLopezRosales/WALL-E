@@ -42,7 +42,7 @@ public class Parser
         {
             return LineSequence();
         }
-        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.point)
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.point && tokens[tokenstream.Position() + 1].Type != Token.TokenType.left_bracket)
         {
             return SPoint();
         }
@@ -100,6 +100,10 @@ public class Parser
         // {
         //     return Exp_Fuc();
         // }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.point && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
+        {
+            return PPoint();
+        }
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.circle && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
         {
             return PCircle();
@@ -540,7 +544,26 @@ public class Parser
         arguments.Branches = new List<Node> { center, radio };
         return arguments;
     }
-
+    public Node PPoint()
+    {
+        tokenstream.MoveForward(2);
+        Node arguments = new Node();
+        arguments.Type = Node.NodeType.Point_Fuc;
+        Node x = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        Node y = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        arguments.Branches = new List<Node> { x, y };
+        return arguments;
+    }
     public Node PLine()
     {
         tokenstream.MoveForward(2);
