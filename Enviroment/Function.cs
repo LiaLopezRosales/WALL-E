@@ -2,7 +2,7 @@ public class Fuction
 {
    public string Name{get;set;}
    public Dictionary<string,object> Functions_Arguments{get;set;} 
-
+   public int NumberofCalls{get;set;}
    public Node Code{get;set;}
 
    public Fuction(string name,Node code,Dictionary<string,object> functions_arg)
@@ -10,6 +10,6 @@ public class Fuction
      this.Name=name;
      this.Code=code;
      this.Functions_Arguments=functions_arg;
-
+     this.NumberofCalls=0;
    }
 }

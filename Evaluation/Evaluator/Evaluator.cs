@@ -928,6 +928,16 @@ public class Evaluator
                 sum.Evaluate(left, right);
                 return sum.Value!;
             }
+            if ((left is AbsSequence || left is Enclosed_Infinite_Sequence || left is Finite_Sequence<object> ||left is Finite_Sequence<Point>|| left is Infinite_Sequence || left is InfinitePointSequence || left is InfiniteDoubleSequence) && right is string && (((string)right)=="undefined"))
+            {
+                sum.Evaluate(left, right);
+                return sum.Value!;
+            }
+            if ((left as AbsSequence != null) && (right as AbsSequence !=null))
+            {
+                sum.Evaluate(left, right);
+                return sum.Value!;
+            }
             if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is string) && !(left is Measure) && !(left is Finite_Sequence<object>) && !(left is Finite_Sequence<Point>) && !(left is Enclosed_Infinite_Sequence) && !(left is Infinite_Sequence) && !(left is InfiniteDoubleSequence) && !(left is InfinitePointSequence)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
@@ -1214,9 +1224,11 @@ public class Evaluator
         {
             object firstvalue = GeneralEvaluation(node.Branches[0]);
             object finalvalue = GeneralEvaluation(node.Branches[1]);
-            if (firstvalue is long && finalvalue is long)
+            if ((firstvalue is double && ((double)firstvalue%1==0)) && (finalvalue is double  && ((double)finalvalue%1==0)))
             {
-                Enclosed_Infinite_Sequence seq = new Enclosed_Infinite_Sequence((long)firstvalue, (long)finalvalue);
+                double first=(double)firstvalue;
+                double final=(double)finalvalue;
+                Enclosed_Infinite_Sequence seq = new Enclosed_Infinite_Sequence(Convert.ToInt64(first),Convert.ToInt64(final));
                 return seq;
             }
             else
@@ -1626,6 +1638,12 @@ public class Evaluator
 
                             }
                             index = i;
+                            context.Available_Functions[index].NumberofCalls++;
+                            if (context.Available_Functions[index].NumberofCalls>80)
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {context.Available_Functions[i].Name} ", new Location(file, line, "column")));
+                                return "";
+                            }
                             //Se evalua la función solicitada
                             object value = GeneralEvaluation(context.Available_Functions[index].Code);
                             //Se elimina el contexto creado para la función
@@ -1696,7 +1714,13 @@ public class Evaluator
                                     }
 
                                 }
+                                CurrentScope.TemporalFunctions[dfunc_name].NumberofCalls++;
                                 
+                            if (CurrentScope.TemporalFunctions[dfunc_name].NumberofCalls>80)
+                            {
+                                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {CurrentScope.TemporalFunctions[dfunc_name].Name} ", new Location(file, line, "column")));
+                                return "";
+                            }
                                 //Se evalua la función solicitada
                                 object value = GeneralEvaluation(CurrentScope.TemporalFunctions[dfunc_name].Code);
                                 //Se elimina el contexto creado para la función

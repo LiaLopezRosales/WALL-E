@@ -22,6 +22,25 @@ public class Sum:Binary
         }
         else if (left is AbsSequence && right is AbsSequence)
         {
+             if (((left is Enclosed_Infinite_Sequence || left is Infinite_Sequence)) || (right is Enclosed_Infinite_Sequence || right is Infinite_Sequence))
+            {
+                IEnumerable<object> Generate(AbsSequence r,AbsSequence l)
+                {
+                    foreach (object item in r.Sequence!)
+                    {
+                        yield return item;
+                    }
+                    foreach (object item in l.Sequence!)
+                    {
+                        yield return item;
+                    }
+                }
+                IEnumerable<object> sum1=Generate((AbsSequence)left,(AbsSequence)right);
+                IEnumerable<long> sum=sum1.OfType<long>();
+                Value=new Infinite_Sequence((IEnumerable<long>)sum);
+            }
+            else
+            {
             Sequence_Concatenation<object> sum=new Sequence_Concatenation<object>((AbsSequence)left,(AbsSequence)right);
             if (sum.count<0)
             {
@@ -31,6 +50,8 @@ public class Sum:Binary
             {
                 Value=new Finite_Sequence<object>(sum.Result,sum.count);
             }
+            }
+            
             
         }
         else if (left is AbsSequence && right is string && (((string)right)=="undefined"))

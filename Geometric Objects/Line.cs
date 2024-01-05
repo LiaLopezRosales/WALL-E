@@ -156,6 +156,29 @@ public class Line : Figure, IEquatable<Line>
         return temp;
         
     }
+    private Finite_Sequence<Point> IntersectLineB(Line l)
+    {
+        if (this.Equals(l))
+        {
+            return null!;
+        }
+        double den=(this.generalpoint1.x-this.generalpoint2.x)*(l.generalpoint1.y-l.generalpoint2.y)-(this.generalpoint1.y-this.generalpoint2.y)*(l.generalpoint1.x-l.generalpoint2.x);
+        if (den==0)
+        {
+            return new Finite_Sequence<Point>(new List<Point>());
+        }
+        double t=((this.generalpoint1.x-l.generalpoint1.x)*(l.generalpoint1.y-l.generalpoint2.y)-(this.generalpoint1.y-l.generalpoint1.y)*(l.generalpoint1.x-l.generalpoint2.x))/den;
+        double u=-((this.generalpoint1.x-this.generalpoint2.x)*(this.generalpoint1.y-l.generalpoint1.y)-(this.generalpoint1.y-this.generalpoint2.y)*(this.generalpoint1.x-l.generalpoint1.x))/den;
+        if (t>=0 && t<=1 && u>=0 && u<=1)
+        {
+            return new Finite_Sequence(new List<Point>(){new Point(this.generalpoint1.x+t*(this.generalpoint2.x-this.generalpoint1.x),this.generalpoint1.y+t*(this.generalpoint2.y-this.generalpoint1.y))});
+        }
+        else
+        {
+           return new Finite_Sequence<Point>(new List<Point>());
+        }
+        
+    }
     private Finite_Sequence<Point> IntersectSegment(Segment s)
     {
       Line relativeline=new Line(s.StartIn,s.EndsIn);
@@ -213,6 +236,34 @@ public class Line : Figure, IEquatable<Line>
         Finite_Sequence<Point> temp1=new Finite_Sequence<Point>(new List<Point>(){p1,p2});
         temp1.type=Finite_Sequence<Point>.SeqType.point;
         return temp1;
+    }
+    private Finite_Sequence<Point> IntersectCircleB(Circle cir)
+    {
+        double dx=this.generalpoint2.x-this.generalpoint1.x;
+        double dy=this.generalpoint2.y-this.generalpoint1.y;
+        double A=dx*dx+dy*dy;
+        double B=2*(dx*(this.generalpoint1.x-cir.center.x)+dy*(this.generalpoint1.y-cir.center.y));
+        double C=(this.generalpoint1.x-cir.center.x)*(this.generalpoint1.x-cir.center.x)+(this.generalpoint1.y-cir.center.y)*(this.generalpoint1.y-cir.center.y)-cir.radio*cir.radio;
+        double det=B*B-4*A*C;
+        if (A<=0.0000001||det<0)
+        {
+            return new Finite_Sequence<Point>(new List<Point>());
+        }
+        else if (det==0)
+        {
+            double t=-B/(2*A);
+            return new Finite_Sequence(new List<Point>(){new Point(this.generalpoint1.x+t*dx,this.generalpoint1.y+t*dy)});
+        }
+        else
+        {
+            double t=(-B+Math.Sqrt(det))/(2*A);
+            Point p1=new Point(this.generalpoint1.x+t*dx,this.generalpoint1.y+t*dy);
+            t=(-B-Math.Sqrt(det))/(2*A);
+            Point p2=new Point(this.generalpoint1.x+t*dx,this.generalpoint1.y+t*dy);
+            return new Finite_Sequence<Point>(new List<Point>(){p1,p2});
+            
+        }
+
     }
     private Finite_Sequence<Point> IntersectArc(Arc arc)
     {
