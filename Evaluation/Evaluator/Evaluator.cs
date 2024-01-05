@@ -1,5 +1,5 @@
 using System.Globalization;
-public class Evaluator
+public class Evaluator:Form
 {   //Modificar para poder acceder a las localizaciones de los errores semánticos
     private Node AST { get; set; }
     private Scope scope { get; set; }
@@ -42,7 +42,22 @@ public class Evaluator
     }
 
     public object GeneralEvaluation(Node node)
-    {
+    {   foreach(var item in context.Available_Functions)
+        {
+            if(item.NumberofCalls+1>55)
+            {
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {item.Name} ", new Location(file, line, "column")));
+                return "";
+            }
+        }
+        if(CurrentScope.Parent!=null)
+        {
+            foreach(var item in CurrentScope.TemporalFunctions)
+            {
+                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {item.Value.Name} ", new Location(file, line, "column")));
+                return "";
+            }
+        }
         if (node.Type == Node.NodeType.Circle)
         {
             Point center = new Point(0, 0);
@@ -293,6 +308,7 @@ public class Evaluator
                 tag = GeneralEvaluation(node.Branches[1]).ToString()!;
             }
             DrawObject d = new DrawObject(value, tag, context.UtilizedColors.Peek());
+            
             if (!d.CheckValidType())
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "type,this type of object can't be draw", new Location(file, line, "column")));
@@ -1639,7 +1655,7 @@ public class Evaluator
                             }
                             index = i;
                             context.Available_Functions[index].NumberofCalls++;
-                            if (context.Available_Functions[index].NumberofCalls>80)
+                            if (context.Available_Functions[index].NumberofCalls>50)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {context.Available_Functions[i].Name} ", new Location(file, line, "column")));
                                 return "";
@@ -1716,7 +1732,7 @@ public class Evaluator
                                 }
                                 CurrentScope.TemporalFunctions[dfunc_name].NumberofCalls++;
                                 
-                            if (CurrentScope.TemporalFunctions[dfunc_name].NumberofCalls>80)
+                            if (CurrentScope.TemporalFunctions[dfunc_name].NumberofCalls>50)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {CurrentScope.TemporalFunctions[dfunc_name].Name} ", new Location(file, line, "column")));
                                 return "";
@@ -1796,11 +1812,13 @@ public class Evaluator
              else if (f1 is Arc)
              {
                  result=((Arc)f1).Intersect((Figure)f2);
+                    
              }
+
              else if(!(f1 is Figure))
              {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "figure", new Location(file, line, "column")));
-                return result=null!;
+                return result;
              }
              if (result is null)
              {

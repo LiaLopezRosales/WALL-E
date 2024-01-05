@@ -121,7 +121,7 @@ public class Line : Figure, IEquatable<Line>
         
     }
     //Métodos de intersección auxiliares(no hay con un punto pq este método ya está contenido en clase Point)
-    private Finite_Sequence<Point> IntersectLine(Line l)
+    private Finite_Sequence<Point> IntersectLineB(Line l)
     {
         if (this.Equals(l))
         {
@@ -156,7 +156,7 @@ public class Line : Figure, IEquatable<Line>
         return temp;
         
     }
-    private Finite_Sequence<Point> IntersectLineB(Line l)
+    private Finite_Sequence<Point> IntersectLine(Line l)
     {
         if (this.Equals(l))
         {
@@ -171,7 +171,7 @@ public class Line : Figure, IEquatable<Line>
         double u=-((this.generalpoint1.x-this.generalpoint2.x)*(this.generalpoint1.y-l.generalpoint1.y)-(this.generalpoint1.y-this.generalpoint2.y)*(this.generalpoint1.x-l.generalpoint1.x))/den;
         if (t>=0 && t<=1 && u>=0 && u<=1)
         {
-            return new Finite_Sequence(new List<Point>(){new Point(this.generalpoint1.x+t*(this.generalpoint2.x-this.generalpoint1.x),this.generalpoint1.y+t*(this.generalpoint2.y-this.generalpoint1.y))});
+            return new Finite_Sequence<Point>(new List<Point>(){new Point(this.generalpoint1.x+t*(this.generalpoint2.x-this.generalpoint1.x),this.generalpoint1.y+t*(this.generalpoint2.y-this.generalpoint1.y))});
         }
         else
         {
@@ -206,7 +206,7 @@ public class Line : Figure, IEquatable<Line>
         Segment relativesegment=new Segment(r.StartIn,r.CreateRelativeEnd());
         return this.IntersectSegment(relativesegment);
     }
-    private Finite_Sequence<Point> IntersectCircle(Circle cir)
+    private Finite_Sequence<Point> IntersectCircleB(Circle cir)
     {
         double distance=GeometricTools.Point_LineDistance(cir.center,this);
         if (distance>cir.radio)
@@ -237,7 +237,7 @@ public class Line : Figure, IEquatable<Line>
         temp1.type=Finite_Sequence<Point>.SeqType.point;
         return temp1;
     }
-    private Finite_Sequence<Point> IntersectCircleB(Circle cir)
+    private Finite_Sequence<Point> IntersectCircle(Circle cir)
     {
         double dx=this.generalpoint2.x-this.generalpoint1.x;
         double dy=this.generalpoint2.y-this.generalpoint1.y;
@@ -252,14 +252,15 @@ public class Line : Figure, IEquatable<Line>
         else if (det==0)
         {
             double t=-B/(2*A);
-            return new Finite_Sequence(new List<Point>(){new Point(this.generalpoint1.x+t*dx,this.generalpoint1.y+t*dy)});
+            return new Finite_Sequence<Point>(new List<Point>(){new Point(this.generalpoint1.x+t*dx,this.generalpoint1.y+t*dy)});
         }
         else
         {
             double t=(-B+Math.Sqrt(det))/(2*A);
             Point p1=new Point(this.generalpoint1.x+t*dx,this.generalpoint1.y+t*dy);
-            t=(-B-Math.Sqrt(det))/(2*A);
-            Point p2=new Point(this.generalpoint1.x+t*dx,this.generalpoint1.y+t*dy);
+            double k=(-B-Math.Sqrt(det))/(2*A);
+            Point s = new Point(this.generalpoint1.x + k * dx, this.generalpoint1.y + k * dy);
+            Point p2=new Point(this.generalpoint1.x-k*dx,this.generalpoint1.y-k*dy);
             return new Finite_Sequence<Point>(new List<Point>(){p1,p2});
             
         }

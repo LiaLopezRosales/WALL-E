@@ -1,9 +1,10 @@
 {
   "ExpandedNodes": [
     "",
+    "\\Evaluation",
     "\\Evaluation\\Evaluator",
-    "\\GeoLibrary"
+    "\\Geometric Objects"
   ],
-  "SelectedNode": "\\GeoLibrary\\try.geo",
+  "SelectedNode": "\\Wall-E.sln",
   "PreviewInSolutionExplorer": true
 }

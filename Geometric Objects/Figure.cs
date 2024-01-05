@@ -1,4 +1,4 @@
-public abstract class Figure
+public abstract class Figure:Form
 {  //Todas las figuras deben definir sus puntos y su intercepción con otras
    public abstract bool ContainPoint(Point p);
    public abstract GenericSequence<Point> FigurePoints();

@@ -4,6 +4,30 @@
     <Compile Update="Enviroment\ArchiveAnallizer.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Evaluation\Evaluator\Evaluator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Geometric Objects\Arc.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Geometric Objects\Circle.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Geometric Objects\Figure.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Geometric Objects\Line.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Geometric Objects\Point.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Geometric Objects\Ray.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Geometric Objects\Segment.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Graphic\Form1.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -64,7 +64,7 @@ namespace Wall_E
                 MessageBox.Show(s, "Analysis stoped", MessageBoxButtons.OK);
             }
 
-            Commands.Clear();
+            //Commands.Clear();
             Continue = true;
         }
 

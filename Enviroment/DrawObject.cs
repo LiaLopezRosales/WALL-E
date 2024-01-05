@@ -16,7 +16,7 @@ public class DrawObject
     //Método que revisa si el objeto es válido para gráficar(solo figuras y secuencias de figuras)
     public bool CheckValidType()
     {
-        if (Figures is Figure || Figures is Finite_Sequence<object> || Figures is InfinitePointSequence)
+        if (Figures is Figure || Figures is Finite_Sequence<object> ||Figures is Finite_Sequence<Point>|| Figures is InfinitePointSequence)
         {
             if (Figures is Finite_Sequence<object>)
             {
