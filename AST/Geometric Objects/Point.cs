@@ -261,6 +261,6 @@ public class Point : Figure, IEquatable<Point>
         temp1.type = Finite_Sequence<Point>.SeqType.point;
         return temp1;
     }
-    public override string ToString() => string.Format("Point in {0} {1} ",x,y);
+    public override string ToString() => string.Format("Point in {0} , {1} ",x,y);
 
 }

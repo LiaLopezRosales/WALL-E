@@ -39,6 +39,7 @@ public class Infinite_Sequence:GenericSequence<long>
        }
        
     }
+    public override string ToString() => string.Format("Infinite Sequence of numbers of type long");
 }
 //Se definen dos clases alternativas que también son secuencias infinitas
 //Estas son resultado de funciones del lenguaje y no pueden ser declaradas manualmente
@@ -91,7 +92,7 @@ public class InfinitePointSequence:GenericSequence<Point>
        }
        
     }
-   
+   public override string ToString() => string.Format("Infinite Sequence of Points");
 }
  public class InfiniteDoubleSequence:GenericSequence<double>
     {
@@ -135,4 +136,5 @@ public class InfinitePointSequence:GenericSequence<Point>
        }
        
     }
+    public override string ToString() => string.Format("Infinite Sequence of Doubles");
     }

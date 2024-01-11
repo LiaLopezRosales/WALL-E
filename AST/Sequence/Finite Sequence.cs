@@ -46,4 +46,5 @@ public class Finite_Sequence<T>:GenericSequence<T>
        }
        
     }
+    public override string ToString() => string.Format("Finite Sequence of Type {}",T);
 }

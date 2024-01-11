@@ -240,4 +240,5 @@ public class Arc:Figure,IEquatable<Arc>
         temp.type=Finite_Sequence<Point>.SeqType.point;
         return temp;
     }
+    public override string ToString() => string.Format("Arc with center at {2}, reference points at {0} , {1} and measure {4}",point_of_semirect1,point_of_semirect2,center,measure);
 }

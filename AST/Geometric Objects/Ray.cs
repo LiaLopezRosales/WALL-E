@@ -191,4 +191,5 @@ public class Ray:Figure,IEquatable<Ray>
         Segment relativesegment=new Segment(this.StartIn,this.CreateRelativeEnd());
         return relativesegment.Intersect(arc);
     }
+    public override string ToString() => string.Format("Ray with reference points at {0} , {1} ",StartIn,PassFor);
 }

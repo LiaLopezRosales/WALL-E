@@ -206,38 +206,28 @@ public class Line : Figure, IEquatable<Line>
         Segment relativesegment=new Segment(r.StartIn,r.CreateRelativeEnd());
         return this.IntersectSegment(relativesegment);
     }
-    private Finite_Sequence<Point> IntersectCircleB(Circle cir)
+    private Finite_Sequence<Point> IntersectCircle(Circle cir)
     {
         double distance=GeometricTools.Point_LineDistance(cir.center,this);
         if (distance>cir.radio)
         {
-            Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>());
-        temp.type=Finite_Sequence<Point>.SeqType.point;
-        return temp;
-        }
-        double m=GeometricTools.Pendient(generalpoint1, generalpoint2);
-        double n=GeometricTools.N_of_Equation(generalpoint1, generalpoint2);
-        double a=1+Math.Pow(m,2);
-        double b=2*m*(n-cir.center.y)-2*cir.center.x;
-        double c=Math.Pow(cir.center.x,2)+Math.Pow(n-cir.center.y,2)-Math.Pow(cir.radio,2);
-        double d=Math.Pow(b,2)-4*a*c;
-        double x1=(-b+Math.Sqrt(d))/(2*a);
-        double y1=GeometricTools.FindY(m,n,x1);
-        Point p1=new Point(x1,y1);
-        if (d==0)
-        {
-            Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>(){p1});
-        temp.type=Finite_Sequence<Point>.SeqType.point;
-        return temp;
-        }
-        double x2=(-b-Math.Sqrt(d))/(2*a);
-        double y2=GeometricTools.FindY(m,n,x2);
-        Point p2=new Point(x2,y2);
-        Finite_Sequence<Point> temp1=new Finite_Sequence<Point>(new List<Point>(){p1,p2});
+            Finite_Sequence<Point> temp1=new Finite_Sequence<Point>(new List<Point>());
         temp1.type=Finite_Sequence<Point>.SeqType.point;
         return temp1;
+        }
+        double m=(this.generalpoint2.y-this.generalpoint1.y)/(this.generalpoint2.x-this.generalpoint1.x);
+        double b=this.generalpoint1.y-m*this.generalpoint1.x;
+        double a =cir.center.x;
+        double b1=-cir.center.y * a;
+        double c=a*a+cir.center.y*cir.center.y-cir.radio*cir.radio;
+        double x1=(-b1 + Math.Sqrt(b1*b1-4*a*c))/2*a;
+        double y1=m*x1+b;
+        double x2=(-b1 - Math.Sqrt(b1*b1-4*a*c))/2*a;
+        double y2=m*x2+b;
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>(){new Point(x1,y1),new Point(x2,y2)});
+        return temp;
     }
-    private Finite_Sequence<Point> IntersectCircle(Circle cir)
+    private Finite_Sequence<Point> IntersectCircleB(Circle cir)
     {
         double dx=this.generalpoint2.x-this.generalpoint1.x;
         double dy=this.generalpoint2.y-this.generalpoint1.y;
@@ -286,4 +276,5 @@ public class Line : Figure, IEquatable<Line>
         temp.type=Finite_Sequence<Point>.SeqType.point;
         return temp;
     }
+    public override string ToString() => string.Format("Line with reference points at {0} , {1} ",generalpoint1,generalpoint2);
 }

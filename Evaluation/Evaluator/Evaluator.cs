@@ -42,22 +42,23 @@ public class Evaluator:Form
     }
 
     public object GeneralEvaluation(Node node)
-    {   foreach(var item in context.Available_Functions)
-        {
-            if(item.NumberofCalls+1>55)
-            {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {item.Name} ", new Location(file, line, "column")));
-                return "";
-            }
-        }
-        if(CurrentScope.Parent!=null)
-        {
-            foreach(var item in CurrentScope.TemporalFunctions)
-            {
-                Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {item.Value.Name} ", new Location(file, line, "column")));
-                return "";
-            }
-        }
+    {   
+        // foreach(var item in context.Available_Functions)
+        // {
+        //     if(item.NumberofCalls+1>55)
+        //     {
+        //         Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {item.Name} ", new Location(file, line, "column")));
+        //         return "";
+        //     }
+        // }
+        // if(CurrentScope.Parent!=null)
+        // {
+        //     foreach(var item in CurrentScope.TemporalFunctions)
+        //     {
+        //         Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {item.Value.Name} ", new Location(file, line, "column")));
+        //         return "";
+        //     }
+        // }
         if (node.Type == Node.NodeType.Circle)
         {
             Point center = new Point(0, 0);
@@ -74,9 +75,13 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                }
+                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                {
+                    CurrentScope.Variables[node.NodeExpression!.ToString()!]=c;
                 }
                 else CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, c);
             }
@@ -98,9 +103,13 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                }
+                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                {
+                    CurrentScope.Variables[node.NodeExpression!.ToString()!]=p;
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, p);
@@ -125,9 +134,13 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                }
+                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                {
+                    CurrentScope.Variables[node.NodeExpression!.ToString()!]=l;
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, l);
@@ -152,9 +165,13 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                }
+                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                {
+                    CurrentScope.Variables[node.NodeExpression!.ToString()!]=s;
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, s);
@@ -179,9 +196,13 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                }
+                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                {
+                    CurrentScope.Variables[node.NodeExpression!.ToString()!]=r;
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, r);
@@ -213,9 +234,13 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                }
+                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                {
+                    CurrentScope.Variables[node.NodeExpression!.ToString()!]=pts;
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, pts);
@@ -249,9 +274,13 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                }
+                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                {
+                    CurrentScope.Variables[node.NodeExpression!.ToString()!]=pts;
                 }
                 else
                     CurrentScope.Variables.Add(node.NodeExpression!.ToString()!, pts);
@@ -276,6 +305,10 @@ public class Evaluator:Form
                 if (CurrentScope.Variables.Keys.Contains(name))
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
+                }
+                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                {
+                    CurrentScope.Variables[name]=value;
                 }
                 else
                     CurrentScope.Variables.Add(name, value);
@@ -405,10 +438,14 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name))
+                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
+                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                                 else
                                     CurrentScope.Variables.Add(name, valueofarg);
                             }
@@ -437,10 +474,14 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name))
+                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
+                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                                 else
                                     CurrentScope.Variables.Add(name, valueofarg);
                             }
@@ -467,10 +508,14 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name))
+                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
+                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
                         }
@@ -506,10 +551,14 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name))
+                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
+                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                                 else
                                     CurrentScope.Variables.Add(name, valueofarg);
                             }
@@ -538,10 +587,14 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name))
+                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
+                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                                 else
                                     CurrentScope.Variables.Add(name, valueofarg);
                             }
@@ -568,10 +621,14 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name))
+                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
+                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
                         }
@@ -600,10 +657,14 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name))
+                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
+                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]="undefined";
+                                        }
                             else
                                 CurrentScope.Variables.Add(name, "undefined");
                         }
@@ -639,10 +700,14 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name))
-                                {
+                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                                {   
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
+                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                                 else
                                     CurrentScope.Variables.Add(name, valueofarg);
                             }
@@ -664,10 +729,14 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name))
+                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
+                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                                 else
                                     CurrentScope.Variables.Add(name, valueofarg);
                             }
@@ -694,10 +763,14 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name))
+                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
+                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
                         }
@@ -734,10 +807,14 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name))
+                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
+                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
                         }
@@ -760,10 +837,14 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name))
+                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
+                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
                         }
@@ -800,10 +881,14 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name))
+                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
+                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
                         }
@@ -826,10 +911,14 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name))
+                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
+                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
                         }
@@ -866,10 +955,14 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name))
+                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
+                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
                         }
@@ -892,10 +985,14 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name))
+                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
+                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                       {
+                                         CurrentScope.Variables[name]=valueofarg;
+                                        }
                             else
                                 CurrentScope.Variables.Add(name, valueofarg);
                         }
@@ -954,7 +1051,7 @@ public class Evaluator:Form
                 sum.Evaluate(left, right);
                 return sum.Value!;
             }
-            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is string) && !(left is Measure) && !(left is Finite_Sequence<object>) && !(left is Finite_Sequence<Point>) && !(left is Enclosed_Infinite_Sequence) && !(left is Infinite_Sequence) && !(left is InfiniteDoubleSequence) && !(left is InfinitePointSequence)))
+            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is string) && !(left is Measure) && !(left is Finite_Sequence<object>) && !(left is Finite_Sequence<Point>) && !(left is Enclosed_Infinite_Sequence) && !(left is Infinite_Sequence) && !(left is InfiniteDoubleSequence) && !(left is InfinitePointSequence)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
@@ -969,19 +1066,22 @@ public class Evaluator:Form
             Substraction sub = new Substraction();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
+            if ((left.GetType() != right.GetType()) || (!(left is double)  && !(left is long) && !(left is Measure)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
+            else
+            {
             sub.Evaluate(left, right);
             return sub.Value!;
+            }
         }
         else if (node.Type == Node.NodeType.Mul)
         {
             Multiplication mul = new Multiplication();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if (!(left is double && right is Measure) && !(left is Measure && right is double) && !(left is double && right is double))
+            if (!(left is double && right is Measure) &&  !(left is long && right is Measure)  && !(left is Measure && right is double) && !(left is Measure && right is long) && !(left is double && right is double) && !(left is long && right is long))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
@@ -996,7 +1096,7 @@ public class Evaluator:Form
             Division div = new Division();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
+            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is Measure)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
@@ -1025,7 +1125,7 @@ public class Evaluator:Form
             Power pow = new Power();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if (!(left is double) || !(right is double))
+            if ((!(left is double) && !(left is long)) || (!(right is double) && !(right is long)) )
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
@@ -1040,7 +1140,7 @@ public class Evaluator:Form
             Module mod = new Module();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if (!(left is double) || !(right is double))
+            if ((!(left is double) && !(left is long)) || (!(right is double) && !(right is long)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
@@ -1071,7 +1171,7 @@ public class Evaluator:Form
         else if (node.Type == Node.NodeType.Sin)
         {
             object arg = GeneralEvaluation(node.Branches[0]);
-            if (!(arg is double))
+            if (!(arg is double) && !(arg is long))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
@@ -1080,7 +1180,7 @@ public class Evaluator:Form
         else if (node.Type == Node.NodeType.Cos)
         {
             object arg = GeneralEvaluation(node.Branches[0]);
-            if (!(arg is double))
+            if (!(arg is double) && !(arg is long))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
@@ -1089,7 +1189,7 @@ public class Evaluator:Form
         else if (node.Type == Node.NodeType.Sqrt)
         {
             object arg = GeneralEvaluation(node.Branches[0]);
-            if (!(arg is double))
+            if (!(arg is double) && !(arg is long))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
@@ -1099,7 +1199,7 @@ public class Evaluator:Form
         {
             object base_of = GeneralEvaluation(node.Branches[0]);
             object arg = GeneralEvaluation(node.Branches[1]);
-            if (!(arg is double) || !(base_of is double))
+            if ((!(arg is double) && !(arg is long)) || (!(base_of is double) && !(base_of is long)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numerical values", new Location(file, line, "column")));
             }
@@ -1330,7 +1430,7 @@ public class Evaluator:Form
             Minor min = new Minor();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
+            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is Measure)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location(file, line, "column")));
             }
@@ -1345,7 +1445,7 @@ public class Evaluator:Form
             Major maj = new Major();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
+            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is Measure)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location(file, line, "column")));
             }
@@ -1360,7 +1460,7 @@ public class Evaluator:Form
             Equal_Major emaj = new Equal_Major();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
+            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is Measure)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location(file, line, "column")));
             }
@@ -1375,7 +1475,7 @@ public class Evaluator:Form
             Equal_Minor emin = new Equal_Minor();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is Measure)))
+            if ((left.GetType() != right.GetType()) || (!(left is double)  && !(left is long) && !(left is Measure)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "numeric or measure values", new Location(file, line, "column")));
             }
@@ -1390,7 +1490,7 @@ public class Evaluator:Form
             Or or = new Or();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left is null) && (right is null))
+            if ((left is null) || (right is null))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
@@ -1405,7 +1505,7 @@ public class Evaluator:Form
             And and = new And();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left is null) && (right is null))
+            if ((left is null) || (right is null))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
@@ -1420,7 +1520,7 @@ public class Evaluator:Form
             Equal eq = new Equal();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left is null) && (right is null))
+            if ((left is null) || (right is null))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
@@ -1435,7 +1535,7 @@ public class Evaluator:Form
             Diferent dif = new Diferent();
             object left = GeneralEvaluation(node.Branches[0]);
             object right = GeneralEvaluation(node.Branches[1]);
-            if ((left is null) && (right is null))
+            if ((left is null) || (right is null))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid values to operate", new Location(file, line, "column")));
             }
@@ -1477,7 +1577,7 @@ public class Evaluator:Form
         {
             object x = GeneralEvaluation(node.Branches[0]);
             object y = GeneralEvaluation(node.Branches[1]);
-            if (!(x is double) || !(y is double))
+            if ((!(x is double) && !(x is long)) || (!(y is double) && !(y is long)))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid coordinates for point", new Location(file, line, "column")));
             }
@@ -1492,7 +1592,7 @@ public class Evaluator:Form
         {
             object center = GeneralEvaluation(node.Branches[0]);
             object radio = GeneralEvaluation(node.Branches[1]);
-            if (!(center is Point) || !(radio is Measure || radio is double))
+            if (!(center is Point) || !(radio is Measure || radio is double || radio is long))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "a valid center point and distance", new Location(file, line, "column")));
             }
@@ -1577,7 +1677,7 @@ public class Evaluator:Form
             object p2 = GeneralEvaluation(node.Branches[1]);
             object p3 = GeneralEvaluation(node.Branches[2]);
             object m = GeneralEvaluation(node.Branches[3]);
-            if (!(p1 is Point) || !(p2 is Point) || !(p3 is Point) || !(m is Measure || m is double))
+            if (!(p1 is Point) || !(p2 is Point) || !(p3 is Point) || !(m is Measure || m is double || m is long))
             {
                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected, "valid points and distance to declare an arc", new Location(file, line, "column")));
             }
@@ -1591,6 +1691,11 @@ public class Evaluator:Form
                 else if (m is double)
                 {
                     Arc temp = new Arc((Point)p1, (Point)p2, (Point)p3, (double)m);
+                    return temp;
+                }
+                else
+                {
+                    Arc temp = new Arc((Point)p1, (Point)p2, (Point)p3, (long)m);
                     return temp;
                 }
 
@@ -1615,6 +1720,7 @@ public class Evaluator:Form
             if (exist)
             {
                 Scope func_scope = CurrentScope.Child();
+                func_scope.InFunction=true;
                 CurrentScope = func_scope;
                 // currentcontext!.Add(func_scope);
 
@@ -1655,7 +1761,7 @@ public class Evaluator:Form
                             }
                             index = i;
                             context.Available_Functions[index].NumberofCalls++;
-                            if (context.Available_Functions[index].NumberofCalls>50)
+                            if (context.Available_Functions[index].NumberofCalls>100)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {context.Available_Functions[i].Name} ", new Location(file, line, "column")));
                                 return "";
@@ -1693,6 +1799,7 @@ public class Evaluator:Form
                 if (exist)
                 {
                     Scope func_scope = CurrentScope.Child();
+                    func_scope.InFunction=true;
                     CurrentScope = func_scope;
                     index=0;
                     // currentcontext!.Add(func_scope);
@@ -1732,7 +1839,7 @@ public class Evaluator:Form
                                 }
                                 CurrentScope.TemporalFunctions[dfunc_name].NumberofCalls++;
                                 
-                            if (CurrentScope.TemporalFunctions[dfunc_name].NumberofCalls>50)
+                            if (CurrentScope.TemporalFunctions[dfunc_name].NumberofCalls>100)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {CurrentScope.TemporalFunctions[dfunc_name].Name} ", new Location(file, line, "column")));
                                 return "";
@@ -1771,6 +1878,10 @@ public class Evaluator:Form
         else if (node.Type == Node.NodeType.Let_exp)
         {
             Scope exp_scope = CurrentScope.Child();
+            if (CurrentScope.InFunction)
+            { 
+                exp_scope.InFunction=true;
+            }
             CurrentScope = exp_scope;
             foreach (var instruction in node.Branches[0].Branches)
             {

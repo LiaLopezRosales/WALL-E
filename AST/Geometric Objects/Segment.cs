@@ -193,4 +193,5 @@ public class Segment:Figure,IEquatable<Segment>
         temp.type=Finite_Sequence<Point>.SeqType.point;
         return temp;
     }
+    public override string ToString() => string.Format("Segment with reference points at {0} , {1} ",StartIn,EndsIn);
 }

@@ -19,6 +19,17 @@ public class Minor:Binary
                 Value = 0;
             }
         }
+        else if (left is long && right is long)
+        {
+            if (Convert.ToInt64(left, CultureInfo.InvariantCulture) < Convert.ToInt64(right, CultureInfo.InvariantCulture))
+            {
+                Value = 1;
+            }
+            else
+            {
+                Value = 0;
+            }
+        }
         else if (left is Measure && right is Measure)
         {
             if (Measure.GreaterThen((Measure)left,(Measure)right))

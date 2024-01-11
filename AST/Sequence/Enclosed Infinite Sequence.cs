@@ -35,4 +35,5 @@ public class Enclosed_Infinite_Sequence:GenericSequence<long>
       
        
     }
+    public override string ToString() => string.Format("Enclosed Sequence");
 }

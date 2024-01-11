@@ -158,31 +158,59 @@ public class Circle:Figure,IEquatable<Circle>
     }
     private Finite_Sequence<Point> IntersectCircleB(Circle c)
     {
-        if (this.Equals(c))
-        {
-            return null!;
-        }
-        double distance=GeometricTools.PointsDistance(this.center,c.center);
-        double radiosum=this.radio+c.radio;
-        if (distance>radiosum||distance<Math.Abs(this.radio-c.radio))
-        {
-            Finite_Sequence<Point> temp1=new Finite_Sequence<Point>(new List<Point>());
-        temp1.type=Finite_Sequence<Point>.SeqType.point;
-            return temp1;
-        }
-        double a=(Math.Pow(this.radio,2)-Math.Pow(c.radio,2)+Math.Pow(distance,2))/(distance*2);
-        double h=Math.Sqrt(Math.Pow(this.radio,2)-Math.Pow(a,2));
-        double x3=this.center.x+a*(c.center.x-this.center.x)/distance;
-        double y3=this.center.y+a*(c.center.y-this.center.y)/distance;
-        double x1=(x3+h*(c.center.y-this.center.y))/distance;
-        double y1=(y3-h*(c.center.x-this.center.x))/distance;
-        double x2=(x3-h*(c.center.y-this.center.y))/distance;
-        double y2=(y3+h*(c.center.x-this.center.x))/distance;
-        Point first=new Point(x1,y1);
-        Point second=new Point(x2,y2);
-        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>(){first,second});
-        temp.type=Finite_Sequence<Point>.SeqType.point;
+        // if (this.Equals(c))
+        // {
+        //     return null!;
+        // }
+        // double distance=GeometricTools.PointsDistance(this.center,c.center);
+        // double radiosum=this.radio+c.radio;
+        // if (distance>radiosum||distance<Math.Abs(this.radio-c.radio))
+        // {
+        //     Finite_Sequence<Point> temp1=new Finite_Sequence<Point>(new List<Point>());
+        // temp1.type=Finite_Sequence<Point>.SeqType.point;
+        //     return temp1;
+        // }
+        // double a=(Math.Pow(this.radio,2)-Math.Pow(c.radio,2)+Math.Pow(distance,2))/(distance*2);
+        // double h=Math.Sqrt(Math.Pow(this.radio,2)-Math.Pow(a,2));
+        // double x3=this.center.x+a*(c.center.x-this.center.x)/distance;
+        // double y3=this.center.y+a*(c.center.y-this.center.y)/distance;
+        // double x1=(x3+h*(c.center.y-this.center.y))/distance;
+        // double y1=(y3-h*(c.center.x-this.center.x))/distance;
+        // double x2=(x3-h*(c.center.y-this.center.y))/distance;
+        // double y2=(y3+h*(c.center.x-this.center.x))/distance;
+        // Point first=new Point(x1,y1);
+        // Point second=new Point(x2,y2);
+        // Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>(){first,second});
+        // temp.type=Finite_Sequence<Point>.SeqType.point;
+        // return temp;
+        double d=Math.Sqrt(Math.Pow(c.center.x-this.center.x,2)+Math.Pow(c.center.y-this.center.y,2));
+       if (d>this.radio+c.radio || d<Math.Abs(this.radio-c.radio))
+       {
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>());
         return temp;
+       }
+       else if (d==0)
+       {
+        Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>());
+        return temp;
+       }
+       else
+       {
+         double a=(Math.Pow(this.radio,2)-Math.Pow(c.radio,2)+Math.Pow(d,2))/2*d;
+         double h=Math.Sqrt(Math.Pow(this.radio,2)-Math.Pow(a,2));
+         double x1=this.center.x+a*(c.center.x-this.center.x)/d;
+         double y1=this.center.y+a*(c.center.y-this.center.y)/d;
+         double x2=x1+h*(c.center.y-this.center.y)/d;
+         double y2=y1-h*(c.center.x-this.center.x)/d;
+         double x3=x1-h*(c.center.y-this.center.y)/d;
+         double y3=y1+h*(c.center.x-this.center.x)/d;
+         
+         Point first=new Point(x3,y3);
+         Point second=new Point(x2,y2);
+         Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>(){first,second});
+         temp.type=Finite_Sequence<Point>.SeqType.point;
+         return temp;
+       }
     }
      private Finite_Sequence<Point> IntersectCircle(Circle c)
     {

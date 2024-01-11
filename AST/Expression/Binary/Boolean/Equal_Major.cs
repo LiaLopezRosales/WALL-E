@@ -1,7 +1,7 @@
 using System.Globalization;
-public class Diferent:Binary
+public class Equal_Major:Binary
 {
-    public Diferent()
+    public Equal_Major()
     {}
     public override ExpressionType Type { get => Type=ExpressionType.Bool; set => Type=ExpressionType.Bool; }
 
@@ -10,7 +10,18 @@ public class Diferent:Binary
     {
         if (left is double && right is double)
         {
-            if (Convert.ToDouble(left, CultureInfo.InvariantCulture) != Convert.ToDouble(right, CultureInfo.InvariantCulture))
+            if (Convert.ToDouble(left, CultureInfo.InvariantCulture) >= Convert.ToDouble(right, CultureInfo.InvariantCulture))
+            {
+                Value = 1;
+            }
+            else
+            {
+                Value = 0;
+            }
+        }
+        else if (left is long && right is long)
+        {
+            if (Convert.ToInt64(left, CultureInfo.InvariantCulture) >= Convert.ToInt64(right, CultureInfo.InvariantCulture))
             {
                 Value = 1;
             }
@@ -21,7 +32,7 @@ public class Diferent:Binary
         }
         else if (left is Measure && right is Measure)
         {
-            if (!Measure.Equals((Measure)left,(Measure)right))
+            if (Measure.Equals((Measure)left,(Measure)right)&&(Measure.GreaterThen((Measure)left,(Measure)right)))
             {
                 Value = 1;
             }
@@ -30,32 +41,12 @@ public class Diferent:Binary
                 Value = 0;
             }
         }
-         else if(left is string && right is string)
-        {
-            if(left.ToString() != right.ToString())
-            {
-                Value=1;
-            }
-            else Value=0;
-        }
-        else
-        {
-            if (!left.Equals(right))
-            {
-                Value=1;
-            }
-            else
-            {
-                Value=0;
-            }
-        }
-         
     }
     public override string ToString()
     {
         if (Value==null)
         {
-            return String.Format("({0}!={1})",Left,Right);
+            return String.Format("({0}>={1})",Left,Right);
         }
         return Value.ToString()!;
     }

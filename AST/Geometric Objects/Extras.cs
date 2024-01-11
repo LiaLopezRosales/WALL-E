@@ -49,10 +49,10 @@ public static class RandomExtensions
                     return false;
                 }
             }
-            // if (x.Equals("{}")||x.Equals("undefined"))
-            // {
-            //     return false;
-            // }
+            if (x.Equals("{}")||x.Equals("undefined"))
+            {
+                return false;
+            }
             return true;
         }
     }

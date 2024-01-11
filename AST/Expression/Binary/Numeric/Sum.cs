@@ -16,6 +16,10 @@ public class Sum:Binary
         {
             Value=left.ToString() + right.ToString();
         }
+        else if(left is long && right is long)
+        {
+        Value = Convert.ToInt64(left,CultureInfo.InvariantCulture) + Convert.ToInt64(right,CultureInfo.InvariantCulture);
+        }
         else if (left is Measure && right is Measure)
         {
             Value=((Measure)left).Sum((Measure)right);

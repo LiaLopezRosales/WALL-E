@@ -124,10 +124,10 @@ public class Parser
         {
             return PArc();
         }
-        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.measure)
-        {
-            return PMeasure();
-        }
+        // if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.measure)
+        // {
+        //     return PMeasure();
+        // }
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.intersect)
         {
             return PIntersect();
@@ -1173,6 +1173,33 @@ public class Parser
             temp.Type=Node.NodeType.Log;
             temp.Branches=new List<Node>{base_of_log,number};
             return temp;
+        }
+        else if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.measure)
+        {
+            tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        Node arguments = new Node();
+        arguments.Type = Node.NodeType.Measure_Fuc;
+        Node p1 = ParseExpression();
+        // p1.NodeExpression = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        Node p2 = ParseExpression();
+        // p2.NodeExpression = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        arguments.Branches = new List<Node> { p1, p2 };
+        return arguments;
         }
         else if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.samples)
         {

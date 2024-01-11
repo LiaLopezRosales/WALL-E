@@ -29,6 +29,16 @@ public class Equal_Minor:Binary
                 Value = 0;
             }
         }
+        else if (left is long && right is long)
+        {
+            if (Convert.ToDouble(left, CultureInfo.InvariantCulture) <= Convert.ToDouble(right, CultureInfo.InvariantCulture))
+            {
+                Value = 1;
+            }
+            else
+            {
+                Value = 0;
+            }
     }
     public override string ToString()
     {

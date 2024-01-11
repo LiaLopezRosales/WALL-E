@@ -12,6 +12,10 @@ public class Multiplication:Binary
         {
         Value = Convert.ToDouble(left,CultureInfo.InvariantCulture) * Convert.ToDouble(right,CultureInfo.InvariantCulture);
         }
+        else if(left is long && right is long)
+        {
+        Value = Convert.ToInt64(left,CultureInfo.InvariantCulture) * Convert.ToInt64(right,CultureInfo.InvariantCulture);
+        }
         else if ((left is Measure && right is double))
         {
             Value=((Measure)left).Product(Convert.ToDouble(right,CultureInfo.InvariantCulture));
