@@ -17,10 +17,11 @@ public class Lexer
         string patronNumeroNegativo = @"-?\d+(\.\d+)?";
         string low=@"_";
         string patronTexto = "\".*?\"";
+        string patronSymbol=@"[^\p{L}\p{N}]";
         string quotes ="\"";
         string patronPalabras = @"\+|\-|\*|\%|(\...)|(\<\=)|(\>\=)|(\=\=)|(\!\=)|(\=\>)|\{|\}|\/|\^|(\!)|\,|\(|\)|\{|\}|\<|\>|\=|\;|\:";
         string patronIdentificador = @"\b\w*[a-zA-Z]\w*\b";
-        string patron = $"{patronTexto}|{low}|{quotes}|{patronIdentificador}|{patronNumeroNegativo}|{patronPalabras} ";
+        string patron = $"{patronTexto}|{low}|{quotes}|{patronIdentificador}|{patronSymbol}|{patronNumeroNegativo}|{patronPalabras} ";
         MatchCollection matches = Regex.Matches(code, patron);
         List<Token> possibletokens = new List<Token>();
         foreach (Match match in matches)
@@ -28,7 +29,7 @@ public class Lexer
             Token temporal = IdentifyType(match.Value,lexererrors,possibletokens.Count);
             if (temporal.Type==Token.TokenType.not_id)
             {
-                lexererrors.Add(new Error(Error.TypeError.Lexical_Error,Error.ErrorCode.Invalid,"token",temporal.TokenLocation));
+                lexererrors.Add(new Error(Error.TypeError.Lexical_Error,Error.ErrorCode.Invalid,"token,does not belong to WALL-E's vocabulary",temporal.TokenLocation));
             }
             possibletokens.Add(temporal);
         }
@@ -80,14 +81,14 @@ public class Lexer
         {
             token = new Token(Token.TokenType.arc,possibletoken,File,Line,index.ToString());
         }
-        else if (possibletoken == "EOL" )
-        {
-            token = new Token(Token.TokenType.EOL,possibletoken,File,Line,index.ToString());
-        }
-        else if (possibletoken == "EOF" )
-        {
-            token = new Token(Token.TokenType.EOF,possibletoken,File,Line,index.ToString());
-        }
+        // else if (possibletoken == "EOL" )
+        // {
+        //     token = new Token(Token.TokenType.EOL,possibletoken,File,Line,index.ToString());
+        // }
+        // else if (possibletoken == "EOF" )
+        // {
+        //     token = new Token(Token.TokenType.EOF,possibletoken,File,Line,index.ToString());
+        // }
         else if (possibletoken == "circle" )
         {
             token = new Token(Token.TokenType.circle,possibletoken,File,Line,index.ToString());
@@ -196,10 +197,10 @@ public class Lexer
         {
             token = new Token(Token.TokenType.not,possibletoken,File,Line,index.ToString());
         }
-        else if (possibletoken == "@")
-        {
-            token = new Token(Token.TokenType.concatenate, possibletoken,File,Line,index.ToString());
-        }
+        // else if (possibletoken == "@")
+        // {
+        //     token = new Token(Token.TokenType.concatenate, possibletoken,File,Line,index.ToString());
+        // }
         else if (possibletoken=="_")
         {
             token = new Token(Token.TokenType.low_hyphen,possibletoken,File,Line,index.ToString());
@@ -250,10 +251,14 @@ public class Lexer
         }
         else
         {
-            if (char.IsDigit(possibletoken[0]))
+            if (char.IsDigit(possibletoken[0]) || !char.IsLetter(possibletoken[0]) && possibletoken.Length!=1)
             {
                 errors.Add(new Error(Error.TypeError.Lexical_Error,Error.ErrorCode.Invalid,"name, must start with letters",new Location(File,Line,index.ToString())));
                 token = new Token(Token.TokenType.not_id,possibletoken,File,Line,index.ToString());
+            }
+            else if (!char.IsLetter(possibletoken[0]) && possibletoken.Length==1)
+            {
+               token = new Token(Token.TokenType.not_id,possibletoken,File,Line,index.ToString());
             }
             else
             {
