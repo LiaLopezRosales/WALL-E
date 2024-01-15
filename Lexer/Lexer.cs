@@ -26,6 +26,10 @@ public class Lexer
         List<Token> possibletokens = new List<Token>();
         foreach (Match match in matches)
         {
+            if (match.Value==" " || match.Value=="")
+            {
+                continue;
+            }
             Token temporal = IdentifyType(match.Value,lexererrors,possibletokens.Count);
             if (temporal.Type==Token.TokenType.not_id)
             {
