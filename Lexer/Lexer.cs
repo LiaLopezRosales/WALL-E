@@ -17,11 +17,11 @@ public class Lexer
         string patronNumeroNegativo = @"-?\d+(\.\d+)?";
         string low=@"_";
         string patronTexto = "\".*?\"";
-        string patronSymbol=@"[^\p{L}\p{N}]";
+        //string patronSymbol=@"[^\p{L}\p{N}]";
         string quotes ="\"";
         string patronPalabras = @"\+|\-|\*|\%|(\...)|(\<\=)|(\>\=)|(\=\=)|(\!\=)|(\=\>)|\{|\}|\/|\^|(\!)|\,|\(|\)|\{|\}|\<|\>|\=|\;|\:";
         string patronIdentificador = @"\b\w*[a-zA-Z]\w*\b";
-        string patron = $"{patronTexto}|{low}|{quotes}|{patronIdentificador}|{patronSymbol}|{patronNumeroNegativo}|{patronPalabras} ";
+        string patron = $"{patronTexto}|{low}|{quotes}|{patronIdentificador}|{patronNumeroNegativo}|{patronPalabras} ";
         MatchCollection matches = Regex.Matches(code, patron);
         List<Token> possibletokens = new List<Token>();
         foreach (Match match in matches)
