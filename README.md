@@ -6,7 +6,7 @@ Es una biblioteca para graficar elementos geométricos como puntos, segmentos y 
 Funcionamiento básico de GeoWall-E:
 1.	Abrir la aplicación de WindowsForm: Esto se puede hacer ejecutando el programa desde un editor de código o ejecutando desde la consola de comandos el script Wall-E.sh
 2.	Escribir el programa que se desea correr en la caja de texto: no debe dejarse la caja de texto vacía, en cuyo caso se le notificará de este incidente.
-2.1.	Importar archivos: para que se ejecute correctamente, el archivo a importar debe encontrarse en \WALL-E\GeoLibrary y tener como identificador la extensión “.geo”, puede encontrarse en una subcarpeta pero el nombre de este archivo debe ser único para poder importarse.
+2.1.  Importar archivos: para que se ejecute correctamente, el archivo a importar debe encontrarse en \WALL-E\GeoLibrary y tener como identificador la extensión “.geo”, puede encontrarse en una subcarpeta pero el nombre de este archivo debe ser único para poder importarse.
 3.	Comenzar su procesamiento mediante el botón de comando: una vez finalizada la escritura de los comandos debe presionar el botón “Prosess Commands” para que como indica se ejecute el intérprete de Wall-E.
 4.	Cerrar el programa o escribir una nueva lista de comandos: Una vez finalizado el procesamiento de los comandos introducidos (incluyendo la visualización de las figuras geométricas), se puede analizar nuevo código no relacionado con el anterir sin necesidad de volver a iniciar el proyecto, o cerrar el programa mediante el botón “X” en la esquina superior derecha de la ventana. Para esto se puede borrar el código anteriormente introducido o simplemente modificarlo.
 

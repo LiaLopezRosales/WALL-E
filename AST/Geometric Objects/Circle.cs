@@ -212,7 +212,7 @@ public class Circle:Figure,IEquatable<Circle>
          return temp;
        }
     }
-     private Finite_Sequence<Point> IntersectCircle(Circle c)
+     private Finite_Sequence<Point> IntersectCircleL(Circle c)
     {
         if (this.Equals(c))
         {
@@ -240,6 +240,45 @@ public class Circle:Figure,IEquatable<Circle>
         Point second=new Point(intersection_x2,intersection_y2);
         Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>(){first,second});
         temp.type=Finite_Sequence<Point>.SeqType.point;
+        return temp;
+    }
+
+    private Finite_Sequence<Point> IntersectCircle(Circle cir)
+    {
+        if (this.Equals(cir))
+        {
+            return null!;
+        }
+
+        Point c1 = this.center;
+        Point c2 = cir.center;
+        double r1 = this.radio;
+        double r2 = cir.radio;
+
+        double d = GeometricTools.PointsDistance(c1, c2);
+        if (d > r1 + r2 || d < Math.Abs(r1 - r2) || (d == 0 && r1 == r2))
+        {
+            Finite_Sequence<Point> temp1 = new(new List<Point>());
+            temp1.type = Finite_Sequence<Point>.SeqType.point;
+            return temp1;
+        }
+
+        double a, h, x2, x3, x4, y2, y3, y4;
+
+        a = (Math.Pow(r1, 2) - Math.Pow(r2, 2) + Math.Pow(d, 2)) / (2 * d);
+        h = Math.Sqrt(Math.Pow(r1, 2) - Math.Pow(a, 2));
+
+        x2 = c1.x + a * (c2.x - c1.x) / d;
+        y2 = c1.y + a * (c2.y - c1.y) / d;
+
+        x3 = x2 + h * (c2.y - c1.y) / d;
+        y3 = y2 - h * (c2.x - c1.x) / d;
+
+        x4 = x2 - h * (c2.y - c1.y) / d;
+        y4 = y2 + h * (c2.x - c1.x) / d;
+
+        Finite_Sequence<Point> temp = new (new List<Point>() { new Point(x3, y3), new Point(x4, y4) });
+        temp.type = Finite_Sequence<Point>.SeqType.point;
         return temp;
     }
     private Finite_Sequence<Point> IntersectArc(Arc arc)

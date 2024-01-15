@@ -20,7 +20,7 @@ public class Equal_Minor:Binary
         }
         else if (left is Measure && right is Measure)
         {
-            if (Measure.Equals((Measure)left,(Measure)right)||!(Measure.GreaterThen((Measure)left,(Measure)right)))
+            if (Measure.Equals((Measure)left, (Measure)right) || !(Measure.GreaterThen((Measure)left, (Measure)right)))
             {
                 Value = 1;
             }
@@ -39,6 +39,7 @@ public class Equal_Minor:Binary
             {
                 Value = 0;
             }
+        }
     }
     public override string ToString()
     {

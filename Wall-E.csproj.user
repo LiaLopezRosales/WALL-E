@@ -1,31 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Compile Update="AST\Geometric Objects\Arc.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="AST\Geometric Objects\Circle.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="AST\Geometric Objects\Figure.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="AST\Geometric Objects\Line.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="AST\Geometric Objects\Point.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="AST\Geometric Objects\Ray.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="AST\Geometric Objects\Segment.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Enviroment\ArchiveAnallizer.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Evaluation\Evaluator\Evaluator.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Geometric Objects\Arc.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Geometric Objects\Circle.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Geometric Objects\Figure.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Geometric Objects\Line.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Geometric Objects\Point.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Geometric Objects\Ray.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Geometric Objects\Segment.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Graphic\Form1.cs">

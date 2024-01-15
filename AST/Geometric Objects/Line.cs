@@ -206,7 +206,7 @@ public class Line : Figure, IEquatable<Line>
         Segment relativesegment=new Segment(r.StartIn,r.CreateRelativeEnd());
         return this.IntersectSegment(relativesegment);
     }
-    private Finite_Sequence<Point> IntersectCircle(Circle cir)
+    private Finite_Sequence<Point> IntersectCircleL(Circle cir)
     {
         double distance=GeometricTools.Point_LineDistance(cir.center,this);
         if (distance>cir.radio)
@@ -226,6 +226,49 @@ public class Line : Figure, IEquatable<Line>
         double y2=m*x2+b;
         Finite_Sequence<Point> temp=new Finite_Sequence<Point>(new List<Point>(){new Point(x1,y1),new Point(x2,y2)});
         return temp;
+    }
+
+    private Finite_Sequence<Point> IntersectCircle(Circle cir)
+    {
+        Point p1 = this.generalpoint1;
+        Point p2 = this.generalpoint2;
+        Point c = cir.center;
+        double r = cir.radio;
+
+        Point intersect1, intersect2;
+
+        double dx, dy, A, B, C, det, t;
+
+        dx = p2.x - p1.x;
+        dy = p2.y - p1.y;
+
+        A = dx * dx + dy * dy;
+        B = 2 * (dx * (p1.x - c.x) + dy * (p1.y - c.y));
+        C = (p1.x - c.x) * (p1.x - c.x) + (p1.y - c.y) * (p1.y - c.y) - r * r;
+
+        det = B * B - 4 * A * C;
+
+        if ((A <= 0.0000001) || (det < 0))
+        {
+            return new Finite_Sequence<Point>(new List<Point>());
+        }
+        else if (det == 0)
+        {
+            // One real solution
+            t = -B / (2 * A);
+            intersect1 = new Point(p1.x + t * dx, p1.y + t * dy);
+            return new Finite_Sequence<Point>(new List<Point>() { intersect1 });
+        }
+        else
+        {
+            // Two real solutions
+            t = (double)((-B + Math.Sqrt(det)) / (2 * A));
+            intersect1 = new Point(p1.x + t * dx, p1.y + t * dy);
+            t = (double)((-B - Math.Sqrt(det)) / (2 * A));
+            intersect2 = new Point(p1.x + t * dx, p1.y + t * dy);
+            return new Finite_Sequence<Point>(new List<Point>() { intersect1, intersect2 });
+        }
+
     }
     private Finite_Sequence<Point> IntersectCircleB(Circle cir)
     {
