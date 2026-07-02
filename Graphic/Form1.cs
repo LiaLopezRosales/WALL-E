@@ -64,7 +64,6 @@ namespace Wall_E
                 MessageBox.Show(s, "Analysis stoped", MessageBoxButtons.OK);
             }
 
-            //Commands.Clear();
             Continue = true;
         }
 
@@ -187,25 +186,6 @@ namespace Wall_E
             return nuevoPunto;
         }
 
-        //Este codigo se encuentra comentado porque para las funcionalidades del proyecto en general no es necesario, pero funciona bien para futuras mejoras
-        /*public void Draw_Point()
-        {
-            Point p = Generar_Punto();
-
-            // Dibujar el punto como un circulo
-            Papel.FillEllipse(Brush, (float)p.x, (float)p.y, 5, 5);
-        }
-        public void Draw_Point(string name)
-        {
-            Point p = Generar_Punto();
-
-            // Dibujar el punto como un circulo
-            Papel.FillEllipse(Brush, (float)p.x, (float)p.y, 5, 5);
-
-            //Mostrar el nombre del punto
-            Papel.DrawString(name, this.Font, Brushes.Black, (float)p.x + 5, (float)p.y - 5);
-        }*/
-
         public void Draw_Point(Point p)
         {
             // Dibujar el punto como un circulo
@@ -217,21 +197,6 @@ namespace Wall_E
             if (name != "")
                 Papel.DrawString(name, this.Font, Brushes.Black, (float)p.x + 5, (float)p.y - 5);
         }
-
-        //Creacion de segmentos sin dar puntos de referencia
-        /* public void Draw_Segment()
-        {
-            Point p1 = Generar_Punto();
-            Point p2 = Generar_Punto();
-            Papel.DrawLine(Lapiz, p1, p2);
-        }
-        public void Draw_Segment(string name)
-        {
-            Point p1 = Generar_Punto();
-            Point p2 = Generar_Punto();
-            Papel.DrawLine(Lapiz, p1, p2);
-            Papel.DrawString(name, this.Font, Brushes.Black, (float)p1.x + 5, (float)p1.y - 5);
-        } */
 
         private void Draw_Segment(Point p1, Point p2)
         {
@@ -304,28 +269,6 @@ namespace Wall_E
             if (name != "")
                 Papel.DrawString(name, this.Font, Brushes.Black, (float)p1.x + 5, (float)p1.y - 5);
         }
-
-        // Formas de dibujar el circulo a partir de distintos datos
-        /* public void Draw_Circule(Point p1, Point p2)
-        {
-            //El punto p1 es el centro y p2 se encuentra en el borde
-            double radio = Math.Sqrt(Math.Pow(p2.x - p1.x, 2) + Math.Pow(p2.y - p1.y, 2));
-
-            Papel.DrawEllipse(Lapiz, (float)(p1.x - radio), (float)(p1.y - radio), (float)(2 * radio), (float)(2 * radio));
-        }
-        public void Draw_Circule(Point p1, Point p2, string name)
-        {
-            Draw_Circule(p1, p2);
-            Papel.DrawString(name, this.Font, Brushes.Black, (float)p1.x + 5, (float)p1.y - 5);
-        }
-        public void Draw_Circule()
-        {
-            Point p1 = Generar_Punto();
-            Random r = RandomProvider.Instance;
-            int size = r.Next(30, 60);
-
-            Papel.DrawEllipse(Lapiz, (float)p1.x, (float)p1.y, size, size);
-        }*/
 
         public void Draw_Circule(Point c, double radio)
         {

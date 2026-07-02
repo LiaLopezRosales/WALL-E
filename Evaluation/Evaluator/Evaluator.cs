@@ -5,7 +5,6 @@ public class Evaluator:Form
     private Scope scope { get; set; }
     private Scope CurrentScope { get; set; }
     private Context context { get; set; }
-    // private List<Scope>? currentcontext{get;set;}
     public List<Error> Semantic_Errors { get; set; }
     public string file{get;set;}
     public string line{get;set;}
@@ -24,7 +23,6 @@ public class Evaluator:Form
     public void Tree_Reader(Node root)
     {
         AST = root;
-        // currentcontext=new List<Scope>(){new Scope()};
     }
 
     public object StartEvaluation(Node node)
@@ -43,22 +41,6 @@ public class Evaluator:Form
 
     public object GeneralEvaluation(Node node)
     {   
-        // foreach(var item in context.Available_Functions)
-        // {
-        //     if(item.NumberofCalls+1>55)
-        //     {
-        //         Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {item.Name} ", new Location(file, line, "column")));
-        //         return "";
-        //     }
-        // }
-        // if(CurrentScope.Parent!=null)
-        // {
-        //     foreach(var item in CurrentScope.TemporalFunctions)
-        //     {
-        //         Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, $"call,full stack for function {item.Value.Name} ", new Location(file, line, "column")));
-        //         return "";
-        //     }
-        // }
         if (node.Type == Node.NodeType.Circle)
         {
             Point center = new Point(0, 0);
@@ -399,11 +381,6 @@ public class Evaluator:Form
         else if (node.Type == Node.NodeType.GlobalSeq)
         {
             object value = GeneralEvaluation(node.Branches[1]);
-            // foreach (var item in ((Finite_Sequence<object>)value).Sequence)
-            // {
-            //     Console.WriteLine(item);
-            // }
-          
             Type type = value.GetType();
             long amount_of_elements = node.Branches[0].Branches.Count;
             
@@ -1722,7 +1699,6 @@ public class Evaluator:Form
                 Scope func_scope = CurrentScope.Child();
                 func_scope.InFunction=true;
                 CurrentScope = func_scope;
-                // currentcontext!.Add(func_scope);
 
                 for (int i = 0; i < context.Available_Functions.Count; i++)
                 {
@@ -1732,11 +1708,6 @@ public class Evaluator:Form
                         //Se comprueba si tienen la misma cantidad de argumentos
                         if (context.Available_Functions[i].Functions_Arguments.Count == func_parameters.Branches.Count)
                         {
-                            //Se agregan los argumentos dados a el scope del cuerpo de la función
-                            // foreach (var p_name in CurrentScope.Parent!.Variables.Keys)
-                            // {
-                            //     CurrentScope.Variables.Add(p_name, CurrentScope.Parent!.Variables[p_name]);
-                            // }
                             int param_number = 0;
                             foreach (var p_name in context.Available_Functions[i].Functions_Arguments.Keys)
                             {
@@ -1747,13 +1718,11 @@ public class Evaluator:Form
                                 {
 
                                     CurrentScope.Variables[p_name] = GeneralEvaluation(func_parameters.Branches[param_number]);
-                                    //CurrentScope.Variables[p_name] =func_parameters.Branches[param_number].NodeExpression!;
                                     param_number++;
                                 }
                                 else
                                 {
                                     object par_value = GeneralEvaluation(func_parameters.Branches[param_number]);
-                                    //object par_value = func_parameters.Branches[param_number].NodeExpression!;
                                     CurrentScope.Variables.Add(p_name, par_value);
                                     param_number++;
                                 }
@@ -1771,7 +1740,6 @@ public class Evaluator:Form
                             //Se elimina el contexto creado para la función
                             Scope parent = CurrentScope.Parent!;
                             CurrentScope = parent;
-                            // currentcontext!.Remove(currentcontext[currentcontext.Count - 1]);
 
                             return value;
 
@@ -1802,7 +1770,6 @@ public class Evaluator:Form
                     func_scope.InFunction=true;
                     CurrentScope = func_scope;
                     index=0;
-                    // currentcontext!.Add(func_scope);
 
                     foreach(var function in CurrentScope.TemporalFunctions)
                     {
@@ -1812,11 +1779,6 @@ public class Evaluator:Form
                             //Se comprueba si tienen la misma cantidad de argumentos
                             if (CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments.Count == func_parameters.Branches.Count)
                             {
-                                //Se agregan los argumentos dados a el scope del cuerpo de la función
-                                // foreach (var p_name in CurrentScope.Parent!.Variables.Keys)
-                                // {
-                                //     CurrentScope.Variables.Add(p_name, CurrentScope.Parent!.Variables[p_name]);
-                                // }
                                 int param_number = 0;
                                 foreach (var p_name in CurrentScope.TemporalFunctions[dfunc_name].Functions_Arguments.Keys)
                                 {
@@ -1849,7 +1811,6 @@ public class Evaluator:Form
                                 //Se elimina el contexto creado para la función
                                 Scope parent = CurrentScope.Parent!;
                                 CurrentScope = parent;
-                                // currentcontext!.Remove(currentcontext[currentcontext.Count - 1]);
 
                                 return value;
 
@@ -1952,7 +1913,6 @@ public class Evaluator:Form
             string partialrute = Directory.GetParent(Path.Combine(Directory.GetCurrentDirectory()))!.FullName!;
             string rute = Path.Combine(partialrute, "GeoLibrary");
             string name=archivename.Remove(0,1);;
-            //name=name.Remove(0,1);
             name=name.Remove(name.Length-1,1);
             
            

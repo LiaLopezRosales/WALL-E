@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 using System.Globalization;
-public class Lexer
-{
-     public List<Error> lexererrors;
+    public class Lexer
+    {
+        public List<Error> lexererrors;
      public string File{get;set;}
      public string Line{get;set;}
 
@@ -85,14 +85,6 @@ public class Lexer
         {
             token = new Token(Token.TokenType.arc,possibletoken,File,Line,index.ToString());
         }
-        // else if (possibletoken == "EOL" )
-        // {
-        //     token = new Token(Token.TokenType.EOL,possibletoken,File,Line,index.ToString());
-        // }
-        // else if (possibletoken == "EOF" )
-        // {
-        //     token = new Token(Token.TokenType.EOF,possibletoken,File,Line,index.ToString());
-        // }
         else if (possibletoken == "circle" )
         {
             token = new Token(Token.TokenType.circle,possibletoken,File,Line,index.ToString());
@@ -201,10 +193,6 @@ public class Lexer
         {
             token = new Token(Token.TokenType.not,possibletoken,File,Line,index.ToString());
         }
-        // else if (possibletoken == "@")
-        // {
-        //     token = new Token(Token.TokenType.concatenate, possibletoken,File,Line,index.ToString());
-        // }
         else if (possibletoken=="_")
         {
             token = new Token(Token.TokenType.low_hyphen,possibletoken,File,Line,index.ToString());

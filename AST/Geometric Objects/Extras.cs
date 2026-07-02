@@ -2,7 +2,6 @@ public static class RandomExtensions
     {   //Modifica al random habitual para que devuelva valores dobles además de enteros
         public static double NextDouble(this Random random,double min,double max)
         {
-            //return min +(random.NextDouble()*(max-min));
             return random.NextDouble()*(max-min)+min;
         }
     }

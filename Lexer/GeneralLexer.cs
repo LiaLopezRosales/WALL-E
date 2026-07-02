@@ -55,7 +55,6 @@ public class GeneralLexer
                 }
                 index=i;
                 amount_of_open_let=amount_of_open_let+amount;
-                // continue;
             }  
         }
         
