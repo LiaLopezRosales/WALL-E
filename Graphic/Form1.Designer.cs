@@ -17,6 +17,12 @@
             {
                 components.Dispose();
             }
+            if (disposing)
+            {
+                Lapiz?.Dispose();
+                Brush?.Dispose();
+                Papel?.Dispose();
+            }
             base.Dispose(disposing);
         }
 

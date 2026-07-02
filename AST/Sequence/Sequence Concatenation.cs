@@ -37,33 +37,13 @@ public class Sequence_Concatenation<T>
 
     private IEnumerable<T> GenerateNewSequence(GenericSequence<T> r, GenericSequence<T> l)
     {
-        if (r is Finite_Sequence<T>)
-        {
-            foreach (T item in ((Finite_Sequence<T>)r).Sequence!)
-            {
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (T item in r.Sequence!)
-            {
-                yield return item;
-            }
-        }
-        if (l is Finite_Sequence<T>)
-        {
-            foreach (T item in ((Finite_Sequence<T>)l).Sequence!)
-            {
-                yield return item;
-            }
-        }
-        else
-        {
-            foreach (T item in l.Sequence!)
-            {
-                yield return item;
-            }
-        }
+        long limit = r.IsInfinite ? r.MaxElements : r.count;
+        long taken = 0;
+        foreach (T item in r.Sequence!)
+            if (taken++ >= limit) break; else yield return item;
+        taken = 0;
+        limit = l.IsInfinite ? l.MaxElements : l.count;
+        foreach (T item in l.Sequence!)
+            if (taken++ >= limit) break; else yield return item;
     }
 }

@@ -49,7 +49,7 @@ public class Evaluator:Form
             Point center = new Point(0, 0);
             Circle c = new Circle(center, 1);
             c.RandomCircle(context.ExistingCircles, context.ExistingPoints);
-            context.ExistingCircles.Add(c);
+            context.TryAddExistingCircle(c);
             if (CurrentScope.Parent == null)
             {
                 if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
@@ -76,7 +76,7 @@ public class Evaluator:Form
         {
             Point p = new Point(0, 0);
             p.RandomPoint(context.ExistingPoints);
-            context.ExistingPoints.Add(p);
+            context.TryAddExistingPoint(p);
             if (CurrentScope.Parent == null)
             {
                 if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
@@ -107,7 +107,7 @@ public class Evaluator:Form
             Point p2 = new Point(0, 0);
             Line l = new Line(p1, p2);
             l.RandomLine(context.ExistingLines, context.ExistingPoints);
-            context.ExistingLines.Add(l);
+            context.TryAddExistingLine(l);
             if (CurrentScope.Parent == null)
             {
                 if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
@@ -138,7 +138,7 @@ public class Evaluator:Form
             Point p2 = new Point(0, 0);
             Segment s = new Segment(p1, p2);
             s.RandomSegment(context.ExistingSegments, context.ExistingPoints);
-            context.ExistingSegments.Add(s);
+            context.TryAddExistingSegment(s);
             if (CurrentScope.Parent == null)
             {
                 if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
@@ -169,7 +169,7 @@ public class Evaluator:Form
             Point p2 = new Point(0, 0);
             Ray r = new Ray(p1, p2);
             r.RandomRay(context.ExistingRays, context.ExistingPoints);
-            context.ExistingRays.Add(r);
+            context.TryAddExistingRay(r);
             if (CurrentScope.Parent == null)
             {
                 if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
@@ -204,7 +204,7 @@ public class Evaluator:Form
                 Point temp = new Point(0, 0);
                 temp.RandomPoint(context.ExistingPoints);
                 elements.Add(temp);
-                context.ExistingPoints.Add(temp);
+                context.TryAddExistingPoint(temp);
             }
             Finite_Sequence<Point> pts = new Finite_Sequence<Point>(elements);
             pts.type=Finite_Sequence<Point>.SeqType.point;
@@ -244,7 +244,7 @@ public class Evaluator:Form
                 Line l = new Line(temp1, temp2);
                 l.RandomLine(context.ExistingLines, context.ExistingPoints);
                 elements.Add(l);
-                context.ExistingLines.Add(l);
+                context.TryAddExistingLine(l);
             }
             Finite_Sequence<Line> pts = new Finite_Sequence<Line>(elements);
             pts.type=Finite_Sequence<Line>.SeqType.line;
@@ -1564,7 +1564,7 @@ public class Evaluator:Form
             else
             {
                 Point p=new Point((double)x,(double)y);
-                context.ExistingPoints.Add(p);
+                context.TryAddExistingPoint(p);
                 return p;
             }
         }
@@ -1581,13 +1581,13 @@ public class Evaluator:Form
                 if (radio is Measure)
                 {
                     Circle temp = new Circle((Point)center, ((Measure)radio).Value);
-                    context.ExistingCircles.Add(temp);
+                    context.TryAddExistingCircle(temp);
                     return temp;
                 }
                 else
                 {
                     Circle temp = new Circle((Point)center, (double)radio);
-                    context.ExistingCircles.Add(temp);
+                    context.TryAddExistingCircle(temp);
                     return temp;
                 }
             }
@@ -1603,7 +1603,7 @@ public class Evaluator:Form
             else
             {
                 Line temp = new Line((Point)p1, (Point)p2);
-                context.ExistingLines.Add(temp);
+                context.TryAddExistingLine(temp);
                 return temp;
             }
         }
@@ -1618,7 +1618,7 @@ public class Evaluator:Form
             else
             {
                 Segment temp = new Segment((Point)p1, (Point)p2);
-                context.ExistingSegments.Add(temp);
+                context.TryAddExistingSegment(temp);
                 return temp;
             }
         }
@@ -1633,7 +1633,7 @@ public class Evaluator:Form
             else
             {
                 Ray temp = new Ray((Point)p1, (Point)p2);
-                context.ExistingRays.Add(temp);
+                context.TryAddExistingRay(temp);
                 return temp;
             }
         }

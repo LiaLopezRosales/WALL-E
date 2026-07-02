@@ -30,14 +30,14 @@ public class Sum:Binary
             {
                 IEnumerable<object> Generate(AbsSequence r,AbsSequence l)
                 {
+                    long limit = r.IsInfinite ? r.MaxElements : r.count;
+                    long taken = 0;
                     foreach (object item in r.Sequence!)
-                    {
-                        yield return item;
-                    }
+                        if (taken++ >= limit) break; else yield return item;
+                    taken = 0;
+                    limit = l.IsInfinite ? l.MaxElements : l.count;
                     foreach (object item in l.Sequence!)
-                    {
-                        yield return item;
-                    }
+                        if (taken++ >= limit) break; else yield return item;
                 }
                 IEnumerable<object> sum1=Generate((AbsSequence)left,(AbsSequence)right);
                 IEnumerable<long> sum=sum1.OfType<long>();
