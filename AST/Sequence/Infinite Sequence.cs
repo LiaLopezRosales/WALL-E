@@ -8,12 +8,12 @@ public class Infinite_Sequence:GenericSequence<long>
     {
        StartsAd=start;
        count=-1;
-       Sequence=GenerateSequence(StartsAd);
+       Sequence=GenerateSequence(StartsAd).Take(MaxElements);
        enumerator =Sequence.GetEnumerator();
     }
     public Infinite_Sequence(IEnumerable<long> seq)
     {
-        Sequence=seq;
+        Sequence=seq.Take(MaxElements);
         count=-1;
         enumerator =Sequence.GetEnumerator();
     }
@@ -53,21 +53,21 @@ public class InfinitePointSequence:GenericSequence<Point>
     {
        StartsAd=start;
        count=-1;
-       Sequence=GenerateSequence(StartsAd);
+       Sequence=GenerateSequence(StartsAd).Take(MaxElements);
        enumerator =Sequence.GetEnumerator();
     }
     public InfinitePointSequence(IEnumerable<Point> s)
     {
        StartsAd=new Point(1.3,2.01);
        count=-1;
-       Sequence=s;
+       Sequence=s.Take(MaxElements);
        enumerator =Sequence.GetEnumerator();
     }
     public InfinitePointSequence(IEnumerable<Point>s,Point initial)
     {
         StartsAd=initial;
         count=-1;
-        Sequence=s;
+        Sequence=s.Take(MaxElements);
         enumerator =Sequence.GetEnumerator();
     }
 
@@ -104,14 +104,14 @@ public class InfinitePointSequence:GenericSequence<Point>
     {
        StartsAd=0.5;
        count=-1;
-       Sequence=s;
+       Sequence=s.Take(MaxElements);
        enumerator =Sequence.GetEnumerator();
     }
     public InfiniteDoubleSequence(double start)
     {
        StartsAd=start;
        count=-1;
-       Sequence=GenerateSequence(start);
+       Sequence=GenerateSequence(start).Take(MaxElements);
        enumerator =Sequence.GetEnumerator();
     }
 

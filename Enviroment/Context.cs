@@ -49,9 +49,23 @@ public class Context
         Results = new();
     }
 
+    public void Clear()
+    {
+        ToDraw.Clear();
+        ExistingCircles.Clear();
+        ExistingLines.Clear();
+        ExistingPoints.Clear();
+        ExistingRays.Clear();
+        ExistingSegments.Clear();
+        Results.Clear();
+        UtilizedColors.Clear();
+        UtilizedColors.Push("black");
+        issuedcontext = false;
+    }
+
     private IEnumerable<double> GenerateRandoms()
     {
-        Random r=new Random();
+        Random r=RandomProvider.Instance;
         int count=0;
         while (true)
         {

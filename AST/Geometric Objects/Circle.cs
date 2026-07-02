@@ -11,7 +11,7 @@ public class Circle:Figure,IEquatable<Circle>
 
     public void RandomCircle(List<Circle>existingcircles,List<Point>points)
     {
-       Random generator=new Random();
+       Random generator=RandomProvider.Instance;
         if (existingcircles.Count==0)
         {
             center=new Point(0,0);
@@ -57,7 +57,7 @@ public class Circle:Figure,IEquatable<Circle>
 
     public Point PointInsideFigure(List<Point> existingpoints)
     {
-       Random random=new Random();
+       Random random=RandomProvider.Instance;
        double angle=0;
        double distance=0;
        if (existingpoints.Count==0)
@@ -108,7 +108,7 @@ public class Circle:Figure,IEquatable<Circle>
         {
             while (true)
             {
-                Random random = new Random();
+                Random random = RandomProvider.Instance;
                 double x = RandomExtensions.NextDouble(random,center.x-radio-1,center.x+radio+1);
                 int one_or_two=random.Next(2);
                 double y = FindYofXinCircle(x)[one_or_two];

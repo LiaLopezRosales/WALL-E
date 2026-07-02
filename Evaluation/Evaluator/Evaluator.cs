@@ -212,7 +212,7 @@ public class Evaluator:Form
         else if (node.Type == Node.NodeType.Point_Seq)
         {
             List<Point> elements = new List<Point>();
-            Random r = new Random();
+            Random r = RandomProvider.Instance;
             int amount = r.Next(1, 30);
             for (int i = 0; i < amount; i++)
             {
@@ -250,7 +250,7 @@ public class Evaluator:Form
         else if (node.Type == Node.NodeType.Line_Seq)
         {
             List<Line> elements = new List<Line>();
-            Random r = new Random();
+            Random r = RandomProvider.Instance;
             int amount = r.Next(1, 30);
             for (int i = 0; i < amount; i++)
             {

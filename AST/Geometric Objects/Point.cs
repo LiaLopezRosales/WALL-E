@@ -11,7 +11,7 @@ public class Point : Figure, IEquatable<Point>
     //Método que genera un punto aleatorio dependiendo del último punto generado
     public void RandomPoint(List<Point> existingpoints)
     {
-        Random generator = new Random();
+        Random generator = RandomProvider.Instance;
         //Si es el primer punto a generar sus coordenadas serán enteras
         if (existingpoints.Count == 0)
         {

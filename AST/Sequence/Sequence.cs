@@ -3,7 +3,7 @@ public class GenericSequence<T>:AbsSequence
   //Si count==-1 su valor es undefined
   public new long count{get;protected set;}
   public new IEnumerable<T>? Sequence {get;set;}
-  private IEnumerator<T> enumerator{get;set;}
+  protected IEnumerator<T> enumerator{get;set;}
   public GenericSequence()
   {
     Sequence=new List<T>();

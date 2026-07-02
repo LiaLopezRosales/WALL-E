@@ -11,7 +11,7 @@ public class Ray:Figure,IEquatable<Ray>
      //Genera un rayo aleatorio
     public void RandomRay(List<Ray>existingrays,List<Point>points)
     {
-       Random generator=new Random();
+       Random generator=RandomProvider.Instance;
         if (existingrays.Count==0)
         {
             StartIn=new Point(0,0);
@@ -130,7 +130,7 @@ public class Ray:Figure,IEquatable<Ray>
         {
             while (true)
             {
-                Random random = new Random();
+                Random random = RandomProvider.Instance;
                 double x = RandomExtensions.NextDouble(random, Math.Min(StartIn.x, PassFor.x), Math.Max(StartIn.x, PassFor.x));
                 while (!GeometricTools.BelongToSegment(StartIn, PassFor, x))
                 {

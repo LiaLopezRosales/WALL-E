@@ -12,7 +12,7 @@ public class Line : Figure, IEquatable<Line>
     //Genera una recta aleatoria(combinación de dos puntos aleatorios única,funciona de forma análoga a la de los puntos)
     public void RandomLine(List<Line> existinglines, List<Point> points)
     {
-        Random generator = new Random();
+        Random generator = RandomProvider.Instance;
         if (existinglines.Count == 0)
         {
             generalpoint1 = new Point(0, 0);
@@ -74,7 +74,7 @@ public class Line : Figure, IEquatable<Line>
         {
             while (true)
             {
-                Random random = new Random();
+                Random random = RandomProvider.Instance;
                 double x = RandomExtensions.NextDouble(random, Math.Min(generalpoint1.x, generalpoint2.x), Math.Max(generalpoint1.x, generalpoint2.x));
                 while (!GeometricTools.BelongToSegment(generalpoint1, generalpoint2, x))
                 {

@@ -172,7 +172,7 @@ namespace Wall_E
 
         public Point Generar_Punto()
         {
-            Random random = new Random();
+            Random random = RandomProvider.Instance;
             Point nuevoPunto;
 
             do
@@ -321,7 +321,7 @@ namespace Wall_E
         public void Draw_Circule()
         {
             Point p1 = Generar_Punto();
-            Random r = new Random();
+            Random r = RandomProvider.Instance;
             int size = r.Next(30, 60);
 
             Papel.DrawEllipse(Lapiz, (float)p1.x, (float)p1.y, size, size);

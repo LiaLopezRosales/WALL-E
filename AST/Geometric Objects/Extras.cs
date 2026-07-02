@@ -145,7 +145,7 @@ public static class RandomExtensions
             double y=m*x+n;
             if (double.IsFinite(m))
             {
-                Random random=new Random();
+                Random random=RandomProvider.Instance;
                 y=RandomExtensions.NextDouble(random,0,120);
             }
             return y;

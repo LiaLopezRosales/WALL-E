@@ -148,7 +148,7 @@ public class Arc:Figure,IEquatable<Arc>
         {
             while (true)
             {
-                Random random = new Random();
+                Random random = RandomProvider.Instance;
                 double x = RandomExtensions.NextDouble(random,center.x-measure-1,center.x+measure+1);
                 double y1 =FindYofXinCircle(x)[0];
                 double y2 = FindYofXinCircle(x)[1];

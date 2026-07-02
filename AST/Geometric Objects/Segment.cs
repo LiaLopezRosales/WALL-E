@@ -11,7 +11,7 @@ public class Segment:Figure,IEquatable<Segment>
      //Genera un segmento aleatorio(funciona igual que el generador de pntos y de lineas)
     public void RandomSegment(List<Segment>existingsegments,List<Point>points)
     {
-       Random generator=new Random();
+       Random generator=RandomProvider.Instance;
         if (existingsegments.Count==0)
         {
             StartIn=new Point(0,0);
@@ -80,7 +80,7 @@ public class Segment:Figure,IEquatable<Segment>
         {
             while (true)
             {
-                Random random = new Random();
+                Random random = RandomProvider.Instance;
                 double x = RandomExtensions.NextDouble(random, Math.Min(StartIn.x, EndsIn.x), Math.Max(StartIn.x, EndsIn.x));
                 while (!GeometricTools.BelongToSegment(StartIn, EndsIn, x))
                 {
