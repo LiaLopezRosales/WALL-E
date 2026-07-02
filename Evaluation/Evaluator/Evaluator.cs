@@ -67,7 +67,7 @@ public class Evaluator:Form
             context.ExistingCircles.Add(c);
             if (CurrentScope.Parent == null)
             {
-                if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
@@ -75,11 +75,11 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
+                if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
-                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                else if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
                 {
                     CurrentScope.Variables[node.NodeExpression!.ToString()!]=c;
                 }
@@ -94,7 +94,7 @@ public class Evaluator:Form
             context.ExistingPoints.Add(p);
             if (CurrentScope.Parent == null)
             {
-                if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
@@ -103,11 +103,11 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
+                if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
-                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                else if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
                 {
                     CurrentScope.Variables[node.NodeExpression!.ToString()!]=p;
                 }
@@ -125,7 +125,7 @@ public class Evaluator:Form
             context.ExistingLines.Add(l);
             if (CurrentScope.Parent == null)
             {
-                if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
@@ -134,11 +134,11 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
+                if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
-                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                else if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
                 {
                     CurrentScope.Variables[node.NodeExpression!.ToString()!]=l;
                 }
@@ -156,7 +156,7 @@ public class Evaluator:Form
             context.ExistingSegments.Add(s);
             if (CurrentScope.Parent == null)
             {
-                if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
@@ -165,11 +165,11 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
+                if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
-                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                else if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
                 {
                     CurrentScope.Variables[node.NodeExpression!.ToString()!]=s;
                 }
@@ -187,7 +187,7 @@ public class Evaluator:Form
             context.ExistingRays.Add(r);
             if (CurrentScope.Parent == null)
             {
-                if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
@@ -196,11 +196,11 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
+                if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
-                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                else if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
                 {
                     CurrentScope.Variables[node.NodeExpression!.ToString()!]=r;
                 }
@@ -225,7 +225,7 @@ public class Evaluator:Form
             pts.type=Finite_Sequence<Point>.SeqType.point;
             if (CurrentScope.Parent == null)
             {
-                if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
@@ -234,11 +234,11 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
+                if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
-                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                else if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
                 {
                     CurrentScope.Variables[node.NodeExpression!.ToString()!]=pts;
                 }
@@ -265,7 +265,7 @@ public class Evaluator:Form
             pts.type=Finite_Sequence<Line>.SeqType.line;
             if (CurrentScope.Parent == null)
             {
-                if (context.GlobalConstant.Keys.Contains(node.NodeExpression!.ToString()!))
+                if (context.GlobalConstant.ContainsKey(node.NodeExpression!.ToString()!))
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
@@ -274,11 +274,11 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
+                if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && !CurrentScope.InFunction)
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
-                else if (CurrentScope.Variables.Keys.Contains(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
+                else if (CurrentScope.Variables.ContainsKey(node.NodeExpression!.ToString()!) && CurrentScope.InFunction)
                 {
                     CurrentScope.Variables[node.NodeExpression!.ToString()!]=pts;
                 }
@@ -293,7 +293,7 @@ public class Evaluator:Form
             object value = GeneralEvaluation(node.Branches[1]);
             if (CurrentScope.Parent == null)
             {
-                if (context.GlobalConstant.Keys.Contains(name))
+                if (context.GlobalConstant.ContainsKey(name))
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
@@ -302,11 +302,11 @@ public class Evaluator:Form
             }
             else
             {
-                if (CurrentScope.Variables.Keys.Contains(name))
+                if (CurrentScope.Variables.ContainsKey(name))
                 {
                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                 }
-                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                 {
                     CurrentScope.Variables[name]=value;
                 }
@@ -429,7 +429,7 @@ public class Evaluator:Form
                             valueofarg = "{}";
                             if (CurrentScope.Parent == null)
                             {
-                                if (context.GlobalConstant.Keys.Contains(name))
+                                if (context.GlobalConstant.ContainsKey(name))
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
@@ -438,11 +438,11 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                                if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
-                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -465,7 +465,7 @@ public class Evaluator:Form
                             valueofarg = rest;
                             if (CurrentScope.Parent == null)
                             {
-                                if (context.GlobalConstant.Keys.Contains(name))
+                                if (context.GlobalConstant.ContainsKey(name))
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
@@ -474,11 +474,11 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                                if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
-                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -499,7 +499,7 @@ public class Evaluator:Form
                         }
                         if (CurrentScope.Parent == null)
                         {
-                            if (context.GlobalConstant.Keys.Contains(name))
+                            if (context.GlobalConstant.ContainsKey(name))
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
@@ -508,11 +508,11 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                            if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
-                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                            else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -542,7 +542,7 @@ public class Evaluator:Form
                             valueofarg = "{}";
                             if (CurrentScope.Parent == null)
                             {
-                                if (context.GlobalConstant.Keys.Contains(name))
+                                if (context.GlobalConstant.ContainsKey(name))
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
@@ -551,11 +551,11 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                                if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
-                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -578,7 +578,7 @@ public class Evaluator:Form
                             valueofarg = rest;
                             if (CurrentScope.Parent == null)
                             {
-                                if (context.GlobalConstant.Keys.Contains(name))
+                                if (context.GlobalConstant.ContainsKey(name))
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
@@ -587,11 +587,11 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                                if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
-                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -612,7 +612,7 @@ public class Evaluator:Form
                         }
                         if (CurrentScope.Parent == null)
                         {
-                            if (context.GlobalConstant.Keys.Contains(name))
+                            if (context.GlobalConstant.ContainsKey(name))
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
@@ -621,11 +621,11 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                            if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
-                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                            else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -648,7 +648,7 @@ public class Evaluator:Form
                         string name = GeneralEvaluation(subnode).ToString()!;
                         if (CurrentScope.Parent == null)
                         {
-                            if (context.GlobalConstant.Keys.Contains(name))
+                            if (context.GlobalConstant.ContainsKey(name))
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
@@ -657,11 +657,11 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                            if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
-                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                            else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]="undefined";
                                         }
@@ -691,7 +691,7 @@ public class Evaluator:Form
                             valueofarg = "{}";
                             if (CurrentScope.Parent == null)
                             {
-                                if (context.GlobalConstant.Keys.Contains(name))
+                                if (context.GlobalConstant.ContainsKey(name))
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
@@ -700,11 +700,11 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                                if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                                 {   
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
-                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -720,7 +720,7 @@ public class Evaluator:Form
                             valueofarg = rest;
                             if (CurrentScope.Parent == null)
                             {
-                                if (context.GlobalConstant.Keys.Contains(name))
+                                if (context.GlobalConstant.ContainsKey(name))
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
@@ -729,11 +729,11 @@ public class Evaluator:Form
                             }
                             else
                             {
-                                if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                                if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                                 {
                                     Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                                 }
-                                else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                                else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -754,7 +754,7 @@ public class Evaluator:Form
                         }
                         if (CurrentScope.Parent == null)
                         {
-                            if (context.GlobalConstant.Keys.Contains(name))
+                            if (context.GlobalConstant.ContainsKey(name))
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
@@ -763,11 +763,11 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                            if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
-                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                            else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -798,7 +798,7 @@ public class Evaluator:Form
                         valueofarg = rest;
                         if (CurrentScope.Parent == null)
                         {
-                            if (context.GlobalConstant.Keys.Contains(name))
+                            if (context.GlobalConstant.ContainsKey(name))
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
@@ -807,11 +807,11 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                            if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
-                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                            else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -828,7 +828,7 @@ public class Evaluator:Form
                         index++;
                         if (CurrentScope.Parent == null)
                         {
-                            if (context.GlobalConstant.Keys.Contains(name))
+                            if (context.GlobalConstant.ContainsKey(name))
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
@@ -837,11 +837,11 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                            if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
-                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                            else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -872,7 +872,7 @@ public class Evaluator:Form
                         valueofarg = rest;
                         if (CurrentScope.Parent == null)
                         {
-                            if (context.GlobalConstant.Keys.Contains(name))
+                            if (context.GlobalConstant.ContainsKey(name))
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
@@ -881,11 +881,11 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                            if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
-                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                            else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -902,7 +902,7 @@ public class Evaluator:Form
                         index++;
                         if (CurrentScope.Parent == null)
                         {
-                            if (context.GlobalConstant.Keys.Contains(name))
+                            if (context.GlobalConstant.ContainsKey(name))
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
@@ -911,11 +911,11 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                            if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
-                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                            else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -946,7 +946,7 @@ public class Evaluator:Form
                         valueofarg = rest;
                         if (CurrentScope.Parent == null)
                         {
-                            if (context.GlobalConstant.Keys.Contains(name))
+                            if (context.GlobalConstant.ContainsKey(name))
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
@@ -955,11 +955,11 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                            if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
-                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                            else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }
@@ -976,7 +976,7 @@ public class Evaluator:Form
                         index++;
                         if (CurrentScope.Parent == null)
                         {
-                            if (context.GlobalConstant.Keys.Contains(name))
+                            if (context.GlobalConstant.ContainsKey(name))
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
@@ -985,11 +985,11 @@ public class Evaluator:Form
                         }
                         else
                         {
-                            if (CurrentScope.Variables.Keys.Contains(name) && !CurrentScope.InFunction)
+                            if (CurrentScope.Variables.ContainsKey(name) && !CurrentScope.InFunction)
                             {
                                 Semantic_Errors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid, "operation,constants can't be modified", new Location(file, line, "column")));
                             }
-                            else if (CurrentScope.Variables.Keys.Contains(name) && CurrentScope.InFunction)
+                            else if (CurrentScope.Variables.ContainsKey(name) && CurrentScope.InFunction)
                                        {
                                          CurrentScope.Variables[name]=valueofarg;
                                         }

@@ -67,17 +67,19 @@ public class Context
     {
         List<Point> points=new List<Point>();
         int count=0;
-        Point tem=new Point(0,0);
         while (true)
         {
             if (count==0)
             {
                 yield return new Point(1.3,2.01);
+                count++;
+                continue;
             }
-            count++;
+            Point tem=new Point(0,0);
             tem.RandomPoint(points);
             points.Add(tem);
             yield return tem;
+            count++;
         }
     }
     private IEnumerable<Point> GeneratePointsInFigure(Circle c)

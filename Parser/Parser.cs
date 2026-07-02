@@ -920,8 +920,11 @@ public class Parser
                 sus.Type = Node.NodeType.Sum;
                 sus.NodeExpression = "+";
             }
-            else sus.Type = Node.NodeType.Sub;
-            sus.NodeExpression = "-";
+            else
+            {
+                sus.Type = Node.NodeType.Sub;
+                sus.NodeExpression = "-";
+            }
             sus.Branches = new List<Node> { left, right };
         }
         if (sus.Type != Node.NodeType.Indefined)
