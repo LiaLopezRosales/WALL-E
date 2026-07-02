@@ -1,3 +1,5 @@
+using System.Threading;
+
 public class GeneralEvaluation
 {
     public List<Node> Lines{get;set;}
@@ -10,13 +12,15 @@ public class GeneralEvaluation
         this.file=file;
     }
     
-    public Context EvaluateArchive(Context basecontext)
+    public Context EvaluateArchive(Context basecontext, CancellationToken token = default)
     {
-        Evaluator evaluate=new Evaluator(basecontext,file);
-        int actualcounterror=0;
+       Evaluator evaluate=new Evaluator(basecontext,file);
+       evaluate.CancellationToken = token;
+       int actualcounterror=0;
         int count=0;
        foreach (var item in Lines)
        {
+          token.ThrowIfCancellationRequested();
           evaluate.line=count.ToString();
           object value=evaluate.GeneralEvaluation(item);
           if (evaluate.AllTheSemantic_Errors().Count>actualcounterror)

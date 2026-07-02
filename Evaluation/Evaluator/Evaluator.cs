@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Threading;
 public class Evaluator:Form
 {   //Modificar para poder acceder a las localizaciones de los errores semánticos
     private Node AST { get; set; }
@@ -8,6 +9,7 @@ public class Evaluator:Form
     public List<Error> Semantic_Errors { get; set; }
     public string file{get;set;}
     public string line{get;set;}
+    public CancellationToken CancellationToken { get; set; }
 
     public Evaluator(Context context,string f)
     {
@@ -40,7 +42,8 @@ public class Evaluator:Form
     }
 
     public object GeneralEvaluation(Node node)
-    {   
+    {
+        CancellationToken.ThrowIfCancellationRequested();
         if (node.Type == Node.NodeType.Circle)
         {
             Point center = new Point(0, 0);

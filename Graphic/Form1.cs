@@ -1,5 +1,7 @@
 using System;
 using System.Drawing;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Wall_E
@@ -10,7 +12,8 @@ namespace Wall_E
         private Pen Lapiz { get; set; }
         private SolidBrush Brush { get; set; }
         private HashSet<Point> PuntosGenerados { get; set; }
-        private bool Continue { get; set; }
+        private volatile bool Continue { get; set; }
+        private CancellationTokenSource _cts = new();
         public Form1()
         {
             InitializeComponent();
@@ -26,7 +29,7 @@ namespace Wall_E
             Papel.Clear(Color.Silver);
         }
 
-        private void ActionButton_Click(object sender, EventArgs e)
+        private async void ActionButton_Click(object sender, EventArgs e)
         {
             string command = Commands.Text;
 
@@ -36,32 +39,47 @@ namespace Wall_E
                 return;
             }
 
-            ArchiveAnalysis procesador = new(command, "MainFile");
-            Context context = procesador.Analyze(new Context());
-            List<object> toPrint = context.Results;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
-            if (!context.issuedcontext)
+            try
             {
-                List<DrawObject> drawObjects = context.ToDraw;
-                string result = "All commands have been successfully processed \r\n";
-                if (drawObjects.Count != 0)
+                Context context = await Task.Run(() =>
                 {
-                    foreach (DrawObject item in drawObjects)
+                    ArchiveAnalysis procesador = new(command, "MainFile");
+                    return procesador.Analyze(new Context(), token);
+                }, token);
+
+                List<object> toPrint = context.Results;
+
+                if (!context.issuedcontext)
+                {
+                    List<DrawObject> drawObjects = context.ToDraw;
+                    string result = "All commands have been successfully processed \r\n";
+                    if (drawObjects.Count != 0)
                     {
-                        DrawFigures(item);
+                        foreach (DrawObject item in drawObjects)
+                        {
+                            token.ThrowIfCancellationRequested();
+                            DrawFigures(item);
+                        }
                     }
+                    else if (toPrint.Count != 0)
+                    {
+                        result += String.Join("\r\n", toPrint.Select(x => x.ToString()));
+                    }
+                    MessageBox.Show( result, "Analysis completed", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 }
                 else if (toPrint.Count != 0)
                 {
-                    result += String.Join("\r\n", toPrint.Select(x => x.ToString()));
+                    string s = "The commands processed before the error were: \r\n";
+                    s += String.Join("\r\n", toPrint.Select(x => x.ToString()));
+                    MessageBox.Show(s, "Analysis stoped", MessageBoxButtons.OK);
                 }
-                MessageBox.Show( result, "Analysis completed", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
-            else if (toPrint.Count != 0)
+            catch (OperationCanceledException)
             {
-                string s = "The commands processed before the error were: \r\n";
-                s += String.Join("\r\n", toPrint.Select(x => x.ToString()));
-                MessageBox.Show(s, "Analysis stoped", MessageBoxButtons.OK);
+                MessageBox.Show("Operation cancelled by user.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
             Continue = true;
@@ -328,6 +346,7 @@ namespace Wall_E
         private void Sequence_Click(object sender, EventArgs e)
         {
             Continue = false;
+            _cts?.Cancel();
         }
     }
 }
