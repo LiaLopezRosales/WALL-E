@@ -1,515 +1,431 @@
-# WALL-E — Roadmap de Implementación
+# WALL-E — Roadmap de Implementación (v2 — Arquitectura Limpia)
 
 Plan unificado que integra todos los documentos de mejora:
 [`IMPROVEMENT_PLAN.md`](./IMPROVEMENT_PLAN.md) · [`PERFORMANCE_PLAN.md`](./PERFORMANCE_PLAN.md) · [`ENHANCEMENTS.md`](./ENHANCEMENTS.md)
-
-Cada paso indica su origen entre `[ ]`.
 
 ---
 
 ## Timeline consolidado
 
 ```
-Semana  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16
+Semana  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18
 Fase 0  ████████
-Fase 1      ██████████████
-Fase 2          ██████████████████
-Fase 3                  ██████████████
-Fase 4                         ██████████████
-Fase 5                                ████████████
-Fase 6                                       ████████
+Fase 1          ██████████████████
+Fase 2                  ████████████████
+Fase 3                          ██████████████████
+Fase 4                                  ████████████████
+Fase 5                                          ████████████
+Fase 6                                                  ████████
 ```
 
-**Total estimado**: ~16 semanas (~4 meses) a tiempo completo.
-**Dependencia clave**: Fase 5 (tests) debe correr en CI desde el principio.
+**Total estimado**: ~18 semanas (~4.5 meses) a tiempo completo.
+
+---
+
+## Refinamiento arquitectónico (cambio clave v1→v2)
+
+### Problemas identificados en v1
+
+| Problema | Impacto |
+|---|---|
+| `Context` es god object (mezcla dominio + UI + resultados) | Viola SRP, difícil de testear |
+| `object` como tipo de retorno en toda la evaluación | Type-unsafe, casts frágiles |
+| Sin capas Domain/Application/Infrastructure | No hay separación de concerns |
+| Sin MVVM real (solo code-behind) | Anti-patrón WinForms en Avalonia |
+| Evaluador conoce Channel de infraestructura | Acoplamiento evaluación→streaming |
+| State machine compleja (~40 casos en switch) | Menos extensible que Visitor Pattern |
+| Sin sistema de Resultados monádico | Errores como strings, no composables |
+
+### Arquitectura objetivo (Clean Architecture / Hexagonal)
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                    Wall-E.UI.Avalonia                      │
+│  (MVVM: Views ↔ ViewModels, SkiaSharp rendering)          │
+│  Depende de: Wall-E.Application                            │
+├──────────────────────────────────────────────────────────┤
+│                   Wall-E.Application                       │
+│  (Orquestación: Pipeline, Caching, DSL, Import/Export)    │
+│  Depende de: Wall-E.Domain                                 │
+├──────────────────────────────────────────────────────────┤
+│                   Wall-E.Domain                            │
+│  (Lógica pura: AST, Figuras, Evaluación, Geometría)       │
+│  Depende de: NADA (net6.0)                                 │
+├──────────────────────────────────────────────────────────┤
+│                 Wall-E.Infrastructure                      │
+│  (IO: FileSystem, GeoLibrary, Persistencia)               │
+│  Depende de: Wall-E.Application                            │
+└──────────────────────────────────────────────────────────┘
+```
+
+### Patrones clave
+
+| Patrón | Dónde | Beneficio |
+|---|---|---|
+| `INodeVisitor<T>` | Evaluación del AST | Cada operación en su método, extensible sin modificar existentes |
+| `IEvaluationResult` sellado | Retorno del evaluador | Union type: `FigureValue`, `NumberValue`, `SequenceValue`, `ErrorValue` — sin `object` |
+| `IProgress<Scene>` | Pipeline evaluación→render | Evaluador produce `Scene` immutable, no conoce Channel |
+| MVVM puro | UI Avalonia | ViewModels sin referencia a Views, data binding, testable |
+| `Result<T, E>` | Errores del pipeline | Monádico, composable, evita try/catch dispersos |
+| `ISceneBuilder` | Construcción de escena | Separa lógica de dibujo de la evaluación |
 
 ---
 
 ## Fase 0: Foundation & Critical Fixes
 
-**Duración**: ~1.5 semanas · **Objetivo**: La app no congela, no crashea, UI responsiva.
+**Duración**: ~1.5 semanas · **Estado**: ✅ COMPLETADA
 
-| # | Tarea | Origen | Días | Archivos |
-|---|---|---|---|---|
-| 0.1 | Pipeline async: `ActionButton_Click` → `async Task`, `CancellationTokenSource` en UI | [PERF-F0] | 1 | `Form1.cs` |
-| 0.2 | `CancellationToken` en Evaluator + ArchiveAnalysis, chequeo en cada nodo | [PERF-F0] | 1 | `Evaluator.cs`, `ArchiveAnallizer.cs`, `GeneralEvaluator.cs` |
-| 0.3 | Botón Stop wireado a `cts.Cancel()` | [PERF-F0] | 0.5 | `Form1.cs` |
-| 0.4 | `volatile` en flag Continue (mientras exista) | [PERF-§1.1] | 0.1 | `Form1.cs` |
-| 0.5 | `MaxElements` global en `AbsSequence` (default 10,000). Toda iteración se detiene al alcanzarlo | [PERF-F1] | 1 | `Sequence.cs`, `Infinite Sequence.cs`, `Finite_Sequence.cs` |
-| 0.6 | `Take<T>` wrapper + `take(expr, n)` en el DSL | [PERF-F1][ENH-§2.2] | 1 | `Lexer.cs`, `Parser.cs`, `TakenSequence.cs` (nuevo), `Evaluator.cs` |
-| 0.7 | Concat segura: `Sum.cs` y `Sequence Concatenation.cs` con límite por secuencia | [PERF-F1] | 0.5 | `Sum.cs`, `Sequence Concatenation.cs` |
-| 0.8 | Bug: `GenerateSamples` — nueva instancia de `Point` por iteración | [PERF-§3.5][IMPR-§2.2.E] | 0.2 | `Context.cs` |
-| 0.9 | Bug: `ParseSum_O_Sub` — `NodeExpression = "-"` en else branch | [IMPR-§2.2.F] | 0.2 | `Parser.cs` |
-| 0.10 | `Keys.Contains` → `ContainsKey` en todo `Evaluator.cs` | [IMPR-§2.2.H] | 0.3 | `Evaluator.cs` |
-| 0.11 | Random estático thread-safe (`ThreadLocal<Random>`) | [PERF-F5] | 0.3 | `RandomProvider.cs` (nuevo), todos los `new Random()` |
-| 0.12 | `Context.Clear()` entre ejecuciones. Reset de `ExistingPoints`, `ToDraw`, `Results`, etc. | [PERF-F5][IMPR-§3.5] | 0.3 | `Context.cs` |
-| 0.13 | Límites en colecciones del Context (`ExistingPoints` ≤ 100k, etc.) | [PERF-F5] | 0.3 | `Context.cs` |
-| 0.14 | Eliminar código muerto (~100 líneas comentadas en `Evaluator.cs`, `Form1.cs`, `Circle.cs`) | [IMPR-§2.2.G] | 0.3 | `Evaluator.cs`, `Form1.cs`, `Circle.cs` |
-| 0.15 | GDI+ `Dispose`: marcar Pen/Brush para migración o agregar `using` | [IMPR-§2.6] | 0.3 | `Form1.cs` |
+| # | Tarea | Archivos |
+|---|---|---|
+| 0.1-0.4 | Pipeline async + CancellationToken + volatile | `Form1.cs`, `Evaluator.cs`, `ArchiveAnallizer.cs`, `GeneralEvaluator.cs` |
+| 0.5-0.7 | MaxElements (10k) + TakenSequence + Safe concat | `Sequence.cs`, `Sum.cs`, `Sequence Concatenation.cs` |
+| 0.8-0.10 | Bugs: GenerateSamples, ParseSum_O_Sub, ContainsKey | `Context.cs`, `Parser.cs`, `Evaluator.cs` |
+| 0.11 | RandomProvider thread-safe | `RandomProvider.cs` (nuevo) |
+| 0.12-0.13 | Context.Clear() + TryAdd limits | `Context.cs` |
+| 0.14-0.15 | Dead code removal + GDI+ Dispose | `Evaluator.cs`, `Form1.cs`, `Parser.cs`, etc. |
 
-**Checkpoint**: `draw samples();` dibuja 10k pts y se detiene. Fractal no congela. Stop funciona. UI responsiva durante evaluación.
+**Checkpoint**: App no congela. Stop button funciona. UI responsiva.
 
-### Código clave: pipeline async
+---
+
+## Fase 1: Clean Architecture Extraction
+
+**Duración**: ~3 semanas · **Objetivo**: Separar en 4 capas limpias. Domain sin dependencias. Application con interfaces.
+
+| # | Tarea | Días | Archivos |
+|---|---|---|---|
+| 1.1 | **Crear `Wall-E.Domain`** (class library net6.0, 0 dependencias externas) | 0.5 | `Wall-E.Domain.csproj` (nuevo) |
+| 1.2 | Mover a Domain: `AST/` (Node, NodeType), `AST/Geometric Objects/` (Figure, Point, Circle, etc.) | 1 | mover archivos, actualizar namespaces |
+| 1.3 | Mover a Domain: `Evaluation/` (Evaluator, Scope, Context → split), `Enviroment/Error.cs` | 1 | mover + refactor |
+| 1.4 | **Split `Context` en 3 responsabilidades** | 2 | `Wall-E.Domain` |
+| | `EvaluationContext` — symbol table, scope stack, functions | | `EvaluationContext.cs` (nuevo) |
+| | `FigureRepository` — ExistingPoints, Circles, Lines (solo figuras, sin UI) | | `FigureRepository.cs` (nuevo) |
+| | `RenderScene` — ToDraw + Colors (resultado plano para render) | | `RenderScene.cs` (nuevo) |
+| 1.5 | **`IEvaluationResult` sellado** — reemplazar `object` return | 2 | `EvaluationResult.cs` (nuevo), `Evaluator.cs` |
+| | `NumberResult(double)`, `PointResult(Point)`, `FigureResult(Figure)`, `SequenceResult(IEnumerable)`, `StringResult(string)`, `ErrorResult(Error)` | | |
+| 1.6 | **`INodeVisitor<T>` + visitor concreto** — reemplazar switch monolítico | 3 | `INodeVisitor.cs`, `EvaluatorVisitor.cs` (nuevos) |
+| 1.7 | **Crear `Wall-E.Application`** (net6.0, ref a Domain) | 0.5 | `Wall-E.Application.csproj` (nuevo) |
+| 1.8 | Mover a Application: `Lexer/`, `Parser/`, `DSL/` (procesamiento texto→AST) | 1 | mover archivos |
+| 1.9 | Mover a Application: `Pipeline/PipelineOrchestrator.cs`, `Caching/ExpressionCache.cs` | 1 | mover + refactor |
+| 1.10 | **Interfaces** `ILexer`, `IParser`, `IEvaluator`, `IPipeline` | 1 | `Wall-E.Application/Interfaces/` |
+| 1.11 | **Crear `Wall-E.Infrastructure`** (net6.0, ref a Application) | 0.3 | `Wall-E.Infrastructure.csproj` (nuevo) |
+| 1.12 | Mover a Infrastructure: `GeoLibrary` loader, file I/O | 0.5 | mover |
+| 1.13 | **`Result<T, E>` monádico** para el pipeline completo | 2 | `Result.cs` (nuevo) |
+| 1.14 | Solución `Wall-E.sln` con estructura `src/` profesional | 0.3 | `Wall-E.sln` (nuevo) |
+| 1.15 | Build en Linux: `dotnet build` pasa en Domain + Application + Infrastructure | 0.5 | csproj adjustments |
+
+**Checkpoint**: `dotnet build` pasa en Linux. Domain no referencia Windows. Evaluator usa visitor pattern. Return type es `IEvaluationResult` sellado. Context dividido en 3.
+
+### Código clave: `IEvaluationResult`
 
 ```csharp
-// Form1.cs — antes: síncrono, bloquea UI
-private void ActionButton_Click(object sender, EventArgs e) { ... }
+public abstract record EvaluationResult;
 
-// Form1.cs — después: async, UI responsiva
-private CancellationTokenSource _cts = new();
-
-private async void ActionButton_Click(object sender, EventArgs e)
-{
-    _cts = new CancellationTokenSource();
-    try
-    {
-        var result = await Task.Run(() => ProcessCode(_cts.Token), _cts.Token);
-        await RenderResultAsync(result, _cts.Token);
-    }
-    catch (OperationCanceledException) { /* user cancelled */ }
-}
-
-private void StopButton_Click(object sender, EventArgs e) => _cts.Cancel();
+public sealed record NumberResult(double Value) : EvaluationResult;
+public sealed record PointResult(Point Value) : EvaluationResult;
+public sealed record FigureResult(Figure Value) : EvaluationResult;
+public sealed record SequenceResult(IEnumerable Value, long Count) : EvaluationResult;
+public sealed record StringResult(string Value) : EvaluationResult;
+public sealed record ErrorResult(Error Value) : EvaluationResult;
+public sealed record VoidResult : EvaluationResult;
 ```
 
-### Código clave: secuencia limitada
+### Código clave: `INodeVisitor<T>`
 
 ```csharp
-// Sequence.cs
-public abstract class AbsSequence
+public interface INodeVisitor<T>
 {
-    public const long DefaultMaxElements = 10000;
-    public long MaxElements { get; set; } = DefaultMaxElements;
-    public bool IsInfinite => count < 0;
+    T VisitCircle(Node node);
+    T VisitPoint(Node node);
+    T VisitLine(Node node);
+    T VisitSegment(Node node);
+    T VisitRay(Node node);
+    T VisitArc(Node node);
+    T VisitSum(Node node);
+    T VisitSub(Node node);
+    T VisitNumber(Node node);
+    T VisitVariable(Node node);
+    T VisitFunctionCall(Node node);
+    // ... uno por cada NodeType (~40 métodos)
 }
 
-// Sum.cs — GenerateSafe con límite
-IEnumerable<object> GenerateSafe(AbsSequence r, AbsSequence l)
+public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
 {
-    long limit = r.IsInfinite ? r.MaxElements : r.count;
-    long taken = 0;
-    foreach (object item in r.Sequence!)
-        if (taken++ >= limit) break; else yield return item;
-    taken = 0;
-    limit = l.IsInfinite ? l.MaxElements : l.count;
-    foreach (object item in l.Sequence!)
-        if (taken++ >= limit) break; else yield return item;
+    private readonly EvaluationContext _context;
+    private readonly FigureRepository _figures;
+    private readonly ExpressionCache _cache;
+
+    public EvaluationResult VisitCircle(Node node) { /* 10-30 líneas */ }
+    public EvaluationResult VisitSum(Node node) { /* 10-30 líneas */ }
+    // cada método es pequeño, testeable aisladamente
+}
+```
+
+### Código clave: `Result<T, E>`
+
+```csharp
+public readonly struct Result<T, E>
+{
+    public bool IsSuccess { get; }
+    public T Value { get; }
+    public E Error { get; }
+
+    public static Result<T, E> Ok(T value) => new() { IsSuccess = true, Value = value };
+    public static Result<T, E> Fail(E error) => new() { IsSuccess = false, Error = error };
+
+    public Result<TNext, E> Map<TNext>(Func<T, TNext> map) =>
+        IsSuccess ? Result<TNext, E>.Ok(map(Value)) : Result<TNext, E>.Fail(Error);
+
+    public Result<TNext, E> Bind<TNext>(Func<T, Result<TNext, E>> bind) =>
+        IsSuccess ? bind(Value) : Result<TNext, E>.Fail(Error);
 }
 ```
 
 ---
 
-## Fase 1: Core Extraction & Architecture
+## Fase 2: Professional Avalonia UI + MVVM
 
-**Duración**: ~2.5 semanas · **Objetivo**: Lógica separada de UI. Evaluator state machine. Cachable, testeable.
+**Duración**: ~3 semanas · **Objetivo**: UI moderna con MVVM puro, streaming progresivo, grid.
 
-| # | Tarea | Origen | Días | Archivos |
-|---|---|---|---|---|
-| 1.1 | Separar `Figure`, `ArchiveAnalysis`, `Evaluator` de `Form` (anti-patrón crítico) | [IMPR-§2.1] | 2 | `Figure.cs`, `ArchiveAnallizer.cs`, `Evaluator.cs` |
-| 1.2 | Crear `Wall-E.Core` (class library, net6.0, sin Windows). Mover Lexer/Parser/AST/Evaluation/Enviroment | [IMPR-§5.3] | 1 | `Wall-E.Core.csproj` (nuevo), mover archivos |
-| 1.3 | Extraer `StoreVariable(name, value)` — elimina ~35 duplicaciones | [IMPR-§2.2] | 1 | `Evaluator.cs` |
-| 1.4 | Dividir `GeneralEvaluation` en métodos por tipo + `switch` expression | [IMPR-§2.3] | 3 | `Evaluator.cs` |
-| 1.5 | State machine evaluator (stack explícito, sin recursión real) | [PERF-F3] | 3 | `StateMachineEvaluator.cs` (nuevo), `EvaluationFrame.cs` (nuevo) |
-| 1.6 | Expression caching para expresiones puras (sin efectos secundarios) | [PERF-F6] | 1.5 | `ExpressionCache.cs` (nuevo), `Evaluator.cs` |
-| 1.7 | Interfaces `IEvaluator`, `ILexer`, `IParser` + DI básica | [IMPR-§4.2-3] | 1 | interfaces nuevas, modificar constructores |
-| 1.8 | Solución `Wall-E.sln` con `src/` + estructura profesional | [IMPR-§5.3] | 0.3 | `Wall-E.sln` (nuevo) |
-| 1.9 | Build en Linux: `dotnet build Wall-E.Core` pasa | — | 0.3 | csproj adjustments |
+| # | Tarea | Días | Archivos |
+|---|---|---|---|
+| 2.1 | **Crear `Wall-E.UI.Avalonia`** (net6.0, ref a Application + Infrastructure) | 0.5 | `Wall-E.UI.Avalonia.csproj` (nuevo) |
+| 2.2 | **MVVM Base**: `ViewModelBase`, `RelayCommand`, `INotifyPropertyChanged` | 1 | `ViewModels/` base |
+| 2.3 | **`MainViewModel`**: Properties: `Code` (string), `IsProcessing` (bool), `StatusMessage` (string), `CurrentTheme`. Commands: `ProcessCommand`, `StopCommand`, `ClearCommand`, `ToggleThemeCommand` | 1.5 | `MainViewModel.cs` (nuevo) |
+| 2.4 | **`CanvasViewModel`**: Zoom, Pan, cursor coordinates, hovered figure. Binding a canvas events | 1.5 | `CanvasViewModel.cs` (nuevo) |
+| 2.5 | **`StatusBarViewModel`**: Processing status, figure count, cursor position | 0.5 | `StatusBarViewModel.cs` (nuevo) |
+| 2.6 | **MainWindow.axaml**: Layout: editor panel (izquierda) + canvas (derecha) + toolbar + statusbar. Pure XAML + binding | 2 | `MainWindow.axaml` |
+| 2.7 | **`ProcessCommand`**: async relay command → `Task.Run(() => pipeline.Execute(code, ct))` → `Scene` result → bind to canvas | 1 | `MainViewModel.cs` |
+| 2.8 | **`IProgress<Scene>` pipeline**: evaluador produce `Scene` (snapshot inmutable de figures + colors). Channel vive en Application | 1 | `Scene.cs`, `PipelineOrchestrator.cs` |
+| 2.9 | **Streaming progresivo**: `Channel<Scene>` con batch cada 100 figures → `await Task.Yield()` → canvas.Invalidate() | 1.5 | `StreamRenderer.cs` (nuevo) |
+| 2.10 | **SkiaSharp canvas**: `SKCanvasView` con suscripción a `PaintSurface` | 1 | `CanvasView.axaml.cs` |
+| 2.11 | **Grid cartesiano** con labels en ejes X/Y + anti-aliasing | 1 | `GridRenderer.cs` (nuevo) |
+| 2.12 | **Zoom** (scroll wheel, centrado en cursor) + **Pan** (click+arrastrar) + reset doble-click | 2 | `ViewState.cs`, eventos en canvas |
+| 2.13 | **Sistema de coordenadas**: origen configurable + escala + Y invertido (cartesiano) | 1 | `CoordinateSystem.cs` (nuevo) |
+| 2.14 | **Color picker visual** (Avalonia `ColorPicker`) en toolbar | 1 | toolbar + binding |
+| 2.15 | **StatusBar**: coordenadas del cursor en vivo, conteo de figuras | 0.5 | binding a CanvasViewModel |
 
-**Checkpoint**: Core compila independiente de WinForms. Evaluator es state machine. Cache funciona en fractales recursivos.
+**Checkpoint**: App Avalonia con MVVM puro corriendo. Process/Stop/Clean via Commands. Grid + zoom + pan. Streaming progresivo.
 
-### Código clave: state machine
+### Código clave: MVVM puro
 
 ```csharp
-public readonly struct EvaluationFrame
+public class MainViewModel : ViewModelBase
 {
-    public readonly Node Node;
-    public readonly int State;       // 0=pendiente, 1=left listo, 2=both listos
-    public readonly object? LeftResult;
-    public readonly object? RightResult;
-}
-
-public class StateMachineEvaluator
-{
-    private readonly Stack<EvaluationFrame> _stack = new();
-    public const int MaxStepsPerBatch = 100;
-
-    public bool Step(int maxSteps, CancellationToken ct)
+    public MainViewModel(IPipeline pipeline, IRenderer renderer)
     {
-        for (int i = 0; i < maxSteps; i++)
+        ProcessCommand = new RelayCommand(async () =>
         {
-            ct.ThrowIfCancellationRequested();
-            if (_stack.Count == 0) return false;
-            StepOne();
-        }
-        return _stack.Count > 0;
+            IsProcessing = true;
+            var scene = await pipeline.ExecuteAsync(Code, _cts.Token);
+            await renderer.RenderAsync(scene, _cts.Token);
+            IsProcessing = false;
+        }, () => !IsProcessing);
     }
 
-    private void StepOne()
-    {
-        var frame = _stack.Pop();
-        switch (frame.State, frame.Node.Type)
-        {
-            case (0, NodeType.Sum):
-                _stack.Push(frame);
-                _stack.Push(new EvaluationFrame(frame.Node.Branches[0]));
-                break;
-            case (1, NodeType.Sum):
-                _stack.Push(frame.WithLeftResult(result));
-                _stack.Push(new EvaluationFrame(frame.Node.Branches[1]));
-                break;
-            case (2, NodeType.Sum):
-                double sum = (double)frame.LeftResult! + (double)frame.RightResult!;
-                ReturnToParent(sum);
-                break;
-            // ... ~40 casos más
-        }
-    }
-}
-```
-
-### Código clave: expression cache
-
-```csharp
-public class ExpressionCache
-{
-    private readonly Dictionary<long, object?> _cache = new();
-
-    public long Key(Node node) => HashNode(node);
-    public bool TryGet(long key, out object? result) => _cache.TryGetValue(key, out result);
-    public void Set(long key, object? result) => _cache[key] = result;
-    public void Clear() => _cache.Clear();
-    public void Invalidate() => Clear();  // al declarar nueva función/variable
-
-    private long HashNode(Node node) => HashCode.Combine(
-        (int)node.Type,
-        node.NodeExpression?.GetHashCode() ?? 0,
-        node.Branches?.Count ?? 0,
-        node.Branches?.Sum(b => HashNode(b)) ?? 0
-    );
-}
-```
-
----
-
-## Fase 2: Avalonia Migration + Streaming
-
-**Duración**: ~3.5 semanas · **Objetivo**: Nueva UI con streaming progresivo.
-
-| # | Tarea | Origen | Días | Archivos |
-|---|---|---|---|---|
-| 2.1 | Nuevo proyecto `Wall-E.Avalonia` con referencia a `Wall-E.Core` | [IMPR-§5.1] | 0.5 | `Wall-E.Avalonia.csproj` (nuevo) |
-| 2.2 | Ventana principal: editor TextBox + canvas `SKCanvasView` + botones Process/Stop/Clean | [IMPR-§5.1-2] | 2 | `MainWindow.axaml`, `MainWindow.axaml.cs` |
-| 2.3 | Channel pipeline: `Channel<DrawCommand>` (bounded, cap 1000) | [PERF-F2] | 1.5 | `DrawPipeline.cs` (nuevo) |
-| 2.4 | Evaluator escribe al channel (producer). Renderer consume con `ReadAllAsync` (consumer) | [PERF-F2] | 1 | `DrawPipeline.cs`, `Evaluator.cs`, `MainWindow.axaml.cs` |
-| 2.5 | Batch rendering: cada 100 DrawCommands, invalidar canvas + `await Task.Yield()` | [PERF-F2][IMPR-§5.4] | 1 | `StreamRenderer.cs` (nuevo) |
-| 2.6 | Grid cartesiano con labels en ejes X/Y | [IMPR-§5.3] | 1 | `GridRenderer.cs` (nuevo) |
-| 2.7 | Zoom (scroll wheel) + Pan (click+arrastrar) + reset doble-click | [IMPR-§5.4] | 2 | `ViewState.cs` (nuevo), eventos en canvas |
-| 2.8 | Sistema de coordenadas: origen configurable + escala | [ENH-§4.3] | 1 | `CoordinateSystem.cs` (nuevo) |
-| 2.9 | Color picker visual (Avalonia `ColorPicker`) | [ENH-§1.11] | 1 | toolbar button + dialog |
-| 2.10 | StatusBar con coordenadas del cursor en vivo | [IMPR-§5.4] | 0.5 | `MainWindow.axaml` |
-
-**Checkpoint**: App Avalonia corriendo. Dibuja con streaming progresivo. Grid + zoom + pan funcionales.
-
-### Código clave: streaming pipeline
-
-```csharp
-// DrawPipeline.cs
-public class DrawPipeline
-{
-    private readonly Channel<DrawCommand> _channel = Channel.CreateBounded<DrawCommand>(
-        new BoundedChannelOptions(1000) { FullMode = BoundedChannelFullMode.Wait });
-
-    public ChannelWriter<DrawCommand> Writer => _channel.Writer;
-    public ChannelReader<DrawCommand> Reader => _channel.Reader;
-    public CancellationTokenSource Cts { get; } = new();
-}
-
-// Evaluator escribe al channel
-await writer.WriteAsync(new DrawCommand(figure, tag, color), ct);
-
-// Renderer consume del channel
-await foreach (DrawCommand cmd in reader.ReadAllAsync(ct))
-{
-    DrawOne(cmd);
-    if (++_batch >= 100) { _batch = 0; canvas.Invalidate(); await Task.Yield(); }
+    public string Code { get => _code; set => SetProperty(ref _code, value); }
+    public bool IsProcessing { get => _isProcessing; set { SetProperty(ref _isProcessing, value); ProcessCommand.RaiseCanExecuteChanged(); } }
+    public IRelayCommand ProcessCommand { get; }
+    // → Sin code-behind. Testing: new MainViewModel(mockPipeline, mockRenderer).ProcessCommand.Execute().
 }
 ```
 
 ### Arquitectura de ventana Avalonia
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  Wall-E.Avalonia                                     │
-│  ┌──────────────┐  ┌──────────────────────────────┐ │
-│  │ Editor Panel  │  │ SKCanvasView (SkiaSharp)     │ │
-│  │ ┌──────────┐ │  │  ┌─────────────────────────┐ │ │
-│  │ │ Comandos  │ │  │  │ Grid + Axes + Labels    │ │ │
-│  │ │ (TextBox) │ │  │  │ Figures + Colors + Tags │ │ │
-│  │ └──────────┘ │  │  │ Zoom/Pan overlay         │ │ │
-│  │ [Process]    │  │  └─────────────────────────┘ │ │
-│  │ [Stop]       │  │                              │ │
-│  │ [Clean]      │  │  StatusBar: "drawing..."     │ │
-│  └──────────────┘  └──────────────────────────────┘ │
-└─────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│  MainWindow.axaml                                       │
+│  ┌──────────────────────┐  ┌─────────────────────────┐ │
+│  │  Editor Panel         │  │  SKCanvasView           │ │
+│  │  ┌──────────────────┐│  │  ┌───────────────────┐  │ │
+│  │  │ TextBox (Code)    ││  │  │ Grid + Axes       │  │ │
+│  │  │ (bind: MainVM    ││  │  │ Figures (Scene)    │  │ │
+│  │  │  .Code)          ││  │  │ Zoom/Pan overlay   │  │ │
+│  │  └──────────────────┘│  │  └───────────────────┘  │ │
+│  │  [Process] [Stop]    │  │  (bind: CanvasVM)       │ │
+│  │  [Clean] [🌙 Toggle] │  └─────────────────────────┘ │
+│  │  [🎨 ColorPicker]    │                               │
+│  └──────────────────────┘  StatusBar: "120 figures"    │
+└────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Fase 3: GPU Rendering + Estética Premium
+## Fase 3: GPU Rendering + Expression Cache + Estética Premium
 
-**Duración**: ~2.5 semanas · **Objetivo**: Rendimiento GPU, look profesional.
+**Duración**: ~2.5 semanas · **Objetivo**: Rendimiento GPU, look profesional, cache.
 
-| # | Tarea | Origen | Días | Archivos |
-|---|---|---|---|---|
-| 3.1 | Batch de puntos con `SKCanvas.DrawPoints(SKPointMode.Points, array)` | [PERF-F4] | 1 | `SkiaRenderer.cs` |
-| 3.2 | Pool de `SKPaint` reutilizados por color | [PERF-F4] | 0.5 | `PaintPool.cs` (nuevo) |
-| 3.3 | `SKPath` para figuras (DrawCircle, DrawLine, DrawArc nativos de Skia) | [PERF-F4] | 1 | `SkiaRenderer.cs` |
-| 3.4 | Anti-aliasing + sombras suaves en figuras | [IMPR-§5.3] | 1 | `SkiaRenderer.cs` |
-| 3.5 | Temas claro/oscuro premium con paleta profesional | [IMPR-§5.3] | 1 | `Theme.cs` (nuevo) |
-| 3.6 | Sistema de capas (z-order): `layer N; draw ...;` | [ENH-§4.1] | 1.5 | `Context.cs`, `Evaluator.cs`, `SkiaRenderer.cs` |
-| 3.7 | Selector de color visual en toolbar | [ENH-§1.11] | 1 | `MainWindow.axaml` |
-| 3.8 | Snap a grid configurable: `snap 0.5;` | [ENH-§4.4] | 0.5 | `Evaluator.cs`, `CoordinateSystem.cs` |
-| 3.9 | Estilos de línea (dashed, dotted, dash-dot) + grosor | [ENH-§3.4] | 1 | `Lexer.cs`, `Parser.cs`, `Evaluator.cs`, `SkiaRenderer.cs` |
-| 3.10 | Relleno de figuras (solid, gradient, none) | [ENH-§3.5] | 1.5 | `DrawObject.cs`, `Evaluator.cs`, `SkiaRenderer.cs` |
-| 3.11 | Ocultar/mostrar figuras: `hide l;` / `show l;` | [ENH-§4.2] | 0.5 | `Context.cs`, `Evaluator.cs`, `SkiaRenderer.cs` |
-| 3.12 | Exportar PNG: `SKCanvas.Snapshot()` → `SKImage.Encode(Png, 100)` → `File.WriteAllBytes` | [IMPR-§5.4] | 0.5 | `ExportService.cs` (nuevo) |
+| # | Tarea | Días | Archivos |
+|---|---|---|---|
+| 3.1 | **Expression Cache** en Application (hash del AST, invalidación en writes) | 1.5 | `ExpressionCache.cs` |
+| 3.2 | **PaintPool**: `SKPaint` reutilizados por color (evita alloc por frame) | 0.5 | `PaintPool.cs` (nuevo) |
+| 3.3 | **Batch GPU**: `SKCanvas.DrawPoints(SKPointMode.Points, array)` para puntos | 1 | `SkiaRenderer.cs` |
+| 3.4 | `SKPath` para figuras (DrawCircle, DrawLine, DrawArc nativos Skia) | 1 | `SkiaRenderer.cs` |
+| 3.5 | Anti-aliasing + sombras suaves + glows en figuras | 1 | `SkiaRenderer.cs` |
+| 3.6 | **Temas claro/oscuro** premium con paleta profesional | 1.5 | `Theme.cs`, toggle command |
+| 3.7 | **Sistema de capas** (z-order): `layer N; draw ...;` | 1.5 | `RenderScene.cs`, `SkiaRenderer.cs` |
+| 3.8 | **Selector de color** visual integrado en toolbar | 1 | toolbar |
+| 3.9 | **Snap a grid** configurable: `snap 0.5;` | 0.5 | `CoordinateSystem.cs` |
+| 3.10 | **Estilos de línea**: dashed, dotted, dash-dot, grosor | 1.5 | `Lexer.cs`, `Parser.cs`, `SkiaRenderer.cs` |
+| 3.11 | **Relleno de figuras**: solid, gradient (linear/radial), none | 1.5 | `DrawObject.cs`, `SkiaRenderer.cs` |
+| 3.12 | **Ocultar/mostrar figuras**: `hide l;` / `show l;` | 0.5 | `RenderScene.cs` |
+| 3.13 | **Exportar PNG**: `canvas.Snapshot()` → `SKImage.Encode(Png, 100)` → `File.WriteAllBytes` | 0.5 | `ExportService.cs` |
 
-**Checkpoint**: 100k puntos en < 0.5s. Temas, capas, estilos, relleno. Export PNG.
-
-### Código clave: batch GPU
-
-```csharp
-// Antes: GDI+ uno por uno
-private void Draw_Point(Point p) =>
-    Papel.FillEllipse(Brush, (float)p.x, (float)p.y, 5, 5);
-
-// Después: SkiaSharp batch
-private void DrawPointsBatch(SKCanvas canvas, SKPoint[] points, SKPaint paint)
-{
-    canvas.DrawPoints(SKPointMode.Points, points, paint);
-    // Una llamada al driver GPU para miles de puntos
-}
-```
-
-### Código clave: tema claro/oscuro
-
-```csharp
-public record Theme
-{
-    public static readonly Theme Light = new()
-    {
-        Background = SKColors.WhiteSmoke,
-        GridLines  = new SKColor(0, 0, 0, 30),
-        GridAxis   = new SKColor(0, 0, 0, 100),
-        AxisLabels = new SKColor(80, 80, 80),
-    };
-
-    public static readonly Theme Dark = new()
-    {
-        Background = new SKColor(30, 30, 30),
-        GridLines  = new SKColor(255, 255, 255, 20),
-        GridAxis   = new SKColor(255, 255, 255, 80),
-        AxisLabels = new SKColor(180, 180, 180),
-    };
-
-    public SKColor Background { get; init; }
-    public SKColor GridLines  { get; init; }
-    public SKColor GridAxis   { get; init; }
-    public SKColor AxisLabels { get; init; }
-}
-```
+**Checkpoint**: 100k puntos en < 0.5s. Cache acelera fractales recursivos. Temas, capas, estilos, relleno. Export PNG.
 
 ---
 
 ## Fase 4: Language Enhancements
 
-**Duración**: ~2.5 semanas · **Objetivo**: DSL rico — colores completos, figuras nuevas, loops.
+**Duración**: ~3 semanas · **Objetivo**: DSL rico — colores completos, figuras nuevas, bucles, animación.
 
-| # | Tarea | Origen | Días | Archivos |
-|---|---|---|---|---|
-| 4.1 | Color `#hex` (16M colores) | [ENH-§1.2] | 1 | `Lexer.cs`, `Parser.cs`, `Evaluator.cs`, `SkiaRenderer.cs` |
-| 4.2 | Color `rgb(r,g,b)` + `rgba(r,g,b,a)` | [ENH-§1.3-4] | 1 | `Lexer.cs`, `Parser.cs`, `Evaluator.cs` |
-| 4.3 | Color `hsl(h,s%,l%)` | [ENH-§1.5] | 1 | `Lexer.cs`, `Parser.cs`, `Evaluator.cs` |
-| 4.4 | Colores CSS completos (~140 nombres) | [ENH-§1.6] | 0.5 | `ColorTable.cs` (nuevo), `Evaluator.cs` |
-| 4.5 | Gradientes en fill: `fill linear(red, blue)` / `fill radial(red, blue)` | [ENH-§1.7] | 1.5 | `Lexer.cs`, `Parser.cs`, `Evaluator.cs`, `SkiaRenderer.cs` |
-| 4.6 | Operaciones cromáticas: `lighten`, `darken`, `mix`, `complement` | [ENH-§1.8] | 1.5 | `Lexer.cs`, `Parser.cs`, `Evaluator.cs` |
-| 4.7 | Comentarios en DSL (`#` / `//`) | [ENH-§2.1] | 0.3 | `Lexer.cs` |
-| 4.8 | `seed(n)` para random determinista | [ENH-§2.2] | 0.3 | `Lexer.cs`, `Parser.cs`, `Evaluator.cs`, `RandomProvider.cs` |
-| 4.9 | `print` / `debug` para output en statusbar | [ENH-§2.3] | 1 | `Lexer.cs`, `Parser.cs`, `Evaluator.cs`, `MainWindow.axaml.cs` |
-| 4.10 | Polígono regular: `polygon(center, radius, n)` | [ENH-§3.1] | 2 | `Polygon.cs` (nuevo), `Parser.cs`, `Evaluator.cs`, `SkiaRenderer.cs` |
-| 4.11 | Elipse: `ellipse(center, rx, ry)` | [ENH-§3.2] | 1.5 | `Ellipse.cs` (nuevo), `Parser.cs`, `Evaluator.cs`, `SkiaRenderer.cs` |
-| 4.12 | Texto/etiquetas: `label(point, "text", size=14)` | [ENH-§3.3] | 1.5 | `LabelFigure.cs` (nuevo), `Parser.cs`, `Evaluator.cs`, `SkiaRenderer.cs` |
-| 4.13 | Bucles: `for i in seq { ... }`, `repeat(n) { ... }` | [ENH-§2.7] | 3 | `AST.cs`, `Parser.cs`, `StateMachineEvaluator.cs` |
-| 4.14 | Constantes extra (`phi`, `sqrt2`) + funciones math (`tan`, `atan`, `abs`, `floor`, `ceil`) | [ENH-§2.5-6] | 0.5 | `Lexer.cs`, `Context.cs` |
-| 4.15 | Animación paramétrica: `animate(t from 0 to 2*PI) { ... }` | [ENH-§4.5] | 2.5 | `AST.cs`, `Parser.cs`, `StateMachineEvaluator.cs`, `StreamRenderer.cs` |
+| # | Tarea | Días | Archivos |
+|---|---|---|---|
+| 4.1 | Color `#hex` (16M colores) | 1 | Lexer/Parser/Evaluator |
+| 4.2 | Color `rgb(r,g,b)` + `rgba(r,g,b,a)` | 1 | Lexer/Parser/Evaluator |
+| 4.3 | Color `hsl(h,s%,l%)` | 1 | Lexer/Parser/Evaluator |
+| 4.4 | Colores CSS completos (~140 nombres) | 0.5 | `ColorTable.cs` |
+| 4.5 | Gradientes en fill: `fill linear(red, blue)` / `fill radial(red, blue)` | 1.5 | Lexer/Parser/Evaluator + Skia |
+| 4.6 | Operaciones cromáticas: `lighten`, `darken`, `mix`, `complement` | 1.5 | Lexer/Parser/Evaluator |
+| 4.7 | Comentarios en DSL (`#` / `//`) | 0.3 | `Lexer.cs` |
+| 4.8 | `seed(n)` para random determinista | 0.3 | `RandomProvider.cs` |
+| 4.9 | `print` / `debug` para output en statusbar | 1 | Lexer/Parser/Evaluator + UI |
+| 4.10 | **Polígono regular**: `polygon(center, radius, n)` | 2 | `Polygon.cs`, Parser, Evaluator, Renderer |
+| 4.11 | **Elipse**: `ellipse(center, rx, ry)` | 1.5 | `Ellipse.cs`, Parser, Evaluator, Renderer |
+| 4.12 | **Texto/etiquetas**: `label(point, "text", size=14)` | 1.5 | `LabelFigure.cs`, Parser, Evaluator, Renderer |
+| 4.13 | **Bucles**: `for i in seq { ... }`, `repeat(n) { ... }` | 3 | AST, Parser, Visitor |
+| 4.14 | Constantes extra (`phi`, `sqrt2`) + funciones math (`tan`, `atan`, `abs`, `floor`, `ceil`) | 0.5 | `Context.cs` |
+| 4.15 | **Animación paramétrica**: `animate(t from 0 to 2*PI) { ... }` | 2.5 | AST, Parser, Visitor, StreamRenderer |
 
 **Checkpoint**: DSL completo. Colores ilimitados. Polígono, elipse, texto, loops, animación.
 
 ---
 
-## Fase 5: Professional Polish
+## Fase 5: Professional Polish (Tests + CI)
 
-**Duración**: ~2 semanas · **Objetivo**: Tests, CI, calidad de código profesional.
+**Duración**: ~2.5 semanas · **Objetivo**: Tests, CI, calidad de código profesional.
 
-| # | Tarea | Origen | Días | Archivos |
-|---|---|---|---|---|
-| 5.1 | Proyecto `Wall-E.Core.Tests` con xUnit | [IMPR-§4.1] | 1 | `Wall-E.Core.Tests.csproj` (nuevo) |
-| 5.2 | Tests de lexer: tokenización correcta de cada token type | [IMPR-§4.1] | 1 | `LexerTests.cs` |
-| 5.3 | Tests de parser: AST correcto para cada statement | [IMPR-§4.1] | 1 | `ParserTests.cs` |
-| 5.4 | Tests de evaluator: cada operación (aritmética, figuras, draw, color, funciones) | [IMPR-§4.1] | 3 | `EvaluatorTests.cs` |
-| 5.5 | Tests de secuencias: finite, infinite (limitado), concatenación, take, count | [IMPR-§4.1] | 1.5 | `SequenceTests.cs` |
-| 5.6 | Tests de intersección: cada combinación de figuras | [IMPR-§4.1] | 2 | `IntersectionTests.cs` |
-| 5.7 | Tests de integración: archivos `.geo` completos | [IMPR-§4.1] | 1 | `IntegrationTests.cs` |
-| 5.8 | GitHub Actions CI: build en ubuntu + test en windows-latest | [IMPR-§4.4] | 1 | `.github/workflows/ci.yml` (nuevo) |
-| 5.9 | `.editorconfig` con reglas del proyecto | [IMPR-§5.5] | 0.3 | `.editorconfig` (nuevo) |
-| 5.10 | Roslynator + SonarAnalyzer configurados | [IMPR-§5.5] | 0.5 | `Directory.Build.props` (nuevo) |
-| 5.11 | XML doc comments en API pública de `Wall-E.Core` | [IMPR-§5.5] | 1 | todos los archivos de Core |
-| 5.12 | Git workflow: conventional commits, branch strategy, PR template | [IMPR-§4.5] | 0.5 | `.github/PULL_REQUEST_TEMPLATE.md` |
+| # | Tarea | Días | Archivos |
+|---|---|---|---|
+| 5.1 | Proyecto `Wall-E.Domain.Tests` + `Wall-E.Application.Tests` con xUnit | 1 | csprojs nuevos |
+| 5.2 | Tests de lexer: cada token type | 1 | `LexerTests.cs` |
+| 5.3 | Tests de parser: AST correcto para cada statement | 1 | `ParserTests.cs` |
+| 5.4 | Tests de evaluator: cada operación vía visitor | 3 | `EvaluatorTests.cs` |
+| 5.5 | Tests de secuencias: finite, infinite (limitado), concat, take, count | 1.5 | `SequenceTests.cs` |
+| 5.6 | Tests de intersección: cada combinación de figuras | 2 | `IntersectionTests.cs` |
+| 5.7 | Tests de integración: archivos `.geo` completos | 1 | `IntegrationTests.cs` |
+| 5.8 | Tests de ViewModel: ProcessCommand, Theme toggle, etc. | 1.5 | `MainViewModelTests.cs` |
+| 5.9 | GitHub Actions CI: build ubuntu + test windows-latest | 1 | `.github/workflows/ci.yml` |
+| 5.10 | `.editorconfig` con reglas del proyecto | 0.3 | `.editorconfig` |
+| 5.11 | Roslynator + SonarAnalyzer configurados | 0.5 | `Directory.Build.props` |
+| 5.12 | XML doc comments en API pública de `Wall-E.Domain` + `Application` | 1 | todos los archivos |
 
-**Checkpoint**: `dotnet test` pasa en CI. Código analizado en cada PR. Documentación XML pública.
-
-### Workflow CI
-
-```yaml
-# .github/workflows/ci.yml
-name: CI
-on: [push, pull_request]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with: { dotnet-version: '6.0' }
-      - run: dotnet restore
-      - run: dotnet build --no-restore -c Release
-  test:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with: { dotnet-version: '6.0' }
-      - run: dotnet test -c Release --verbosity normal
-```
-
-### Estructura final del proyecto
-
-```
-WALL-E/
-  Wall-E.sln
-  src/
-    Wall-E.Core/
-      Lexer/        Lexer.cs, TokenStream.cs
-      Parser/       Parser.cs, GeneralParser.cs
-      AST/
-        Node.cs
-        Expression/
-        Geometric Objects/  Point.cs, Line.cs, Circle.cs, Arc.cs, Polygon.cs, Ellipse.cs
-        Sequence/    Sequence.cs, Infinite Sequence.cs, Finite_Sequence.cs, TakenSequence.cs
-      Evaluation/
-        Evaluator.cs, StateMachineEvaluator.cs, ExpressionCache.cs
-        GeneralEvaluator.cs
-      Enviroment/
-        Context.cs, Scope.cs, DrawObject.cs, Error.cs, Function.cs, RandomProvider.cs
-      Wall-E.Core.csproj (net6.0)
-    Wall-E.Avalonia/
-      MainWindow.axaml
-      MainWindow.axaml.cs
-      Rendering/    SkiaRenderer.cs, StreamRenderer.cs, GridRenderer.cs, ViewState.cs
-      Pipeline/     DrawPipeline.cs, DrawCommand.cs
-      Theme.cs, PaintPool.cs, ExportService.cs
-      Wall-E.Avalonia.csproj (net6.0)
-  tests/
-    Wall-E.Core.Tests/
-      LexerTests.cs, ParserTests.cs, EvaluatorTests.cs
-      SequenceTests.cs, IntersectionTests.cs, IntegrationTests.cs
-      Wall-E.Core.Tests.csproj (net6.0)
-  GeoLibrary/       demo.geo, fractal.geo, samples.geo
-  .github/
-    workflows/ci.yml
-    PULL_REQUEST_TEMPLATE.md
-  .editorconfig
-  README.md
-  LICENSE
-  AGENTS.md
-  IMPROVEMENT_PLAN.md
-  PERFORMANCE_PLAN.md
-  ENHANCEMENTS.md
-  ROADMAP.md
-```
+**Checkpoint**: `dotnet test` pasa en CI. Cobertura > 40%. Análisis estático en cada PR.
 
 ---
 
 ## Fase 6: Portfolio Finalization
 
-**Duración**: ~1 semana · **Objetivo**: Presentación profesional lista para reclutadores.
+**Duración**: ~1.5 semanas · **Objetivo**: Presentación profesional.
 
-| # | Tarea | Origen | Días | Archivos |
-|---|---|---|---|---|
-| 6.1 | README.md en inglés con badges (build, license, .NET) + ejemplos de código + screenshot | [IMPR-§6.1] | 1 | `README.md` |
-| 6.2 | Screenshots de alta calidad: demo figuras, grid, tema oscuro, highlighting | [IMPR-§6.2] | 1 | `docs/screenshots/` |
-| 6.3 | Archivos `.geo` de ejemplo (demo, fractales, samples) en GeoLibrary | [IMPR-§6.4] | 1 | `GeoLibrary/demo.geo`, `fractal.geo` |
-| 6.4 | LICENSE (MIT) | [IMPR-§6.3] | 0.1 | `LICENSE` (nuevo) |
-| 6.5 | CLI tool: `Wall-E.Cli` para procesar .geo headless (`input.geo -o output.png`) | [ENH-§6.4] | 2 | `Wall-E.Cli.csproj` (nuevo), `Program.cs` |
-| 6.6 | Exportar SVG: generar XML SVG desde figuras | [ENH-§6.1] | 2 | `SvgExporter.cs` (nuevo) |
-| 6.7 | Demo online: publicar Avalonia Wasm en GitHub Pages | [IMPR-§6.5] | 1 | `docs/` folder + GH Pages config |
-| 6.8 | Syntax highlighting en el editor del DSL (AvaloniaEdit o Skia custom) | [IMPR-§5.5][ENH-§1] | 2 | `DslHighlighting.cs` (nuevo), `MainWindow.axaml` |
+| # | Tarea | Días | Archivos |
+|---|---|---|---|
+| 6.1 | README.md en inglés con badges + ejemplos + screenshot | 1 | `README.md` |
+| 6.2 | Screenshots de alta calidad: demo, grid, dark theme | 1 | `docs/screenshots/` |
+| 6.3 | Archivos `.geo` de ejemplo (demo, fractal, samples) | 1 | `GeoLibrary/` |
+| 6.4 | LICENSE (MIT) | 0.1 | `LICENSE` |
+| 6.5 | CLI tool: `Wall-E.Cli` (headless, input.geo → output.png) | 2 | `Wall-E.Cli.csproj` |
+| 6.6 | Exportar SVG desde la escena | 2 | `SvgExporter.cs` |
+| 6.7 | Demo online: publicar Avalonia Wasm en GitHub Pages | 1.5 | `docs/` + GH Pages |
+| 6.8 | Syntax highlighting en editor DSL (AvaloniaEdit o Skia custom) | 2 | `DslHighlighting.cs` |
 
-**Checkpoint**: README profesional, ejemplos, CLI, demo online, LICENSE. Listo para compartir.
+**Checkpoint**: README profesional, ejemplos, CLI, demo online, LICENSE.
 
-### Badges para README
+---
 
-```markdown
-![Build](https://img.shields.io/github/actions/workflow/status/user/WALL-E/ci.yml?branch=main)
-![License](https://img.shields.io/github/license/user/WALL-E)
-![.NET](https://img.shields.io/badge/.NET-6.0-512BD4)
-![Platform](https://img.shields.io/badge/platform-win%20%7C%20linux%20%7C%20mac-lightgrey)
+## Estructura final del proyecto
+
+```
+WALL-E/
+  Wall-E.sln
+  src/
+    Wall-E.Domain/
+      AST/
+        Node.cs, NodeType.cs, INodeVisitor.cs, INodeVisitorExtensions.cs
+      Figures/
+        Figure.cs (abstract), Point.cs, Line.cs, Circle.cs,
+        Segment.cs, Ray.cs, Arc.cs, Polygon.cs, Ellipse.cs, LabelFigure.cs
+      Evaluation/
+        EvaluationContext.cs, Scope.cs
+        EvaluationResult.cs, ErrorResult.cs
+        IEvaluator.cs
+      Geometry/
+        IntersectionHelper.cs, MeasureHelper.cs
+      Wall-E.Domain.csproj (net6.0, 0 dependencies)
+
+    Wall-E.Application/
+      Interfaces/
+        ILexer.cs, IParser.cs, IPipeline.cs, ISceneBuilder.cs
+      DSL/
+        Lexer/  (Lexer.cs, Token.cs, TokenStream.cs, GeneralLexer.cs)
+        Parser/ (Parser.cs, GeneralParser.cs)
+      Pipeline/
+        PipelineOrchestrator.cs, Scene.cs, RenderCommand.cs
+      Caching/
+        ExpressionCache.cs
+      Services/
+        GeoImporter.cs, ExportService.cs
+      Wall-E.Application.csproj (net6.0, → Domain)
+
+    Wall-E.Infrastructure/
+      FileSystem/
+        GeoLibraryLoader.cs
+      Wall-E.Infrastructure.csproj (net6.0, → Application)
+
+    Wall-E.UI.Avalonia/
+      ViewModels/
+        ViewModelBase.cs, RelayCommand.cs
+        MainViewModel.cs, CanvasViewModel.cs
+        StatusBarViewModel.cs, EditorViewModel.cs
+      Views/
+        MainWindow.axaml + .cs
+        EditorView.axaml, CanvasView.axaml
+      Rendering/
+        SkiaRenderer.cs, StreamRenderer.cs
+        GridRenderer.cs, SceneBuilder.cs
+        PaintPool.cs, ViewState.cs
+        CoordinateSystem.cs
+      Theme.cs, ExportService.cs
+      Wall-E.UI.Avalonia.csproj (net6.0, → Application + Infrastructure)
+
+  tests/
+    Wall-E.Domain.Tests/
+      EvaluatorTests.cs, FigureTests.cs
+      SequenceTests.cs, IntersectionTests.cs
+    Wall-E.Application.Tests/
+      LexerTests.cs, ParserTests.cs
+      PipelineTests.cs, IntegrationTests.cs
+    Wall-E.UI.Tests/
+      MainViewModelTests.cs
+
+  GeoLibrary/    (demo.geo, fractal.geo, samples.geo)
+  .github/workflows/ci.yml
+  .editorconfig
+  README.md, LICENSE, AGENTS.md
+  IMPROVEMENT_PLAN.md, PERFORMANCE_PLAN.md, ENHANCEMENTS.md, ROADMAP.md
 ```
 
 ---
 
-## Tabla de trazabilidad completa
+## Lo que NO entra en este plan (sin cambios vs v1)
 
-| Origen | Se asigna a |
+| Mejora | Motivo |
 |---|---|
-| `PERFORMANCE_PLAN.md` F0 | Fase 0 (#0.1-0.4) |
-| `PERFORMANCE_PLAN.md` F1 | Fase 0 (#0.5-0.7) |
-| `PERFORMANCE_PLAN.md` F2 | Fase 2 (#2.3-2.5) |
-| `PERFORMANCE_PLAN.md` F3 | Fase 1 (#1.5) |
-| `PERFORMANCE_PLAN.md` F4 | Fase 3 (#3.1-3.3) |
-| `PERFORMANCE_PLAN.md` F5 | Fase 0 (#0.11-0.13) |
-| `PERFORMANCE_PLAN.md` F6 | Fase 1 (#1.6) |
-| `IMPROVEMENT_PLAN.md` §2.2 (bugs) | Fase 0 (#0.8-0.10, 0.14-0.15) |
-| `IMPROVEMENT_PLAN.md` §2.1 (classes from Form) | Fase 1 (#1.1) |
-| `IMPROVEMENT_PLAN.md` §2.2 (refactor) | Fase 1 (#1.3-1.4) |
-| `IMPROVEMENT_PLAN.md` §3 (optimizaciones) | Fase 0 (#0.11-0.13), Fase 1 (#1.6) |
-| `IMPROVEMENT_PLAN.md` §5 (migración UI) | Fase 2 (#2.1-2.10) |
-| `IMPROVEMENT_PLAN.md` §5.3 (estética) | Fase 3 (#3.4-3.12) |
-| `IMPROVEMENT_PLAN.md` §4 (prácticas) | Fase 5 (#5.1-5.12) |
-| `IMPROVEMENT_PLAN.md` §6 (documentación) | Fase 6 (#6.1-6.4, 6.7) |
-| `ENHANCEMENTS.md` §1 (color) | Fase 4 (#4.1-4.6), Fase 3 (#3.7) |
-| `ENHANCEMENTS.md` §2 (DSL) | Fase 4 (#4.7-4.9, 4.13-4.14) |
-| `ENHANCEMENTS.md` §3 (figuras) | Fase 4 (#4.10-4.12) |
-| `ENHANCEMENTS.md` §4 (dibujo) | Fase 3 (#3.6, 3.8, 3.11), Fase 4 (#4.15) |
-| `ENHANCEMENTS.md` §5 (performance) | Fase 0 (#0.5-0.6) |
-| `ENHANCEMENTS.md` §6 (I/O) | Fase 6 (#6.5-6.6) |
-
----
-
-## Lo que NO entra en este plan
-
-| Mejora | Motivo de exclusión |
-|---|---|
-| Undo/redo en comandos | Esfuerzo alto (~5d), impacto medio en entrevista |
-| Arrastrar puntos interactivamente | Requiere sistema de selección + hit testing complejo |
-| Auto-completado del DSL | IA/búsqueda, desvío del core del proyecto |
-| Evaluación incremental (diff AST) | Alta complejidad, mejora marginal vs streaming |
-| Import/export DXF / GeoJSON | Nicho, esfuerzo alto por formato |
-| Macros en el DSL | Complejo, poca visibilidad en portafolio |
-| System clock / env vars | Irrelevante para geometría |
-| Tuplas, mapas, records en DSL | Cambio profundo en sistema de tipos (~8d) |
+| Undo/redo en comandos | ~5d, impacto medio |
+| Arrastrar puntos interactivamente | Hit testing complejo |
+| Auto-completado del DSL | Desvío del core |
+| Evaluación incremental (diff AST) | Mejora marginal vs streaming |
+| Import/export DXF / GeoJSON | Nicho, esfuerzo alto |
+| Macros en el DSL | Complejo, poca visibilidad |
+| Tuplas, mapas, records en DSL | Cambio profundo (~8d) |
 | Break/continue en loops | Baja prioridad vs loops básicos |
-
----
-
-*Documento generado el 2026-07-01. Integra IMPROVEMENT_PLAN.md, PERFORMANCE_PLAN.md y ENHANCEMENTS.md en un roadmap unificado de 7 fases y ~16 semanas.*

@@ -28,14 +28,39 @@ Plan estratégico para transformar GeoWall-E de proyecto escolar a portafolio pr
 - Bug concreto en `GenerateSamples` y `ParseSum_O_Sub`
 - Sin async, sin DI, sin separación de capas
 
-### Roadmap (4 fases)
+### Roadmap (7 fases, ~18 semanas)
 
 | Fase | Duración | Resultado |
 |---|---|---|
-| **F1: Foundation** | 1 semana | Tests, refactor del monolito, bugs críticos, separar clases de `Form` |
-| **F2: Modern UI** | 2 semanas | Migración a Avalonia, grid, zoom, exportar PNG |
-| **F3: Polish** | 1 semana | Rendimiento, estética premium, syntax highlighting, CI |
-| **F4: Portfolio** | 3 días | README en inglés, screenshots, license, demo online |
+| **F0: Foundation** | 1.5 semanas | ✅ App no congela. Async pipeline. MaxElements. Bugs corregidos |
+| **F1: Clean Architecture** | 3 semanas | Domain/Application/Infrastructure separados. Visitor Pattern. `IEvaluationResult`. `Result<T,E>` |
+| **F2: Avalonia + MVVM** | 3 semanas | UI moderna con MVVM puro, streaming progresivo, grid, zoom/pan |
+| **F3: GPU + Cache** | 2.5 semanas | SkiaSharp batch rendering. Expression Cache. Temas claro/oscuro. Estilos |
+| **F4: Language++** | 3 semanas | Colores completos, polígono, elipse, bucles, animación |
+| **F5: Tests + CI** | 2.5 semanas | xUnit tests, CI, analyzers, .editorconfig |
+| **F6: Portfolio** | 1.5 semanas | README, CLI, demo online, syntax highlighting |
+
+**Arquitectura objetivo**: Clean Architecture en 4 capas:
+
+```
+┌──────────────────────────────┐
+│   Wall-E.UI.Avalonia (MVVM)  │  → SkiaSharp, ViewModels, Themes
+├──────────────────────────────┤
+│   Wall-E.Application         │  → Pipeline, Caching, DSL Parsing
+├──────────────────────────────┤
+│   Wall-E.Domain              │  → AST, Figures, Evaluation, Geometry
+├──────────────────────────────┤
+│   Wall-E.Infrastructure      │  → File I/O, Persistence
+└──────────────────────────────┘
+```
+
+Cambios clave respecto al plan original:
+- `Context` se divide en `EvaluationContext` + `FigureRepository` + `RenderScene`
+- `object` return se reemplaza por `IEvaluationResult` sellado
+- Switch monolítico se reemplaza por `INodeVisitor<T>`
+- Evaluador produce `Scene` inmutable (no conoce Channel)
+- MVVM puro con ViewModels inyectados (no code-behind)
+- `Result<T, E>` monádico para errores composables
 
 ---
 
@@ -139,6 +164,18 @@ WinForms es una tecnología muerta para reclutadores externos a Microsoft. Para 
 | Dificultad migración | Media | Media | — |
 
 **Implementación**: Un `Avalonia.Controls.Canvas` con un `SKCanvas` de SkiaSharp reemplaza al `PictureBox`. Los objetos geométricos se renderizan con `SKPaint` en lugar de `System.Drawing.Pen/Brush`.
+
+**Arquitectura MVVM pura**:
+
+```
+MainViewModel (code, isProcessing, status)
+  → EditorViewModel (code text, syntax highlighting)
+  → CanvasViewModel (scene, zoom, pan, cursor)
+  → StatusBarViewModel (figure count, cursor position)
+```
+
+Cada ViewModel se inyecta via constructor (DI manual o `Microsoft.Extensions.DependencyInjection`).  
+Zero code-behind en lo posible. Toda la lógica de UI está en ViewModels testables.
 
 **Mejoras visuales que impactan**
 
@@ -860,18 +897,36 @@ jobs:
 WALL-E/
   Wall-E.sln
   src/
-    Wall-E.Core/             # Lógica principal (sin dependencies de UI)
-      Lexer/
-      Parser/
-      AST/
-      Evaluation/
-      Enviroment/
-      Wall-E.Core.csproj     # net6.0 (no Windows-specific)
-    Wall-E.Avalonia/          # UI (Avalonia)
-      Wall-E.Avalonia.csproj # net6.0 (multi-target)
+    Wall-E.Domain/              # 0 dependencias externas
+      AST/                      # Node, NodeType, INodeVisitor<T>
+      Figures/                  # Point, Line, Circle, etc.
+      Evaluation/               # EvaluationContext, EvaluationResult, IEvaluator
+      Geometry/                 # Intersections, measures
+      Wall-E.Domain.csproj      # net6.0
+
+    Wall-E.Application/         # → Domain
+      Interfaces/               # ILexer, IParser, IPipeline, ISceneBuilder
+      DSL/                      # Lexer, Parser, GeneralLexer, GeneralParser
+      Pipeline/                 # PipelineOrchestrator, Scene, RenderCommand
+      Caching/                  # ExpressionCache
+      Wall-E.Application.csproj # net6.0
+
+    Wall-E.Infrastructure/      # → Application
+      FileSystem/               # GeoLibrary loader
+      Wall-E.Infrastructure.csproj
+
+    Wall-E.UI.Avalonia/         # → Application + Infrastructure
+      ViewModels/               # MainViewModel, CanvasViewModel, etc.
+      Views/                    # MainWindow.axaml, EditorView, CanvasView
+      Rendering/                # SkiaRenderer, StreamRenderer, GridRenderer
+      Theme.cs, PaintPool.cs
+      Wall-E.UI.Avalonia.csproj
+
   tests/
-    Wall-E.Core.Tests/        # Tests unitarios
-      Wall-E.Core.Tests.csproj
+    Wall-E.Domain.Tests/
+    Wall-E.Application.Tests/
+    Wall-E.UI.Tests/
+
   GeoLibrary/
   docs/
   README.md

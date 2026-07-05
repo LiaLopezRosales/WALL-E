@@ -2,16 +2,27 @@
 
 ## Project
 
-GeoWall-E: geometric drawing interpreter with a Windows Forms GUI.  
-Target: `net6.0-windows` (Windows-only). No tests, no CI, no linter/formatter.
+GeoWall-E: geometric drawing interpreter.  
+Target architecture: Clean Architecture (4 layers).  
+Target framework: `net6.0` (cross-platform after Fase 1).
 
 ## Commands
 
 ```bash
-dotnet build Wall-E.csproj      # build
-dotnet run --project Wall-E.csproj  # run
-./Wall-E.sh                     # build + run
-dotnet clean                    # clean
+dotnet build src/Wall-E.Domain/Wall-E.Domain.csproj       # build domain (Linux OK)
+dotnet build src/Wall-E.Application/Wall-E.Application.csproj   # build application
+dotnet build src/Wall-E.Infrastructure/Wall-E.Infrastructure.csproj # build infrastructure
+dotnet build src/Wall-E.UI.Avalonia/Wall-E.UI.Avalonia.csproj    # build UI (Windows)
+dotnet build Wall-E.sln                                    # build all
+dotnet run --project src/Wall-E.UI.Avalonia/Wall-E.UI.Avalonia.csproj  # run
+./Wall-E.sh                                                # build + run (legacy WinForms)
+dotnet clean                                               # clean
+```
+
+Until Fase 1 is complete, the legacy build still works:
+```bash
+dotnet build Wall-E.csproj
+dotnet run --project Wall-E.csproj
 ```
 
 ## Commit discipline (hard rule)
@@ -38,7 +49,31 @@ Rationale: this is a portfolio project. Commit history is the only proof of work
 | `Analyze`/`Analyzer` | `Analize` / `Anallizer` |
 | `issuedContext` | `issuedcontext` |
 
-## Architecture quirks
+## Architecture (target — after Fase 1)
+
+```
+Wall-E.Domain/              → 0 external dependencies
+  AST/                      Node, NodeType, INodeVisitor<T>
+  Figures/                  Point, Line, Circle, etc.
+  Evaluation/               EvaluationContext, EvaluationResult, IEvaluator
+  Geometry/                 Intersections, measures
+
+Wall-E.Application/         → depends on Domain
+  Interfaces/               ILexer, IParser, IPipeline
+  DSL/                      Lexer, Parser
+  Pipeline/                 PipelineOrchestrator, Scene
+  Caching/                  ExpressionCache
+
+Wall-E.Infrastructure/      → depends on Application
+  FileSystem/               GeoLibrary loader
+
+Wall-E.UI.Avalonia/         → depends on Application + Infrastructure
+  ViewModels/               MainViewModel, CanvasViewModel
+  Views/                    MainWindow.axaml
+  Rendering/                SkiaRenderer, StreamRenderer, GridRenderer
+```
+
+## Architecture quirks (pre-refactor)
 
 - **Many non-UI classes inherit `Form`** (`Figure`, `ArchiveAnalysis`, `Evaluator` all extend `System.Windows.Forms.Form`).
 - **Pipeline**: `GeneralLexer` (regex line-by-line) → `GeneralParser` (recursive descent) → `GeneralEvaluation` (single 1320+ line `if/else` chain).
@@ -46,16 +81,16 @@ Rationale: this is a portfolio project. Commit history is the only proof of work
 - **Evaluator** at `Evaluation/Evaluator/Evaluator.cs` handles all node types in one massive method.
 - **Import system**: `.geo` files must be placed in `GeoLibrary/`; filename must be unique across subdirectories.
 
-## Performance bottlenecks (freeze/crash on fractals)
+## Performance bottlenecks (pre-fix, all resolved in Fase 0)
 
-- **Draw loop blocks UI thread** — `Form1.cs:116-125` consumes infinite sequences in `while(Continue)` on the UI thread with no yield. Stop button cannot fire.
+- **Draw loop blocks UI thread** — `Form1.cs:116-125` consumes infinite sequences in `while(Continue)` on the UI thread with no yield.
 - **No consumption limit on infinite sequences** — `foreach` over infinite `.Sequence` in `Sum.cs:31-44` / `Sequence Concatenation.cs:38-68` never terminates.
 - **Three `while(true)` generators** in `Context.cs:56,71,89` (`randoms`, `samples`, `points`).
 - **No async, no CancellationToken** anywhere. `Continue` flag is not `volatile`.
-- **Bug**: `GenerateSamples` (`Context.cs:66-82`) reuses the same `Point` reference — all yielded elements are the last mutated value.
+- **Bug**: `GenerateSamples` (`Context.cs:66-82`) reuses the same `Point` reference.
 - **Bug**: `ParseSum_O_Sub` (`Parser.cs:922-924`) sets `NodeExpression = "-"` even for Sum.
 
-See `PERFORMANCE_PLAN.md` for the optimization roadmap.
+All resolved in Fase 0. See `PERFORMANCE_PLAN.md` for the optimization roadmap.  
 See `ROADMAP.md` for the unified implementation plan across all areas.
 
 ## Other
