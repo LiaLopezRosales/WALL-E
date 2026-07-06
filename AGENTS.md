@@ -13,8 +13,7 @@ dotnet build src/Wall-E.Domain/Wall-E.Domain.csproj       # build domain (Linux 
 dotnet build src/Wall-E.Application/Wall-E.Application.csproj   # build application
 dotnet build src/Wall-E.Infrastructure/Wall-E.Infrastructure.csproj # build infrastructure
 dotnet build src/Wall-E.UI.Avalonia/Wall-E.UI.Avalonia.csproj    # build UI (Windows)
-dotnet build Wall-E.sln                                    # build all
-dotnet run --project src/Wall-E.UI.Avalonia/Wall-E.UI.Avalonia.csproj  # run
+dotnet build src/Wall-E.sln                                # build new architecture
 ./Wall-E.sh                                                # build + run (legacy WinForms)
 dotnet clean                                               # clean
 ```
@@ -49,25 +48,25 @@ Rationale: this is a portfolio project. Commit history is the only proof of work
 | `Analyze`/`Analyzer` | `Analize` / `Anallizer` |
 | `issuedContext` | `issuedcontext` |
 
-## Architecture (target — after Fase 1)
+## Architecture (completed — Fase 1)
 
 ```
 Wall-E.Domain/              → 0 external dependencies
   AST/                      Node, NodeType, INodeVisitor<T>
-  Figures/                  Point, Line, Circle, etc.
-  Evaluation/               EvaluationContext, EvaluationResult, IEvaluator
-  Geometry/                 Intersections, measures
+  Figures/                  Point, Line, Circle, Line, Segment, Ray, Arc, Measure
+  Evaluation/               EvaluationContext, EvaluationResult (sealed), EvaluatorVisitor
+  Geometry/                 GeometricTools
+  RandomProvider.cs, Scope.cs, Function.cs, DrawObject.cs, Error.cs, Location.cs
 
 Wall-E.Application/         → depends on Domain
   Interfaces/               ILexer, IParser, IPipeline
-  DSL/                      Lexer, Parser
-  Pipeline/                 PipelineOrchestrator, Scene
-  Caching/                  ExpressionCache
+  DSL/                      GeneralLexer, Lexer, Token, TokenStream, GeneralParser, Parser
+  Pipeline/                 PipelineOrchestrator
 
 Wall-E.Infrastructure/      → depends on Application
-  FileSystem/               GeoLibrary loader
+  FileSystem/               GeoLibraryLoader
 
-Wall-E.UI.Avalonia/         → depends on Application + Infrastructure
+Wall-E.UI.Avalonia/         → depends on Application + Infrastructure (TODO - Fase 2)
   ViewModels/               MainViewModel, CanvasViewModel
   Views/                    MainWindow.axaml
   Rendering/                SkiaRenderer, StreamRenderer, GridRenderer
