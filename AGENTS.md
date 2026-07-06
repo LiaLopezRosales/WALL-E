@@ -4,7 +4,7 @@
 
 GeoWall-E: geometric drawing interpreter.  
 Target architecture: Clean Architecture (4 layers).  
-Target framework: `net6.0` (cross-platform after Fase 1).
+Target framework: `net8.0`.
 
 ## Commands
 
@@ -18,7 +18,7 @@ dotnet build src/Wall-E.sln                                # build new architect
 dotnet clean                                               # clean
 ```
 
-Until Fase 1 is complete, the legacy build still works:
+The legacy build still works (separate project):
 ```bash
 dotnet build Wall-E.csproj
 dotnet run --project Wall-E.csproj

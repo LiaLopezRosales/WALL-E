@@ -3,9 +3,9 @@ namespace Wall_E.Domain;
 
 public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
 {
-    private readonly EvaluationContext _context;
-    private readonly FigureRepository _figures;
-    private readonly RenderScene _scene;
+    private EvaluationContext _context;
+    private FigureRepository _figures;
+    private RenderScene _scene;
     private readonly Scope _rootScope;
     private Scope _currentScope;
     private readonly string _file;
@@ -175,25 +175,352 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitIf(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitElse(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitDeclaredFuc(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitNegation(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitVar(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitParameters(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitFuction(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitConcat(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitAnd(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitOr(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitMinor(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitMajor(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitEqualMinor(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitEqualMajor(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitEqual(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitDiferent(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitSum(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitSub(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitMul(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitDiv(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitModule(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitPow(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitNegation(Node node)
+    {
+        EvaluationResult valResult = Visit(node.Branches[0]);
+        if (valResult is ErrorResult) return valResult;
+        object val = UnwrapRaw(valResult)!;
+        if (CheckTrueORFalse.Check(val))
+            return new NumberResult(0);
+        return new NumberResult(1);
+    }
+
+    public EvaluationResult VisitMinor(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is Measure)))
+        {
+            AddError("numeric or measure values");
+            return new VoidResult();
+        }
+
+        var min = new Minor();
+        min.Evaluate(left, right);
+        return WrapResult(min.Value);
+    }
+
+    public EvaluationResult VisitMajor(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is Measure)))
+        {
+            AddError("numeric or measure values");
+            return new VoidResult();
+        }
+
+        var maj = new Major();
+        maj.Evaluate(left, right);
+        return WrapResult(maj.Value);
+    }
+
+    public EvaluationResult VisitEqualMajor(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is Measure)))
+        {
+            AddError("numeric or measure values");
+            return new VoidResult();
+        }
+
+        var emaj = new Equal_Major();
+        emaj.Evaluate(left, right);
+        return WrapResult(emaj.Value);
+    }
+
+    public EvaluationResult VisitEqualMinor(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is Measure)))
+        {
+            AddError("numeric or measure values");
+            return new VoidResult();
+        }
+
+        var emin = new Equal_Minor();
+        emin.Evaluate(left, right);
+        return WrapResult(emin.Value);
+    }
+
+    public EvaluationResult VisitOr(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if (left is null || right is null)
+        {
+            AddError("valid values to operate");
+            return new VoidResult();
+        }
+
+        var or = new Or();
+        or.Evaluate(left, right);
+        return WrapResult(or.Value);
+    }
+
+    public EvaluationResult VisitAnd(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if (left is null || right is null)
+        {
+            AddError("valid values to operate");
+            return new VoidResult();
+        }
+
+        var and = new And();
+        and.Evaluate(left, right);
+        return WrapResult(and.Value);
+    }
+
+    public EvaluationResult VisitEqual(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if (left is null || right is null)
+        {
+            AddError("valid values to operate");
+            return new VoidResult();
+        }
+
+        var eq = new Equal();
+        eq.Evaluate(left, right);
+        return WrapResult(eq.Value);
+    }
+
+    public EvaluationResult VisitDiferent(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if (left is null || right is null)
+        {
+            AddError("valid values to operate");
+            return new VoidResult();
+        }
+
+        var dif = new Diferent();
+        dif.Evaluate(left, right);
+        return WrapResult(dif.Value);
+    }
+
+    public EvaluationResult VisitSum(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if (left is string s1 && s1 == "undefined" && right is AbsSequence)
+            return new StringResult("undefined");
+
+        if ((left is AbsSequence || left is Enclosed_Infinite_Sequence || left is Finite_Sequence<object> ||
+             left is Finite_Sequence<Point> || left is Infinite_Sequence || left is InfinitePointSequence ||
+             left is InfiniteDoubleSequence) && right is string s2 && s2 == "undefined")
+        {
+            var sum = new Sum();
+            sum.Evaluate(left, right);
+            return WrapResult(sum.Value);
+        }
+
+        if (left is AbsSequence && right is AbsSequence)
+        {
+            var sum = new Sum();
+            sum.Evaluate(left, right);
+            return WrapResult(sum.Value);
+        }
+
+        if (left.GetType() != right.GetType() ||
+            (!(left is double) && !(left is long) && !(left is string) && !(left is Measure) &&
+             !(left is Finite_Sequence<object>) && !(left is Finite_Sequence<Point>) &&
+             !(left is Enclosed_Infinite_Sequence) && !(left is Infinite_Sequence) &&
+             !(left is InfiniteDoubleSequence) && !(left is InfinitePointSequence)))
+        {
+            AddError("valid values to operate");
+            return new VoidResult();
+        }
+
+        var sumOp = new Sum();
+        sumOp.Evaluate(left, right);
+        return WrapResult(sumOp.Value);
+    }
+
+    public EvaluationResult VisitSub(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is Measure)))
+        {
+            AddError("valid values to operate");
+            return new VoidResult();
+        }
+
+        var sub = new Substraction();
+        sub.Evaluate(left, right);
+        return WrapResult(sub.Value);
+    }
+
+    public EvaluationResult VisitMul(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if (!(left is double && right is Measure) && !(left is long && right is Measure) &&
+            !(left is Measure && right is double) && !(left is Measure && right is long) &&
+            !(left is double && right is double) && !(left is long && right is long))
+        {
+            AddError("valid values to operate");
+            return new VoidResult();
+        }
+
+        var mul = new Multiplication();
+        mul.Evaluate(left, right);
+        return WrapResult(mul.Value);
+    }
+
+    public EvaluationResult VisitDiv(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if ((left.GetType() != right.GetType()) || (!(left is double) && !(left is long) && !(left is Measure)))
+        {
+            AddError("valid values to operate");
+            return new VoidResult();
+        }
+
+        if ((right is double rd && rd == 0) || (right is Measure rm && rm.Value == 0))
+        {
+            AddError("operation,can't divide by zero");
+            return WrapResult(left);
+        }
+
+        try
+        {
+            var div = new Division();
+            div.Evaluate(left, right);
+            return WrapResult(div.Value);
+        }
+        catch (DivideByZeroException)
+        {
+            AddError("operation,can't divide by zero");
+            return WrapResult(left);
+        }
+    }
+
+    public EvaluationResult VisitModule(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if ((!(left is double) && !(left is long)) || (!(right is double) && !(right is long)))
+        {
+            AddError("numerical values");
+            return new VoidResult();
+        }
+
+        var mod = new Module();
+        mod.Evaluate(left, right);
+        return WrapResult(mod.Value);
+    }
+
+    public EvaluationResult VisitPow(Node node)
+    {
+        EvaluationResult leftResult = Visit(node.Branches[0]);
+        if (leftResult is ErrorResult) return leftResult;
+        EvaluationResult rightResult = Visit(node.Branches[1]);
+        if (rightResult is ErrorResult) return rightResult;
+
+        object left = UnwrapRaw(leftResult)!;
+        object right = UnwrapRaw(rightResult)!;
+
+        if ((!(left is double) && !(left is long)) || (!(right is double) && !(right is long)))
+        {
+            AddError("numerical values");
+            return new VoidResult();
+        }
+
+        var pow = new Power();
+        pow.Evaluate(left, right);
+        return WrapResult(pow.Value);
+    }
     public EvaluationResult VisitArc(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitPointSeq(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitLineSeq(Node node) => EvaluateFallback(node);
@@ -246,6 +573,21 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         if (result is Figure f) return new FigureResult(f);
         if (result is EvaluationResult er) return er;
         return new StringResult(result.ToString()!);
+    }
+
+    private static object? UnwrapRaw(EvaluationResult result) => result switch
+    {
+        NumberResult n => n.Value,
+        StringResult s => s.Value,
+        FigureResult f => f.Value,
+        SequenceResult seq => seq.Value,
+        _ => null
+    };
+
+    private void AddError(string expected)
+    {
+        _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected,
+            expected, new Location(_file, _line, "column")));
     }
 
     private void StoreVariable(string name, object value)
