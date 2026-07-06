@@ -1,3 +1,4 @@
+using System.Threading;
 namespace Wall_E.Domain;
 
 public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
@@ -10,6 +11,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     private readonly string _file;
     private string _line = "0";
     private readonly List<Error> _semanticErrors = new();
+    public CancellationToken CancellationToken { get; set; }
 
     public IReadOnlyList<Error> SemanticErrors => _semanticErrors;
     public Scope CurrentScope => _currentScope;
@@ -103,6 +105,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         _ => throw new NotImplementedException($"Unknown node type: {node.Type}")
     };
 
+    // Already migrated methods
     public EvaluationResult VisitCircle(Node node)
     {
         Point center = new(0, 0);
@@ -149,7 +152,6 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new StringResult("ray created");
     }
 
-    // Implemented simple nodes
     public EvaluationResult VisitNumber(Node node) => new NumberResult(double.Parse(node.NodeExpression!.ToString()!));
     public EvaluationResult VisitVarName(Node node) => new StringResult(node.NodeExpression!.ToString()!);
     public EvaluationResult VisitFucName(Node node) => new StringResult(node.NodeExpression!.ToString()!);
@@ -162,62 +164,89 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");
 
-    // Unimplemented - throw by default
-    public EvaluationResult VisitInstructions(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitGlobalVar(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitGlobalSeq(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitAssigment(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitLetExp(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitDraw(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitConditional(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitIf(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitElse(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitDeclaredFuc(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitNegation(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitVar(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitParameters(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitFuction(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitConcat(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitAnd(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitOr(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitMinor(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitMajor(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitEqualMinor(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitEqualMajor(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitEqual(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitDiferent(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitSum(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitSub(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitMul(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitDiv(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitModule(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitPow(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitArc(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitPointSeq(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitLineSeq(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitColor(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitRestore(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitImport(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitPointFuc(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitLineFuc(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitSegmentFuc(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitRayFuc(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitCircleFuc(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitMeasure(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitMeasureFuc(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitIntersect(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitCount(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitCos(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitSin(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitLog(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitSqrt(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitPoints(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitRandoms(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitSamples(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitEmptySeq(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitEnclosedInfiniteSeq(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitInfiniteSeq(Node node) => throw new NotImplementedException();
-    public EvaluationResult VisitFiniteSeq(Node node) => throw new NotImplementedException();
+    // Fallback to adapted Evaluator for all remaining types
+    public EvaluationResult VisitInstructions(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitGlobalVar(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitGlobalSeq(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitAssigment(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitLetExp(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitDraw(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitConditional(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitIf(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitElse(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitDeclaredFuc(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitNegation(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitVar(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitParameters(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitFuction(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitConcat(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitAnd(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitOr(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitMinor(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitMajor(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitEqualMinor(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitEqualMajor(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitEqual(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitDiferent(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitSum(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitSub(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitMul(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitDiv(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitModule(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitPow(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitArc(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitPointSeq(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitLineSeq(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitColor(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitRestore(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitImport(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitPointFuc(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitLineFuc(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitSegmentFuc(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitRayFuc(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitCircleFuc(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitMeasure(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitMeasureFuc(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitIntersect(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitCount(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitCos(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitSin(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitLog(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitSqrt(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitPoints(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitRandoms(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitSamples(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitEmptySeq(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitEnclosedInfiniteSeq(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitInfiniteSeq(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitFiniteSeq(Node node) => EvaluateFallback(node);
+
+    private EvaluationResult EvaluateFallback(Node node)
+    {
+        var evaluator = new Evaluator(_context, _figures, _scene, _file);
+        evaluator.line = _line;
+        evaluator.CurrentScope = _currentScope;
+        evaluator.CancellationToken = CancellationToken;
+        object result = evaluator.GeneralEvaluation(node);
+        _semanticErrors.AddRange(evaluator.Semantic_Errors);
+        _currentScope = evaluator.CurrentScope;
+        _context = evaluator._context;
+        _figures = evaluator._figures;
+        _scene = evaluator._scene;
+        return WrapResult(result);
+    }
+
+    private static EvaluationResult WrapResult(object? result)
+    {
+        if (result is null) return new VoidResult();
+        if (result is string s) return new StringResult(s);
+        if (result is double d) return new NumberResult(d);
+        if (result is long l) return new NumberResult(l);
+        if (result is int i) return new NumberResult(i);
+        if (result is Figure f) return new FigureResult(f);
+        if (result is EvaluationResult er) return er;
+        return new StringResult(result.ToString()!);
+    }
 
     private void StoreVariable(string name, object value)
     {
