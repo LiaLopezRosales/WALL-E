@@ -166,16 +166,13 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
 
     // Fallback to adapted Evaluator for all remaining types
     public EvaluationResult VisitInstructions(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitGlobalVar(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitGlobalSeq(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitAssigment(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitLetExp(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitDraw(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitConditional(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitIf(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitElse(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitDeclaredFuc(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitVar(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitParameters(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitFuction(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitConcat(Node node) => EvaluateFallback(node);
@@ -521,11 +518,175 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         pow.Evaluate(left, right);
         return WrapResult(pow.Value);
     }
+    public EvaluationResult VisitVar(Node node)
+    {
+        string name = node.NodeExpression!.ToString()!;
+        if (_context.GlobalConstant.ContainsKey(name))
+            return WrapResult(_context.GlobalConstant[name]);
+        if (_currentScope.Variables.ContainsKey(name))
+            return WrapResult(_currentScope.Variables[name]);
+        _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,
+            "variable", new Location(_file, _line, "column")));
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitGlobalVar(Node node)
+    {
+        string name = Visit(node.Branches[0]).ToString()!;
+        object value = UnwrapRaw(Visit(node.Branches[1]))!;
+        StoreVariable(name, value);
+        return new StringResult("global constant has been added");
+    }
+
+    public EvaluationResult VisitDraw(Node node)
+    {
+        EvaluationResult valResult = Visit(node.Branches[0]);
+        if (valResult is ErrorResult) return valResult;
+        object value = UnwrapRaw(valResult)!;
+        string tag = " ";
+        if (node.Branches[1].Type != Node.NodeType.Indefined)
+            tag = Visit(node.Branches[1]).ToString()!;
+        var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek());
+        if (!d.CheckValidType())
+        {
+            _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,
+                "type,this type of object can't be draw", new Location(_file, _line, "column")));
+        }
+        else
+            _scene.ToDraw.Add(d);
+        return new StringResult("Function to draw added");
+    }
+
+    public EvaluationResult VisitColor(Node node)
+    {
+        string color = node.NodeExpression!.ToString()!;
+        if (_scene.UtilizedColors.Peek() != color)
+            _scene.UtilizedColors.Push(color);
+        return new StringResult($"Color changed to {color}");
+    }
+
+    public EvaluationResult VisitRestore(Node node)
+    {
+        if (_scene.UtilizedColors.Count > 1)
+            _scene.UtilizedColors.Pop();
+        return new StringResult($"Used color has been restore to {_scene.UtilizedColors.Peek()}");
+    }
+
+    public EvaluationResult VisitSin(Node node)
+    {
+        EvaluationResult argResult = Visit(node.Branches[0]);
+        if (argResult is ErrorResult) return argResult;
+        object arg = UnwrapRaw(argResult)!;
+        if (!(arg is double) && !(arg is long))
+        {
+            AddError("numerical values");
+            return new VoidResult();
+        }
+        return new NumberResult(_context.Trig_functions["sin"](Convert.ToDouble(arg)));
+    }
+
+    public EvaluationResult VisitCos(Node node)
+    {
+        EvaluationResult argResult = Visit(node.Branches[0]);
+        if (argResult is ErrorResult) return argResult;
+        object arg = UnwrapRaw(argResult)!;
+        if (!(arg is double) && !(arg is long))
+        {
+            AddError("numerical values");
+            return new VoidResult();
+        }
+        return new NumberResult(_context.Trig_functions["cos"](Convert.ToDouble(arg)));
+    }
+
+    public EvaluationResult VisitSqrt(Node node)
+    {
+        EvaluationResult argResult = Visit(node.Branches[0]);
+        if (argResult is ErrorResult) return argResult;
+        object arg = UnwrapRaw(argResult)!;
+        if (!(arg is double) && !(arg is long))
+        {
+            AddError("numerical values");
+            return new VoidResult();
+        }
+        return new NumberResult(_context.Trig_functions["sqrt"](Convert.ToDouble(arg)));
+    }
+
+    public EvaluationResult VisitLog(Node node)
+    {
+        EvaluationResult baseResult = Visit(node.Branches[0]);
+        if (baseResult is ErrorResult) return baseResult;
+        EvaluationResult argResult = Visit(node.Branches[1]);
+        if (argResult is ErrorResult) return argResult;
+        object baseOf = UnwrapRaw(baseResult)!;
+        object arg = UnwrapRaw(argResult)!;
+        if ((!(arg is double) && !(arg is long)) || (!(baseOf is double) && !(baseOf is long)))
+        {
+            AddError("numerical values");
+            return new VoidResult();
+        }
+        return new NumberResult(_context.Log["log"](Convert.ToDouble(baseOf), Convert.ToDouble(arg)));
+    }
+
+    public EvaluationResult VisitCount(Node node)
+    {
+        EvaluationResult argResult = Visit(node.Branches[0]);
+        if (argResult is ErrorResult) return argResult;
+        object arg = UnwrapRaw(argResult)!;
+
+        // Try common sequence types for count
+        switch (arg)
+        {
+            case GenericSequence<object> gs:
+            {
+                long c = gs.count;
+                if (c < 0) return new StringResult("undefined");
+                return new NumberResult(c);
+            }
+            case Finite_Sequence<Point> fsp:
+            {
+                long c = fsp.count;
+                if (c < 0) return new StringResult("undefined");
+                return new NumberResult(c);
+            }
+            case Finite_Sequence<object> fso:
+            {
+                long c = fso.count;
+                if (c < 0) return new StringResult("undefined");
+                return new NumberResult(c);
+            }
+            case Infinite_Sequence inf:
+            {
+                long c = inf.count;
+                if (c < 0) return new StringResult("undefined");
+                return new NumberResult(c);
+            }
+            case InfinitePointSequence ips:
+            {
+                long c = ips.count;
+                if (c < 0) return new StringResult("undefined");
+                return new NumberResult(c);
+            }
+            case InfiniteDoubleSequence ids:
+            {
+                long c = ids.count;
+                if (c < 0) return new StringResult("undefined");
+                return new NumberResult(c);
+            }
+            case Enclosed_Infinite_Sequence eis:
+            {
+                long c = eis.count;
+                if (c < 0) return new StringResult("undefined");
+                return new NumberResult(c);
+            }
+        }
+        _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,
+            "argument,can't count this type", new Location(_file, _line, "column")));
+        return new VoidResult();
+    }
+
     public EvaluationResult VisitArc(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitPointSeq(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitLineSeq(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitColor(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitRestore(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitImport(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitPointFuc(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitLineFuc(Node node) => EvaluateFallback(node);
@@ -535,11 +696,6 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitMeasure(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitMeasureFuc(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitIntersect(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitCount(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitCos(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitSin(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitLog(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitSqrt(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitPoints(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitRandoms(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitSamples(Node node) => EvaluateFallback(node);
