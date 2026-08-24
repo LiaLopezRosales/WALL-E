@@ -199,8 +199,8 @@ public readonly struct Result<T, E>
 > | Hito | Alcance | Tareas | Estado |
 > |---|---|---|---|
 > | M1 | Proyecto Avalonia net8.0 + MVVM base + MainWindow (editor/canvas/errores) + ProcessCommand síncrono + render de `RenderScene` | 2.1–2.7, 2.10 | ✅ |
-> | M1.5 | Rediseño estético «taller de dibujo técnico»: FluentAvalonia dark + paleta propia, shell rediseñada (ver sección siguiente) | nuevo | ⏳ en curso |
-> | M2 | Grid cartesiano, sistema de coordenadas, zoom/pan, cursor y statusbar | 2.11–2.13, 2.15 | pendiente |
+> | M1.5 | Rediseño estético «taller de dibujo técnico»: FluentAvalonia dark + paleta propia, shell rediseñada (ver sección siguiente) | nuevo | ✅ |
+> | M2 | Grid cartesiano, sistema de coordenadas, zoom/pan, cursor y statusbar | 2.11–2.13, 2.15 | ✅ |
 > | M3 | Cancelación UI (`PipelineOrchestrator.Cancel()` ya existe) + streaming progresivo por batches | 2.8–2.9 | pendiente |
 > | M4 | Color picker, temas, pulido de estados de error | 2.14 | pendiente |
 
