@@ -316,6 +316,9 @@ public class MainViewModel : ViewModelBase
 
 ## Fase 3: GPU Rendering + Expression Cache + Estética Premium
 
+> **REORDENADO post-auditoría (2026-08-24)**: estos ítems se redistribuyeron en los
+> hitos M7–M9 del «Plan vigente». Esta tabla queda como registro histórico de origen.
+
 **Duración**: ~2.5 semanas · **Objetivo**: Rendimiento GPU, look profesional, cache.
 
 | # | Tarea | Días | Archivos |
@@ -339,6 +342,9 @@ public class MainViewModel : ViewModelBase
 ---
 
 ## Fase 4: Language Enhancements
+
+> **REORDENADO post-auditoría (2026-08-24)**: redistribuido en hitos M6–M8 y M12
+> del «Plan vigente». Tabla histórica; 4.1 ya ejecutado (adelantado).
 
 **Duración**: ~3 semanas · **Objetivo**: DSL rico — colores completos, figuras nuevas, bucles, animación.
 
@@ -368,6 +374,9 @@ public class MainViewModel : ViewModelBase
 
 ## Fase 5: Professional Polish (Tests + CI)
 
+> **REORDENADO post-auditoría (2026-08-24)**: 5.9/5.10 ejecutados (adelantados);
+> el resto va al hito M10 del «Plan vigente». Tabla histórica.
+
 **Duración**: ~2.5 semanas · **Objetivo**: Tests, CI, calidad de código profesional.
 
 | # | Tarea | Días | Archivos |
@@ -391,6 +400,9 @@ public class MainViewModel : ViewModelBase
 
 ## Fase 6: Portfolio Finalization
 
+> **REORDENADO post-auditoría (2026-08-24)**: redistribuido en hitos M6 (LICENSE),
+> M11 (ecosistema) y M12 (Wasm, highlighting) del «Plan vigente». Tabla histórica.
+
 **Duración**: ~1.5 semanas · **Objetivo**: Presentación profesional.
 
 | # | Tarea | Días | Archivos |
@@ -405,6 +417,46 @@ public class MainViewModel : ViewModelBase
 | 6.8 | Syntax highlighting en editor DSL (AvaloniaEdit o Skia custom) | 2 | `DslHighlighting.cs` |
 
 **Checkpoint**: README profesional, ejemplos, CLI, demo online, LICENSE.
+
+---
+
+## Plan vigente tras la auditoría post-Fase 2 (reordenado — nada se descarta)
+
+> **Auditoría 2026-08-24**: cruce sistemático de ROADMAP / ENHANCEMENTS /
+> IMPROVEMENT_PLAN / PERFORMANCE_PLAN contra el código real de `src/`.
+> Decisión: reordenar por valor de portafolio y dependencias técnicas;
+> **todo ítem planificado conserva hito asignado** — nada queda fuera.
+
+### Hallazgos de la auditoría
+
+1. **Paridad rota**: `draw figura, "etiqueta";` se parsea y almacena el `Tag`,
+   pero el canvas Avalonia nunca lo dibuja (`DrawingCanvas.cs` solo usa
+   `Figures` y `UsedColor`). El legacy sí lo renderizaba (`Graphic/Form1.cs:96`).
+2. **ExpressionCache es código muerto**: instanciado en `PipelineOrchestrator`
+   pero `Execute` jamás lo consulta.
+3. **Cero archivos `.geo` de ejemplo** en el repositorio.
+4. Colisión nueva: los comentarios `#` del catálogo chocan con los literales
+   hex (4.1). Los comentarios serán solo `//`.
+5. CI verde desde el primer run; suite en 74 tests al momento de la auditoría.
+6. La tabla «Lo que NO entra» del final sigue vigente como alcance excluido
+   documentado (no es trabajo planificado).
+
+### Hitos M6–M12
+
+| Hito | Contenido | Ítems de origen |
+|---|---|---|
+| **M6 · Paridad y victorias rápidas** | Render de Tag/etiquetas en canvas (paridad) · comentarios `//` · `seed(n)` determinista · `print/debug` a panel de salida · constantes `phi`,`sqrt2` + math `tan/atan/abs/floor/ceil` · `rgb(r,g,b)` / `rgba(r,g,b,a)` · Export PNG (`ExportService` + diálogo de guardado) · LICENSE MIT | 3.13, 4.2, 4.7, 4.8, 4.9, 4.14, 6.4, ENH #1–#8 |
+| **M7 · Lenguaje completo** | `polygon(center,r,n)` · `ellipse(center,rx,ry)` · bucles `for i in seq {…}` / `repeat(n){…}` · `label(point,"text",size)` · estilos de línea dashed/dotted/dash-dot/grosor · fill solid/none | 3.10, 3.11(solid), 4.10–4.13 |
+| **M8 · Sistema de color completo** | `ColorTable.cs` con ~140 nombres CSS · `hsl(h,s%,l%)` · ops cromáticas lighten/darken/mix/complement · gradientes fill linear/radial (dependen del fill de M7) · hex8 alpha opcional | 3.11(gradientes), 4.3–4.6, ENH 1.4 |
+| **M9 · Render premium + performance** | Batch GPU `SKCanvas.DrawPoints` vía `ICustomDrawOperation` (permite subir `MaxDrawnShapes`) · `SKPath` nativo por figura · AA/sombras/glows sutiles · capas `layer N` z-order · `hide/show` · snap configurable · ExpressionCache cableado de verdad o eliminación honesta si no demuestra mejora medible | 3.1–3.5, 3.7, 3.9, 3.12 |
+| **M10 · Calidad final** | `Wall-E.Domain.Tests` · tests aislados lexer/parser · tests de ViewModel con Avalonia.Headless · intersecciones: todas las combinaciones · Roslynator+SonarAnalyzer vía `Directory.Build.props` (warnings) · XML docs en API pública Domain+Application · cobertura medida >40% | 5.1–5.8, 5.11, 5.12 |
+| **M11 · Ecosistema portafolio** | Screenshots alta calidad en `docs/` · ejemplos `.geo` demo/fractal/samples en GeoLibrary · README final con imágenes · CLI headless `input.geo → output.png` (reusa ExportService de M6) · export SVG | 6.1–6.3, 6.5, 6.6 |
+| **M12 · Extras finales** | Animación paramétrica `animate(t from … to …){…}` · syntax highlighting del editor · demo Wasm en GitHub Pages | 4.15, 6.7, 6.8 |
+
+**Reglas del plan vigente**: cada hito entra por commits pequeños verificados
+(build + tests + humo cuando toca UI); CI debe permanecer verde; ningún ítem
+sale del plan sin decisión explícita del usuario. Orden pensado para que cada
+hito habilite al siguiente (fill→gradientes, loops→batch GPU, PNG headless→CLI).
 
 ---
 
