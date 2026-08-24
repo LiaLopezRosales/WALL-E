@@ -1028,8 +1028,34 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     }
     public EvaluationResult VisitPointSeq(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitLineSeq(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitImport(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitIntersect(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitIntersect(Node node)
+    {
+        EvaluationResult r1 = Visit(node.Branches[0]);
+        if (r1 is ErrorResult) return r1;
+        EvaluationResult r2 = Visit(node.Branches[1]);
+        if (r2 is ErrorResult) return r2;
+        object f1 = UnwrapRaw(r1)!;
+        object f2 = UnwrapRaw(r2)!;
+
+        if (f2 is not Figure || f1 is not Figure)
+        {
+            AddError("figure");
+            return new VoidResult();
+        }
+
+        Finite_Sequence<Point> result = ((Figure)f1).Intersect((Figure)f2);
+        if (result is null)
+            return new StringResult("undefined");
+        return new SequenceResult(result, result.count);
+    }
+
+    // Real import wiring needs the pipeline layer (GeoLibrary lives in Infrastructure,
+    // which Domain cannot reference); same semantic error as legacy until then.
+    public EvaluationResult VisitImport(Node node)
+    {
+        AddError("import requires UI/Infrastructure layer");
+        return new VoidResult();
+    }
     public EvaluationResult VisitPoints(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitRandoms(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitSamples(Node node) => EvaluateFallback(node);
