@@ -20,6 +20,8 @@ Fase 6                                                  ████████
 
 **Total estimado**: ~18 semanas (~4.5 meses) a tiempo completo.
 
+**Progreso real**: Fase 0 ✅ · Fase 1 ✅ (+ sprint de deudas ✅) · Fase 2 en curso.
+
 ---
 
 ## Refinamiento arquitectónico (cambio clave v1→v2)
@@ -93,9 +95,9 @@ Fase 6                                                  ████████
 > **ESTADO: COMPLETA ✅** (ver `MIGRATION_LOG.md` para el historial completo).
 > Desviaciones respecto al plan original: target real es **net8.0** (no net6.0);
 > el visitor cubre **todos los tipos de nodo alcanzables** y el fallback al
-> `Evaluator` legacy fue eliminado; existen **43 tests de caracterización**
-> (`tests/Wall-E.Application.Tests`). Deudas post-migración listadas en
-> MIGRATION_LOG.md "Deudas conocidas".
+> `Evaluator` legacy fue eliminado. El sprint de deudas post-migración también
+> está **COMPLETO** (`DEBT_SPRINT.md`): shadowing eliminado, let-in reparado,
+> `import` cableado vía `IGeoLibrarySource`, 59 tests de caracterización en verde.
 
 **Duración**: ~3 semanas · **Objetivo**: Separar en 4 capas limpias. Domain sin dependencias. Application con interfaces.
 
@@ -191,6 +193,20 @@ public readonly struct Result<T, E>
 ---
 
 ## Fase 2: Professional Avalonia UI + MVVM
+
+> **EJECUCIÓN POR HITOS** (adaptación de las tareas 2.1–2.15 a la arquitectura real):
+>
+> | Hito | Alcance | Tareas |
+> |---|---|---|
+> | M1 | Proyecto Avalonia net8.0 + MVVM base + MainWindow (editor/canvas/errores) + ProcessCommand síncrono + render de `RenderScene` | 2.1–2.7, 2.10 |
+> | M2 | Grid cartesiano, sistema de coordenadas, zoom/pan, cursor y statusbar | 2.11–2.13, 2.15 |
+> | M3 | Cancelación UI (`PipelineOrchestrator.Cancel()` ya existe) + streaming progresivo por batches | 2.8–2.9 |
+> | M4 | Color picker, temas, pulido de estados de error | 2.14 |
+>
+> Nota técnica: el render usa el pipeline Skia **nativo de Avalonia**
+> (`Control.Render(DrawingContext)`), no un `SKCanvasView` externo — mismo motor,
+> menos dependencias. La API real del orquestador es `Execute(source, file)` +
+> `Cancel()`; `RenderScene` ya existe como snapshot plano de figuras+colores.
 
 **Duración**: ~3 semanas · **Objetivo**: UI moderna con MVVM puro, streaming progresivo, grid.
 

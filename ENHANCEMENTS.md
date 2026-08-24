@@ -1,5 +1,10 @@
 # WALL-E — Catalogo de Mejoras Potenciales
 
+> **DOCUMENTO HISTÓRICO (pre-migración)**: catálogo de ideas escrito antes de la
+> extracción de arquitectura limpia; las referencias a archivos legacy (Form1.cs,
+> Context.cs) corresponden al monolito original. Ideas vigentes priorizadas en el
+> [`ROADMAP.md`](./ROADMAP.md). Estado real: [`AGENTS.md`](./AGENTS.md).
+
 Mejoras extendidas más allá del plan principal (`IMPROVEMENT_PLAN.md`). Clasificadas por área, esfuerzo e impacto para portafolio.
 
 ---

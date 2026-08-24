@@ -1,5 +1,10 @@
 # WALL-E — Plan de Mejora Integral
 
+> **DOCUMENTO HISTÓRICO (pre-migración)**: este análisis se escribió antes de la
+> extracción de arquitectura limpia y alimentó el [`ROADMAP.md`](./ROADMAP.md) v2.
+> El "estado actual" que describe corresponde al monolito legacy y NO refleja el
+> estado del repositorio. Estado real: [`AGENTS.md`](./AGENTS.md).
+
 Plan estratégico para transformar GeoWall-E de proyecto escolar a portafolio profesional listo para entrevistas.
 
 ---
