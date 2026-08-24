@@ -893,17 +893,142 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new VoidResult();
     }
 
-    public EvaluationResult VisitArc(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitArc(Node node)
+    {
+        var results = new EvaluationResult[node.Branches.Count];
+        for (int i = 0; i < node.Branches.Count; i++)
+        {
+            results[i] = Visit(node.Branches[i]);
+            if (results[i] is ErrorResult) return results[i];
+        }
+        object p1 = UnwrapRaw(results[0])!, p2 = UnwrapRaw(results[1])!,
+               p3 = UnwrapRaw(results[2])!, m = UnwrapRaw(results[3])!;
+        if (p1 is not Point || p2 is not Point || p3 is not Point || !IsDistance(m))
+        {
+            AddError("valid points and distance to declare an arc");
+            return new VoidResult();
+        }
+        double angle = m is Measure meas ? meas.Value : Convert.ToDouble(m);
+        return new FigureResult(new Arc((Point)p1, (Point)p2, (Point)p3, angle));
+    }
+
+    private static bool IsDistance(object value) =>
+        value is Measure || value is double || value is long;
+
+    // Parser never produces plain Measure nodes; only measure(p1,p2).
+    public EvaluationResult VisitMeasure(Node node) => new VoidResult();
+
+    public EvaluationResult VisitPointFuc(Node node)
+    {
+        EvaluationResult xResult = Visit(node.Branches[0]);
+        if (xResult is ErrorResult) return xResult;
+        EvaluationResult yResult = Visit(node.Branches[1]);
+        if (yResult is ErrorResult) return yResult;
+        object x = UnwrapRaw(xResult)!;
+        object y = UnwrapRaw(yResult)!;
+        if ((x is not double && x is not long) || (y is not double && y is not long))
+        {
+            AddError("valid coordinates for point");
+            return new VoidResult();
+        }
+        Point p = new(Convert.ToDouble(x), Convert.ToDouble(y));
+        _figures.TryAddExistingPoint(p);
+        return new FigureResult(p);
+    }
+
+    public EvaluationResult VisitCircleFuc(Node node)
+    {
+        EvaluationResult centerResult = Visit(node.Branches[0]);
+        if (centerResult is ErrorResult) return centerResult;
+        EvaluationResult radioResult = Visit(node.Branches[1]);
+        if (radioResult is ErrorResult) return radioResult;
+        object center = UnwrapRaw(centerResult)!;
+        object radio = UnwrapRaw(radioResult)!;
+        if (center is not Point || !IsDistance(radio))
+        {
+            AddError("a valid center point and distance");
+            return new VoidResult();
+        }
+        double radius = radio is Measure meas ? meas.Value : Convert.ToDouble(radio);
+        Circle c = new((Point)center, radius);
+        _figures.TryAddExistingCircle(c);
+        return new FigureResult(c);
+    }
+
+    public EvaluationResult VisitLineFuc(Node node)
+    {
+        EvaluationResult r1 = Visit(node.Branches[0]);
+        if (r1 is ErrorResult) return r1;
+        EvaluationResult r2 = Visit(node.Branches[1]);
+        if (r2 is ErrorResult) return r2;
+        object p1 = UnwrapRaw(r1)!;
+        object p2 = UnwrapRaw(r2)!;
+        if (p1 is not Point || p2 is not Point)
+        {
+            AddError("valid points to declare a line");
+            return new VoidResult();
+        }
+        Line l = new((Point)p1, (Point)p2);
+        _figures.TryAddExistingLine(l);
+        return new FigureResult(l);
+    }
+
+    public EvaluationResult VisitSegmentFuc(Node node)
+    {
+        EvaluationResult r1 = Visit(node.Branches[0]);
+        if (r1 is ErrorResult) return r1;
+        EvaluationResult r2 = Visit(node.Branches[1]);
+        if (r2 is ErrorResult) return r2;
+        object p1 = UnwrapRaw(r1)!;
+        object p2 = UnwrapRaw(r2)!;
+        if (p1 is not Point || p2 is not Point)
+        {
+            AddError("valid points to declare a segment");
+            return new VoidResult();
+        }
+        Segment s = new((Point)p1, (Point)p2);
+        _figures.TryAddExistingSegment(s);
+        return new FigureResult(s);
+    }
+
+    public EvaluationResult VisitRayFuc(Node node)
+    {
+        EvaluationResult r1 = Visit(node.Branches[0]);
+        if (r1 is ErrorResult) return r1;
+        EvaluationResult r2 = Visit(node.Branches[1]);
+        if (r2 is ErrorResult) return r2;
+        object p1 = UnwrapRaw(r1)!;
+        object p2 = UnwrapRaw(r2)!;
+        if (p1 is not Point || p2 is not Point)
+        {
+            AddError("valid points to declare a ray");
+            return new VoidResult();
+        }
+        Ray ray = new((Point)p1, (Point)p2);
+        _figures.TryAddExistingRay(ray);
+        return new FigureResult(ray);
+    }
+
+    public EvaluationResult VisitMeasureFuc(Node node)
+    {
+        EvaluationResult r1 = Visit(node.Branches[0]);
+        if (r1 is ErrorResult) return r1;
+        EvaluationResult r2 = Visit(node.Branches[1]);
+        if (r2 is ErrorResult) return r2;
+        object p1 = UnwrapRaw(r1)!;
+        object p2 = UnwrapRaw(r2)!;
+        if (p1 is not Point || p2 is not Point)
+        {
+            AddError("valid points to declare a measure");
+            return new VoidResult();
+        }
+        // Legacy returned raw Measure; we expose its numeric value because the
+        // sealed result hierarchy has no Measure variant yet.
+        return new NumberResult(new Measure((Point)p1, (Point)p2).Value);
+    }
     public EvaluationResult VisitPointSeq(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitLineSeq(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitImport(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitPointFuc(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitLineFuc(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitSegmentFuc(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitRayFuc(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitCircleFuc(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitMeasure(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitMeasureFuc(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitIntersect(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitPoints(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitRandoms(Node node) => EvaluateFallback(node);
