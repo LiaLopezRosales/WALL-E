@@ -4,10 +4,12 @@
              x:Class="Wall_E.UI.Avalonia.App"
              RequestedThemeVariant="Dark">
 
-    <!-- M1.5 'taller de dibujo tecnico' palette - see ROADMAP.md -->
+    <!-- M1.5 'taller de dibujo tecnico' palette - see ROADMAP.md.
+         Theme-varying brushes live in ThemeDictionaries so the toggle
+         swaps them at runtime; XAML references them via DynamicResource. -->
     <Application.Resources>
         <ResourceDictionary>
-            <!-- WALL-E rust-amber accent -->
+            <!-- WALL-E rust-amber accent (shared by both variants) -->
             <Color x:Key="SystemAccentColor">#F5A623</Color>
             <Color x:Key="SystemAccentColorLight1">#FFB454</Color>
             <Color x:Key="SystemAccentColorLight2">#FFC678</Color>
@@ -16,17 +18,32 @@
             <Color x:Key="SystemAccentColorDark2">#B37710</Color>
             <Color x:Key="SystemAccentColorDark3">#8C5C0C</Color>
 
-            <SolidColorBrush x:Key="AccentBrush" Color="#F5A623"/>
-            <SolidColorBrush x:Key="BgBaseBrush" Color="#14161B"/>
-            <SolidColorBrush x:Key="BgSurfaceBrush" Color="#1A1E26"/>
-            <SolidColorBrush x:Key="BgInputBrush" Color="#232833"/>
-            <SolidColorBrush x:Key="HairlineBrush" Color="#303746"/>
-            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E8EAED"/>
-            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#98A2B3"/>
-            <SolidColorBrush x:Key="ErrorBrush" Color="#EF5350"/>
-            <SolidColorBrush x:Key="SuccessBrush" Color="#66BB6A"/>
-            <SolidColorBrush x:Key="CanvasPaperBrush" Color="#FFFFFF"/>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="AccentBrush" Color="#F5A623"/>
+                    <SolidColorBrush x:Key="BgBaseBrush" Color="#14161B"/>
+                    <SolidColorBrush x:Key="BgSurfaceBrush" Color="#1A1E26"/>
+                    <SolidColorBrush x:Key="BgInputBrush" Color="#232833"/>
+                    <SolidColorBrush x:Key="HairlineBrush" Color="#303746"/>
+                    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E8EAED"/>
+                    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#98A2B3"/>
+                    <SolidColorBrush x:Key="ErrorBrush" Color="#EF5350"/>
+                    <SolidColorBrush x:Key="SuccessBrush" Color="#66BB6A"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="AccentBrush" Color="#E8960C"/>
+                    <SolidColorBrush x:Key="BgBaseBrush" Color="#EEF1F6"/>
+                    <SolidColorBrush x:Key="BgSurfaceBrush" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="BgInputBrush" Color="#E7ECF3"/>
+                    <SolidColorBrush x:Key="HairlineBrush" Color="#C6CFDB"/>
+                    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1B1F27"/>
+                    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#5A6472"/>
+                    <SolidColorBrush x:Key="ErrorBrush" Color="#D32F2F"/>
+                    <SolidColorBrush x:Key="SuccessBrush" Color="#2E7D32"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
 
+            <SolidColorBrush x:Key="CanvasPaperBrush" Color="#FFFFFF"/>
             <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
         </ResourceDictionary>
     </Application.Resources>
@@ -36,12 +53,12 @@
 
         <Style Selector="Button.danger">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ErrorBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource ErrorBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/>
         </Style>
         <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#22EF5350"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ErrorBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
             <Setter Property="Foreground" Value="#FF6F6D"/>
         </Style>
         <Style Selector="Button.danger:pressed /template/ ContentPresenter">

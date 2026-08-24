@@ -2,27 +2,32 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="using:Wall_E.UI.Avalonia.Views"
         xmlns:vm="using:Wall_E.UI.Avalonia.ViewModels"
+        xmlns:fac="using:FluentAvalonia.UI.Controls"
         x:Class="Wall_E.UI.Avalonia.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="GeoWall-E" Width="1200" Height="760" MinWidth="900" MinHeight="600"
-        Background="{StaticResource BgBaseBrush}"
+        Background="{DynamicResource BgBaseBrush}"
         FontFamily="Segoe UI, Inter, Noto Sans, Ubuntu">
 
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
 
+    <Window.Resources>
+        <views:DslPaletteToBrushConverter x:Key="InkToBrush"/>
+    </Window.Resources>
+
     <Grid RowDefinitions="Auto,*,Auto,26">
 
         <!-- Header bar -->
-        <Border Grid.Row="0" Background="{StaticResource BgSurfaceBrush}"
-                BorderBrush="{StaticResource HairlineBrush}" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Margin="16,10,12,10">
+        <Border Grid.Row="0" Background="{DynamicResource BgSurfaceBrush}"
+                BorderBrush="{DynamicResource HairlineBrush}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto" Margin="16,10,12,10">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
                     <Ellipse Width="11" Height="11" VerticalAlignment="Center"
-                             Fill="{StaticResource AccentBrush}"/>
+                             Fill="{DynamicResource AccentBrush}"/>
                     <TextBlock Text="GeoWall-E" FontSize="15" FontWeight="SemiBold"
-                               Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <Button Grid.Column="2" x:Name="StressRunButton" Command="{Binding StressRunCommand}"
@@ -48,7 +53,7 @@
                         IsVisible="{Binding IsProcessing}" Margin="8,0,0,0"
                         MinWidth="96" Padding="14,7">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <PathIcon Width="9" Height="9" Foreground="{StaticResource ErrorBrush}"
+                        <PathIcon Width="9" Height="9" Foreground="{DynamicResource ErrorBrush}"
                                   Data="M 0 0 L 9 0 L 9 9 L 0 9 Z"/>
                         <TextBlock Text="Stop"/>
                     </StackPanel>
@@ -61,6 +66,16 @@
                         <TextBlock Text="Clear"/>
                     </StackPanel>
                 </Button>
+                <Button Grid.Column="6" x:Name="ThemeButton" Command="{Binding ToggleThemeCommand}"
+                        ToolTip.Tip="Tema claro / oscuro" Margin="8,0,0,0"
+                        MinWidth="52" Padding="10,7" HorizontalContentAlignment="Center">
+                    <Panel>
+                        <PathIcon Width="11" Height="11" IsVisible="{Binding IsDarkTheme}"
+                                  Data="M 9.6 1.1 A 4.9 4.9 0 1 0 10.4 9.9 A 3.9 3.9 0 0 1 9.6 1.1 Z"/>
+                        <PathIcon Width="12" Height="12" IsVisible="{Binding !IsDarkTheme}"
+                                  Data="M 5.5 0 L 6.6 2.1 L 4.4 2.1 Z M 5.5 11 L 6.6 8.9 L 4.4 8.9 Z M 0 5.5 L 2.1 6.6 L 2.1 4.4 Z M 11 5.5 L 8.9 6.6 L 8.9 4.4 Z M 2.55 2.55 L 4.35 3.15 L 3.15 4.35 Z M 8.45 2.55 L 7.85 4.35 L 6.65 3.15 Z M 2.55 8.45 L 3.15 6.65 L 4.35 7.85 Z M 8.45 8.45 L 6.65 7.85 L 7.85 6.65 Z M 3.4 5.5 A 2.1 2.1 0 1 0 7.6 5.5 A 2.1 2.1 0 1 0 3.4 5.5 Z"/>
+                    </Panel>
+                </Button>
             </Grid>
         </Border>
 
@@ -68,11 +83,11 @@
         <Grid Grid.Row="1" ColumnDefinitions="*,6,1.5*" Margin="12,12,12,8">
 
             <Border Grid.Column="0" CornerRadius="10" ClipToBounds="True"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1">
+                    Background="{DynamicResource BgSurfaceBrush}"
+                    BorderBrush="{DynamicResource HairlineBrush}" BorderThickness="1">
                 <Grid RowDefinitions="Auto,*">
                     <TextBlock Grid.Row="0" Text="PROGRAM" FontSize="11" FontWeight="SemiBold"
-                               LetterSpacing="2" Foreground="{StaticResource TextSecondaryBrush}"
+                               LetterSpacing="2" Foreground="{DynamicResource TextSecondaryBrush}"
                                Margin="14,10,0,4"/>
                     <TextBox Grid.Row="1" Text="{Binding Code}" AcceptsReturn="True"
                              Background="Transparent" BorderThickness="0" Padding="14,6,14,12"
@@ -84,19 +99,30 @@
             <GridSplitter Grid.Column="1" Background="Transparent"/>
 
             <Border Grid.Column="2" CornerRadius="10" ClipToBounds="True" Margin="6,0,0,0"
-                    Background="{StaticResource BgSurfaceBrush}"
-                    BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1">
+                    Background="{DynamicResource BgSurfaceBrush}"
+                    BorderBrush="{DynamicResource HairlineBrush}" BorderThickness="1">
                 <Grid RowDefinitions="Auto,*">
-                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="8,4,8,0">
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto" Margin="8,4,8,0">
                         <TextBlock Grid.Column="0" Text="CANVAS" FontSize="11" FontWeight="SemiBold"
-                                   LetterSpacing="2" Foreground="{StaticResource TextSecondaryBrush}"
+                                   LetterSpacing="2" Foreground="{DynamicResource TextSecondaryBrush}"
                                    VerticalAlignment="Center" Margin="6,4,0,2"/>
-                        <Button Grid.Column="1" x:Name="FitButton" Content="Fit"
+                        <Button Grid.Column="1" x:Name="PaperButton"
+                                ToolTip.Tip="Color del papel" Margin="10,0,0,0"
+                                MinWidth="40" Padding="7,4" HorizontalContentAlignment="Center">
+                            <Rectangle x:Name="PaperSwatch" Width="13" Height="13" RadiusX="3" RadiusY="3"
+                                       Fill="White" Stroke="{DynamicResource HairlineBrush}" StrokeThickness="1"/>
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedLeft">
+                                    <ColorPicker x:Name="PaperPicker" Width="300"/>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Grid.Column="3" x:Name="FitButton" Content="Fit"
                                 ToolTip.Tip="Ajustar al contenido · doble clic reinicia la vista"
                                 Padding="10,3" MinWidth="64" FontSize="12" HorizontalContentAlignment="Center"/>
                     </Grid>
                     <Border Grid.Row="1" CornerRadius="0,0,10,10" ClipToBounds="True"
-                            Background="{StaticResource CanvasPaperBrush}">
+                            Background="{DynamicResource CanvasPaperBrush}">
                         <views:DrawingCanvas x:Name="Canvas"/>
                     </Border>
                 </Grid>
@@ -106,39 +132,58 @@
         <!-- Error strip -->
         <Expander Grid.Row="2" IsExpanded="{Binding HasErrors}" IsVisible="{Binding HasErrors}"
                   Margin="12,0,12,6" HorizontalAlignment="Stretch"
-                  Background="{StaticResource BgSurfaceBrush}"
-                  BorderBrush="{StaticResource HairlineBrush}" CornerRadius="8">
+                  Background="{DynamicResource BgSurfaceBrush}"
+                  BorderBrush="{DynamicResource HairlineBrush}" CornerRadius="8">
             <Expander.Header>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Ellipse Width="9" Height="9" Fill="{StaticResource ErrorBrush}"
+                    <Ellipse Width="9" Height="9" Fill="{DynamicResource ErrorBrush}"
                              VerticalAlignment="Center"/>
-                    <TextBlock Foreground="{StaticResource ErrorBrush}" FontWeight="SemiBold"
+                    <TextBlock Foreground="{DynamicResource ErrorBrush}" FontWeight="SemiBold"
                                Text="{Binding ErrorCount, StringFormat='{}{0} error(s)'}"/>
                 </StackPanel>
             </Expander.Header>
             <ListBox ItemsSource="{Binding Errors}" MaxHeight="150" Background="Transparent"
                      BorderThickness="0" FontFamily="Cascadia Code,Consolas,Menlo,monospace"
-                     FontSize="12" Foreground="{StaticResource TextPrimaryBrush}"/>
+                     FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}"/>
         </Expander>
 
         <!-- Statusbar -->
-        <Border Grid.Row="3" Background="{StaticResource BgSurfaceBrush}"
-                BorderBrush="{StaticResource HairlineBrush}" BorderThickness="0,1,0,0">
-            <Grid ColumnDefinitions="*,Auto" Margin="14,3,14,3">
+        <Border Grid.Row="3" Background="{DynamicResource BgSurfaceBrush}"
+                BorderBrush="{DynamicResource HairlineBrush}" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto,Auto" Margin="14,3,14,3">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
                     <Ellipse Width="8" Height="8" VerticalAlignment="Center"
-                             Fill="{StaticResource SuccessBrush}"
+                             Fill="{DynamicResource SuccessBrush}"
                              IsVisible="{Binding !StatusIsError}"/>
                     <Ellipse Width="8" Height="8" VerticalAlignment="Center"
-                             Fill="{StaticResource ErrorBrush}"
+                             Fill="{DynamicResource ErrorBrush}"
                              IsVisible="{Binding StatusIsError}"/>
                     <TextBlock Text="{Binding StatusMessage}" FontSize="12"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
-                <TextBlock Grid.Column="1" x:Name="CursorPos" Text="x: —   y: —" FontSize="12"
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4"
+                            VerticalAlignment="Center" Margin="0,0,16,0"
+                            ToolTip.Tip="Tinta activa del programa (pila de colores, arriba = actual)">
+                    <TextBlock Text="ink:" FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                    <ItemsControl ItemsSource="{Binding InkColors}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Ellipse Width="10" Height="10" Fill="{Binding Converter={StaticResource InkToBrush}}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <TextBlock Grid.Column="2" x:Name="CursorPos" Text="x: —   y: —" FontSize="12"
                            FontFamily="Cascadia Code,Consolas,Menlo,monospace"
-                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
                            VerticalAlignment="Center"/>
             </Grid>
         </Border>

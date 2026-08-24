@@ -18,6 +18,21 @@ public partial class MainWindow : Window
             CursorPos.Text = $"x: {x:F1}   y: {y:F1}";
         Canvas.CursorLeftCanvas += () => CursorPos.Text = "x: —   y: —";
         FitButton.Click += (_, _) => Canvas.FitToContent();
+
+        // Named fields are not generated for controls inside a Flyout -
+        // resolve the paper picker through the flyout's content.
+        if (PaperButton.Flyout is global::Avalonia.Controls.Flyout paperFlyout &&
+            paperFlyout.Content is global::Avalonia.Controls.ColorPicker paperPicker)
+        {
+            paperPicker.Color = global::Avalonia.Media.Colors.White;
+            paperPicker.ColorChanged += (_, e) =>
+            {
+                var c = e.NewColor;
+                Canvas.Paper = new global::Avalonia.Media.SolidColorBrush(
+                    global::Avalonia.Media.Color.FromArgb(255, c.R, c.G, c.B));
+                PaperSwatch.Fill = Canvas.Paper;
+            };
+        }
     }
 
     private void WireViewModel()

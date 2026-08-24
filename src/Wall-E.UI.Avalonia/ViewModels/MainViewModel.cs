@@ -64,12 +64,19 @@ public class MainViewModel : ViewModelBase
     public bool HasErrors => Errors.Count > 0;
     public int ErrorCount => Errors.Count;
 
+    /// <summary>Active DSL ink stack (top-first), shown as swatches.</summary>
+    public System.Collections.ObjectModel.ObservableCollection<global::Avalonia.Media.IBrush> InkColors { get; } = new();
+
+    public bool IsDarkTheme =>
+        global::Avalonia.Application.Current?.RequestedThemeVariant != global::Avalonia.Styling.ThemeVariant.Light;
+
     public event EventHandler? SceneChanged;
 
     public RelayCommand ProcessCommand { get; }
     public RelayCommand ClearCommand { get; }
     public RelayCommand StopCommand { get; }
     public RelayCommand StressRunCommand { get; }
+    public RelayCommand ToggleThemeCommand { get; }
 
     public MainViewModel()
     {
@@ -77,6 +84,7 @@ public class MainViewModel : ViewModelBase
         ClearCommand = new RelayCommand(_ => Clear(), _ => !IsProcessing);
         StopCommand = new RelayCommand(_ => _pipeline.Cancel(), _ => IsProcessing);
         StressRunCommand = new RelayCommand(_ => _ = RunAsync(BuildStressProgram()), _ => !IsProcessing);
+        ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
 
         // Progressive streaming (M3): poll the synchronized scene while the
         // pipeline runs on a background thread; each tick with new content
@@ -134,6 +142,7 @@ public class MainViewModel : ViewModelBase
             IsProcessing = false;
             OnPropertyChanged(nameof(Scene));
             OnPropertyChanged(nameof(DisplayScene));
+            UpdateInkStrip();
             SceneChanged?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -144,7 +153,28 @@ public class MainViewModel : ViewModelBase
         if (count == _lastDrawCount) return;
         _lastDrawCount = count;
         StatusMessage = $"Drawing... {count} object(s)";
+        UpdateInkStrip();
         SceneChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void ToggleTheme()
+    {
+        var app = global::Avalonia.Application.Current;
+        if (app is null) return;
+        app.RequestedThemeVariant = IsDarkTheme
+            ? global::Avalonia.Styling.ThemeVariant.Light
+            : global::Avalonia.Styling.ThemeVariant.Dark;
+        OnPropertyChanged(nameof(IsDarkTheme));
+    }
+
+    /// <summary>Refreshes the ink swatch strip from the scene's color stack
+    /// (top-first, capped at 8 for space).</summary>
+    private void UpdateInkStrip()
+    {
+        var colors = _pipeline.Scene.ColorsSnapshot();
+        InkColors.Clear();
+        foreach (var c in colors.Take(8))
+            InkColors.Add(Wall_E.UI.Avalonia.Views.DslPalette.ToBrush(c));
     }
 
     private void Clear()
@@ -154,6 +184,7 @@ public class MainViewModel : ViewModelBase
         Errors.Clear();
         StatusMessage = "Canvas cleared";
         StatusIsError = false;
+        InkColors.Clear();
         OnPropertyChanged(nameof(Scene));
         SceneChanged?.Invoke(this, EventArgs.Empty);
     }

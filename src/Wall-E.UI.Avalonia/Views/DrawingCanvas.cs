@@ -57,6 +57,16 @@ public class DrawingCanvas : Control
     private bool _panning;
     private APoint _panLast;
 
+    private IBrush _paper = Brushes.White;
+
+    /// <summary>Canvas background ("paper"). White keeps DSL ink colors
+    /// truthful; user-selectable from the canvas header.</summary>
+    public IBrush Paper
+    {
+        get => _paper;
+        set { _paper = value; InvalidateVisual(); }
+    }
+
     public DrawingCanvas()
     {
         DoubleTapped += (_, _) => ResetView();
@@ -138,7 +148,7 @@ public class DrawingCanvas : Control
 
     public override void Render(DrawingContext context)
     {
-        context.FillRectangle(Brushes.White, new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height));
+        context.FillRectangle(Paper, new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height));
         if (!IsSizeValid()) return;
 
         // Smart camera: move the viewport only when content falls outside
@@ -541,17 +551,5 @@ public class DrawingCanvas : Control
         return new PolyShape(points, color);
     }
 
-    private static IBrush ParseColor(string name) => name.ToLowerInvariant() switch
-    {
-        "black" => Brushes.Black,
-        "white" => Brushes.White,
-        "blue" => Brushes.DodgerBlue,
-        "red" => Brushes.Red,
-        "yellow" => Brushes.Yellow,
-        "green" => Brushes.LimeGreen,
-        "cyan" => Brushes.Cyan,
-        "magenta" => Brushes.Magenta,
-        "grey" => Brushes.Gray,
-        _ => Brushes.Gray,
-    };
+    private static IBrush ParseColor(string name) => DslPalette.ToBrush(name);
 }
