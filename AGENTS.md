@@ -84,9 +84,9 @@ Generators like `GenerateRandoms`/`GenerateSamples`/`GeneratePointsInFigure` are
 ## Deferred gaps (per ROADMAP.md)
 
 - `ArchiveAnalysis : Form` + `MessageBox` → Fase 2 (Avalonia UI)
-- Post-migration debts (let-in grammar, sequence property shadowing, `import` wiring, expression-node self-evaluation) → see MIGRATION_LOG.md "Deudas conocidas"
+- Post-migration debts → **sprint planned in `DEBT_SPRINT.md`** (shadowing root fix, let-in grammar, import wiring, GlobalSeq tests; expression self-evaluation deferred)
 - CI → Fase 5 (characterization tests already exist)
-- Planning docs: `ROADMAP.md` (unified plan), `IMPROVEMENT_PLAN.md`, `PERFORMANCE_PLAN.md`, `ENHANCEMENTS.md`
+- Planning docs: `ROADMAP.md` (unified plan), `MIGRATION_LOG.md`, `DEBT_SPRINT.md`, `IMPROVEMENT_PLAN.md`, `PERFORMANCE_PLAN.md`, `ENHANCEMENTS.md`
 
 ## Other
 

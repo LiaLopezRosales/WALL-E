@@ -89,6 +89,9 @@ Suite final tras Lotes 1–5: **43 tests en verde**.
 
 ### Deudas conocidas (post-Fase 1)
 
+> Plan de saldado aprobado en `DEBT_SPRINT.md` (T1 shadowing, T2 let-in, T3 import, T4 tests
+> GlobalSeq; T5 expresiones autoevaluadas diferida explícitamente).
+
 1. **let-in roto** (bug #4): requiere decisión de diseño sobre la gramática (`LetExp` ya está migrado pero el parser no lo alcanza bien).
 2. **Property shadowing** en `GenericSequence<T>` (`new count`/`new Sequence`): los fixes actuales castean en los puntos de consumo; el refactor limpio es eliminar los miembros sombreados de `AbsSequence`.
 3. **Import sin cablear**: `VisitImport` devuelve error; conectar `GeoLibraryLoader` requiere que el pipeline pase el loader al contexto (Infrastructure → Application ya tiene la dirección correcta).
