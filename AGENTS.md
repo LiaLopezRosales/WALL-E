@@ -65,9 +65,10 @@ Wall-E.Infrastructure/      FileSystem/GeoLibraryLoader
 ### Migration state (important)
 
 - **Fase 1 is COMPLETE**: `EvaluatorVisitor` (Domain/Evaluation/EvaluatorVisitor.cs) implements every reachable node type directly via `INodeVisitor<EvaluationResult>`; the legacy-fallback bridge and the adapted 1933-line `Evaluator` class were deleted from `src/`. Full history in `MIGRATION_LOG.md`.
-- Known post-migration debts (see MIGRATION_LOG.md "Deudas conocidas"): broken let-in grammar, property shadowing (`new count`) between `GenericSequence<T>` and `AbsSequence`, `import` not wired to `GeoLibraryLoader`, expression nodes (`Sum` etc.) still self-evaluate internally.
+- **Debt sprint COMPLETE** (see `DEBT_SPRINT.md`): sequence property shadowing removed (`count` abstract on `AbsSequence`), let-in grammar repaired (GlobalVar no longer eats `in`; GeneralLexer self-closes let chunks; scope variables shadow globals in `VisitVar`), `import` wired via `IGeoLibrarySource` injection with cycle guard. Remaining known debt: expression nodes (`Sum` etc.) still self-evaluate internally — explicitly deferred.
+- DSL semantics notes: infinite sequences yield **longs** while finite literals hold lexer doubles; GlobalSeq gives the last target ALL remaining elements as a finite sequence (trailing `_` absorbs it); `{seq} + undefined` returns the first sequence unchanged.
 - `EvaluationContext`, `FigureRepository`, `RenderScene` replaced the old god-object `Context`.
-- Characterization tests: `dotnet test tests/Wall-E.Application.Tests/...csproj` — keep them green; they are the regression net for behavior changes.
+- Characterization tests: `dotnet test tests/Wall-E.Application.Tests/...csproj` (59 tests) — keep them green; they are the regression net for behavior changes.
 - Wall-E.UI.Avalonia (MVVM + SkiaSharp) is planned but **does not exist yet** — don't reference or build it.
 
 ## Architecture quirks (legacy project only)
@@ -84,7 +85,7 @@ Generators like `GenerateRandoms`/`GenerateSamples`/`GeneratePointsInFigure` are
 ## Deferred gaps (per ROADMAP.md)
 
 - `ArchiveAnalysis : Form` + `MessageBox` → Fase 2 (Avalonia UI)
-- Post-migration debts → **sprint planned in `DEBT_SPRINT.md`** (shadowing root fix, let-in grammar, import wiring, GlobalSeq tests; expression self-evaluation deferred)
+- Post-migration debts → **sprint COMPLETE, record in `DEBT_SPRINT.md`**; only remaining debt: expression nodes still self-evaluate (explicitly deferred)
 - CI → Fase 5 (characterization tests already exist)
 - Planning docs: `ROADMAP.md` (unified plan), `MIGRATION_LOG.md`, `DEBT_SPRINT.md`, `IMPROVEMENT_PLAN.md`, `PERFORMANCE_PLAN.md`, `ENHANCEMENTS.md`
 

@@ -89,14 +89,15 @@ Suite final tras Lotes 1–5: **43 tests en verde**.
 
 ### Deudas conocidas (post-Fase 1)
 
-> Plan de saldado aprobado en `DEBT_SPRINT.md` (T1 shadowing, T2 let-in, T3 import, T4 tests
-> GlobalSeq; T5 expresiones autoevaluadas diferida explícitamente).
+> **ACTUALIZACIÓN (sprint de deudas completado, ver `DEBT_SPRINT.md`):** las deudas
+> 1, 2, 3 y 5 están **RESUELTAS** (commits `d841fc3`, `c5b5f68`, `8c89892`, `64c2324`).
+> La única deuda restante es la 4, diferida explícitamente.
 
-1. **let-in roto** (bug #4): requiere decisión de diseño sobre la gramática (`LetExp` ya está migrado pero el parser no lo alcanza bien).
-2. **Property shadowing** en `GenericSequence<T>` (`new count`/`new Sequence`): los fixes actuales castean en los puntos de consumo; el refactor limpio es eliminar los miembros sombreados de `AbsSequence`.
-3. **Import sin cablear**: `VisitImport` devuelve error; conectar `GeoLibraryLoader` requiere que el pipeline pase el loader al contexto (Infrastructure → Application ya tiene la dirección correcta).
-4. **Nodos expresión autoevaluados**: `Sum`, `Pow`, etc. aún ejecutan su propio `Evaluate`; `WrapResult` sigue en pie por ellos. Migrarlos al patrón visitor es opcional (no bloquea Fase 2).
-5. **Tests de GlobalSeq**: cubierto solo por probe manual; añadir casos de caracterización sería barato.
+1. ~~**let-in roto** (bug #4)~~ → **RESUELTO** en T2: eran tres defectos coordinados (`GlobalVar` se comía el `in`; `GeneralLexer` dejaba el contador de lets abiertos colgando y tragaba statements siguientes; `VisitVar` daba prioridad a globales sobre scope). Semántica de shadowing decidida por diseño: no había comportamiento legacy que preservar porque let-in nunca parseó.
+2. ~~**Property shadowing**~~ → **RESUELTO** en T1: `count` es abstracto en `AbsSequence` con única implementación en `GenericSequence<T>`; eliminados todos los `new`, los enumeradores duplicados y `AbsSequence.Sequence`/`IsExhausted`.
+3. ~~**Import sin cablear**~~ → **RESUELTO** en T3: inyección vía `IGeoLibrarySource` (Application) implementada por `GeoLibraryLoader` (Infrastructure); handler con guarda de ciclos; fallos a dos canales; resultados internos de biblioteca fuera de `Context.Results`.
+4. **Nodos expresión autoevaluados**: `Sum`, `Pow`, etc. aún ejecutan su propio `Evaluate`; `WrapResult` sigue en pie por ellos. Diferida explícitamente (cero impacto funcional).
+5. ~~**Tests de GlobalSeq**~~ → **RESUELTO** en T4: siete casos de caracterización incluyendo el drenaje seguro de infinitos.
 
 ---
 

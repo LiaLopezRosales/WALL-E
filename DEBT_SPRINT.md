@@ -7,13 +7,49 @@ de seguridad más barata que habrá nunca para tocar gramática y jerarquía de 
 renderizador de la Fase 2 consumirá secuencias directamente — el shadowing sin corregir es una
 mina terrestre para ese consumo.
 
-Estado al cierre de este archivo: **PLAN APROBADO, EJECUCIÓN PENDIENTE**.
+Estado al cierre de este archivo: **COMPLETO ✅ — sprint ejecutado íntegramente**.
+Suite final: 59/59 tests en verde.
 
 Orden de ejecución (cada tarea = un commit, tests en verde antes de avanzar):
 
 ```
 T1 Shadowing (raíz)  →  T2 let-in  →  T3 import  →  T4 Tests GlobalSeq   [T5 diferida]
 ```
+
+### Resultados de la ejecución
+
+| Tarea | Commit | Tests |
+|---|---|---|
+| T1 shadowing | `d841fc3` | 44 |
+| T2 let-in | `c5b5f68` (+ `ce195b6` corrige aserción) | 47 |
+| T3 import | `8c89892` | 52 |
+| T4 GlobalSeq | `64c2324` | 59 |
+
+Hallazgos que refinaron el plan durante la ejecución:
+
+- **T1**: el diseño final declara `count` como propiedad **abstracta en `AbsSequence`**
+  (una sola implementación en `GenericSequence<T>`) en vez de moverla sin más: así toda
+  lectura por referencia base es polimórficamente correcta y `WrapResult` no necesita
+  casts. Se confirmó el bug latente con probe (`{seq}+undefined` reportaba `Count=0`,
+  ahora `Count=2`, cubierto por test de regresión). También se eliminó `IsExhausted`
+  (cero consumidores) y los enumeradores privados duplicados de las subclases.
+- **T2**: fueron **tres defectos coordinados**, no uno: (a) `Parser.GlobalVar` consumía
+  incondicionalmente el token tras el valor y se comía el `in`; (b) `GeneralLexer`
+  dejaba `amount_of_open_let` colgando cuando un chunk cerraba sus propios lets y se
+  tragaba silenciosamente todos los statements siguientes (por eso `x;` desaparecía);
+  (c) `VisitVar` consultaba `GlobalConstant` antes que las variables de scope, haciendo
+  imposible el shadowing. Nota clave: como let-in **nunca parseó en el legacy**, no había
+  comportamiento que preservar — la semántica actual es decisión de diseño documentada
+  (cuerpo con instrucciones separadas por `;`, cierre `in <expr>`, scope local sombreada
+  a globales). El troceado de statements por `;` vive en `GeneralLexer`, no en el parser.
+- **T3**: el handler solo se cablea cuando existe fuente (si no, `VisitImport` conserva
+  su error semántico); los fallos de importación van a DOS canales (`pipeline.Errors` y
+  el `ErrorResult` del statement); los resultados internos de la biblioteca NO llegan a
+  `Context.Results` (decisión deliberada, test lo congela).
+- **T4**: el drenaje de `{1...}` con dos targets deja `rest.count == MaxElements - 1`
+  (9999) y finito — invariante de seguridad verificado. Ojo para futuros tests:
+  `Infinite_Sequence` produce **longs** mientras los literales finitos guardan doubles
+  del lexer; `Assert.Equal(1.0, boxedLong)` falla aunque valgan lo mismo.
 
 ---
 
@@ -196,9 +232,9 @@ y `WrapResult` ya es correcto tras T1. Se reevalúa si la Fase 2 exige extender 
 
 ## Definición de "done" del sprint
 
-- [ ] T1–T4 commiteadas por separado, conventional commits
-- [ ] Suite completa en verde (≥ 50 tests tras T2/T3/T4)
-- [ ] Este documento actualizado con hallazgos de ejecución y decisiones tomadas
-- [ ] AGENTS.md ("Deferred gaps") y MIGRATION_LOG.md ("Deudas conocidas") actualizados:
-      shadowing/let-in/import pasan a RESUELTAS; T5 queda como única deuda, explícitamente diferida
-- [ ] Dominio estable → arranque de Fase 2 (Avalonia UI) con base limpia
+- [x] T1–T4 commiteadas por separado, conventional commits
+- [x] Suite completa en verde (59 tests tras el sprint; eran 43)
+- [x] Este documento actualizado con hallazgos de ejecución y decisiones tomadas
+- [x] AGENTS.md ("Deferred gaps") y MIGRATION_LOG.md ("Deudas conocidas") actualizados:
+      shadowing/let-in/import RESUELTAS; T5 queda como única deuda, explícitamente diferida
+- [x] Dominio estable → arranque de Fase 2 (Avalonia UI) con base limpia
