@@ -202,7 +202,7 @@ public readonly struct Result<T, E>
 > | M1.5 | Rediseño estético «taller de dibujo técnico»: FluentAvalonia dark + paleta propia, shell rediseñada (ver sección siguiente) | nuevo | ✅ |
 > | M2 | Grid cartesiano, sistema de coordenadas, zoom/pan, cursor y statusbar | 2.11–2.13, 2.15 | ✅ |
 > | M3 | Cancelación UI (`PipelineOrchestrator.Cancel()` ya existe) + streaming progresivo por batches | 2.8–2.9 | ✅ |
-> | M4 | Color picker, temas, pulido de estados de error | 2.14 | pendiente |
+> | M4 | Color picker (papel del lienzo), tema claro/oscuro en vivo, tira de tinta DSL activa; pulido de errores ya cubierto por insignia/dot/autoexpand | 2.14 | ✅ |
 
 #### M1.5 — Dirección de arte aprobada («taller de dibujo técnico»)
 
