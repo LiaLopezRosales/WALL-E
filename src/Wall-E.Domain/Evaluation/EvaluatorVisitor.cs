@@ -164,7 +164,6 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");
 
-    // Fallback to adapted Evaluator for all remaining types
     public EvaluationResult VisitInstructions(Node node)
     {
         // Instructions is a container node; each branch is individually evaluated by the caller.
@@ -1255,21 +1254,6 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         }
         AddError("argument");
         return new VoidResult();
-    }
-
-    private EvaluationResult EvaluateFallback(Node node)
-    {
-        var evaluator = new Evaluator(_context, _figures, _scene, _file);
-        evaluator.line = _line;
-        evaluator.CurrentScope = _currentScope;
-        evaluator.CancellationToken = CancellationToken;
-        object result = evaluator.GeneralEvaluation(node);
-        _semanticErrors.AddRange(evaluator.Semantic_Errors);
-        _currentScope = evaluator.CurrentScope;
-        _context = evaluator._context;
-        _figures = evaluator._figures;
-        _scene = evaluator._scene;
-        return WrapResult(result);
     }
 
     private static EvaluationResult WrapResult(object? result)
