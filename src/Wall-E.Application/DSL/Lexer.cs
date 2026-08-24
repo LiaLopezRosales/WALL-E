@@ -23,7 +23,10 @@ namespace Wall_E.Application.DSL;
         string quotes ="\"";
         string patronPalabras = @"\+|\-|\*|\%|(\...)|(\<\=)|(\>\=)|(\=\=)|(\!\=)|(\=\>)|\{|\}|\/|\^|(\!)|\,|\(|\)|\{|\}|\<|\>|\=|\;|\:";
         string patronIdentificador = @"\b\w*[a-zA-Z]\w*\b";
-        string patron = $"{patronTexto}|{low}|{quotes}|{patronIdentificador}|{patronNumeroNegativo}|{patronPalabras} ";
+        // Hex color literals (#RRGGBB / #RGB). Six digits first so the
+        // alternation doesn't stop at three.
+        string patronHex = @"(#[0-9a-fA-F]{6})|(#[0-9a-fA-F]{3})";
+        string patron = $"{patronTexto}|{low}|{quotes}|{patronHex}|{patronIdentificador}|{patronNumeroNegativo}|{patronPalabras} ";
         MatchCollection matches = Regex.Matches(code, patron);
         List<Token> possibletokens = new List<Token>();
         foreach (Match match in matches)
@@ -228,6 +231,10 @@ namespace Wall_E.Application.DSL;
             token = new Token(Token.TokenType.And, possibletoken,File,Line,index.ToString());
         } 
         else if (possibletoken == "black" || possibletoken == "white"|| possibletoken == "blue"|| possibletoken == "red"|| possibletoken == "yellow"|| possibletoken == "green"|| possibletoken == "cyan"|| possibletoken == "magenta"|| possibletoken == "grey")
+        {
+            token = new Token(Token.TokenType.color_value, possibletoken,File,Line,index.ToString());
+        }
+        else if (Regex.IsMatch(possibletoken, "^#[0-9a-fA-F]{6}$|^#[0-9a-fA-F]{3}$"))
         {
             token = new Token(Token.TokenType.color_value, possibletoken,File,Line,index.ToString());
         }
