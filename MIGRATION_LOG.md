@@ -36,20 +36,33 @@ Commit: `221e651 fix: first successful build of src/Wall-E.sln`
 
 ---
 
-## Fase B — Red de seguridad: tests de caracterización ⏳
+## Fase B — Red de seguridad: tests de caracterización ✅
 
 Objetivo: capturar el comportamiento ACTUAL (visitor con fallback al legacy) como regresión
 permanente antes de tocar los lotes riesgosos de migración.
 
-- [ ] B.1 Crear `tests/Wall-E.Application.Tests` (xUnit, net8.0) + añadir a la solución
-- [ ] B.2 Exponer `EvaluationContext` desde `PipelineOrchestrator` (hoy solo expone `Errors`)
-- [ ] B.3 Tests B1 aritmética/lógica/trig
-- [ ] B.4 Tests B2 figuras y escena
-- [ ] B.5 Tests B3 control flow y funciones
-- [ ] B.6 Tests B4 secuencias (crítico: finitas, infinitas acotadas por MaxElements, concat, quirk `{seq} + undefined`)
-- [ ] B.7 Tests B5 errores semánticos
+- [x] B.1 `tests/Wall-E.Application.Tests` creado (xUnit, net8.0), agregado a `src/Wall-E.sln`
+- [x] B.2 `PipelineOrchestrator` expone ahora `Context`, `Figures`, `Scene` (antes solo `Errors`)
+- [x] B.3–B.7 Suite completa: **27 tests en verde** (`3b3fb56`)
+  - `ArithmeticCharacterizationTests` (9): aritmética, precedencia, trig, PI
+  - `FigureCharacterizationTests` (5): declaraciones, draw, color por defecto
+  - `ControlFlowCharacterizationTests` (5): asignación+lectura, if-then-else, let-in, funciones
+  - `SequenceCharacterizationTests` (5): caracterización de secuencias (ver bugs conocidos)
+  - `ErrorCharacterizationTests` (4): división por cero, reasignación, variable desconocida
 
-## Fase C — Migración de los 25 métodos restantes ⬜
+### Bugs descubiertos por la caracterización
+
+| # | Bug | Estado |
+|---|---|---|
+| 1 | `VisitGlobalVar` almacenaba variables bajo el `ToString()` del record (`"StringResult { Value = x }"`), rompiendo toda lectura posterior. Ídem tags de `draw`. | **CORREGIDO** (`1087a50`, helper `RawString`) |
+| 2 | `Finite_Sequence<T>.ToString()` usa formato malformado `"Type {}"` → `FormatException`. Cualquier sentencia cuyo valor sea secuencia finita/vacía revienta el pipeline. | Documentado; se corrige en Lote 4 |
+| 3 | El puente fallback envuelve cualquier secuencia legacy como `StringResult(ToString())` → `count({1...100})` responde "can't count this type". | Documentado; desaparece al migrar secuencias (Lotes 4–5) |
+| 4 | `let-in` produce error sintáctico (`let x = 5 in ...`) o NRE (con `;`). | Documentado; se revisa en Lote 1/4 |
+
+Los bugs 2–4 están capturados como tests marcados `KNOWN_BUG` / comentarios;
+al corregirlos se reemplazan las aserciones por el comportamiento correcto tipado.
+
+## Fase C — Migración de los 25 métodos restantes ⏳
 
 | Lote | Métodos | Estado |
 |---|---|---|
