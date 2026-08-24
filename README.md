@@ -1,5 +1,7 @@
 # GeoWall-E
 
+[![CI](https://github.com/LiaLopezRosales/WALL-E/actions/workflows/ci.yml/badge.svg)](https://github.com/LiaLopezRosales/WALL-E/actions/workflows/ci.yml)
+
 **GeoWall-E** is a geometric drawing interpreter for a small DSL: write short programs (points, lines, circles, sequences, functions, conditionals) and render them on a canvas. Pipeline: **Lexer → Parser → Evaluator → Canvas**.
 
 ```
@@ -18,8 +20,8 @@ Two codebases coexist in this repository:
 | | Legacy | New architecture |
 |---|---|---|
 | Project | root `Wall-E.csproj` (`net6.0-windows`, WinForms) | `src/Wall-E.{Domain,Application,Infrastructure}` (`net8.0`) |
-| Status | fully working, Windows only | Clean Architecture, complete visitor-based evaluator, 59 characterization tests |
-| UI | WinForms | Avalonia UI + MVVM (in progress, see ROADMAP Fase 2) |
+| Status | fully working, Windows only | Clean Architecture, complete visitor-based evaluator, 74 characterization tests, CI on every push |
+| UI | WinForms | Avalonia 11 + FluentAvalonia, MVVM, streaming canvas with pan/zoom (Fase 2 complete) |
 
 The new architecture follows a strict dependency direction (**Infrastructure → Application → Domain**, zero external dependencies in Domain), replaces the legacy god-object evaluator with the Visitor pattern and sealed result records, and wires `import` through an injectable `IGeoLibrarySource`.
 
