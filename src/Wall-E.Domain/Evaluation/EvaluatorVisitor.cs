@@ -722,7 +722,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
 
     public EvaluationResult VisitGlobalVar(Node node)
     {
-        string name = Visit(node.Branches[0]).ToString()!;
+        string name = RawString(Visit(node.Branches[0]));
         object value = UnwrapRaw(Visit(node.Branches[1]))!;
         StoreVariable(name, value);
         return new StringResult("global constant has been added");
@@ -735,7 +735,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         object value = UnwrapRaw(valResult)!;
         string tag = " ";
         if (node.Branches[1].Type != Node.NodeType.Indefined)
-            tag = Visit(node.Branches[1]).ToString()!;
+            tag = RawString(Visit(node.Branches[1]));
         var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek());
         if (!d.CheckValidType())
         {
@@ -929,6 +929,9 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         SequenceResult seq => seq.Value,
         _ => null
     };
+
+    private static string RawString(EvaluationResult result) =>
+        result is StringResult s ? s.Value : result.ToString()!;
 
     private void AddError(string expected)
     {
