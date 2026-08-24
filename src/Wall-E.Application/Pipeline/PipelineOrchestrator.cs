@@ -13,6 +13,9 @@ public class PipelineOrchestrator : IPipeline
 
     public List<Error> Errors => _errors;
     public ExpressionCache Cache => _cache;
+    public EvaluationContext Context { get; private set; } = new();
+    public FigureRepository Figures { get; private set; } = new();
+    public RenderScene Scene { get; private set; } = new();
 
     public PipelineOrchestrator()
     {
@@ -49,6 +52,9 @@ public class PipelineOrchestrator : IPipeline
         var context = new EvaluationContext();
         var figures = new FigureRepository();
         var scene = new RenderScene();
+        Context = context;
+        Figures = figures;
+        Scene = scene;
 
         var evaluator = new EvaluatorVisitor(context, figures, scene, file);
         evaluator.CancellationToken = token;
