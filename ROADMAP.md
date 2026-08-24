@@ -201,7 +201,7 @@ public readonly struct Result<T, E>
 > | M1 | Proyecto Avalonia net8.0 + MVVM base + MainWindow (editor/canvas/errores) + ProcessCommand síncrono + render de `RenderScene` | 2.1–2.7, 2.10 | ✅ |
 > | M1.5 | Rediseño estético «taller de dibujo técnico»: FluentAvalonia dark + paleta propia, shell rediseñada (ver sección siguiente) | nuevo | ✅ |
 > | M2 | Grid cartesiano, sistema de coordenadas, zoom/pan, cursor y statusbar | 2.11–2.13, 2.15 | ✅ |
-> | M3 | Cancelación UI (`PipelineOrchestrator.Cancel()` ya existe) + streaming progresivo por batches | 2.8–2.9 | pendiente |
+> | M3 | Cancelación UI (`PipelineOrchestrator.Cancel()` ya existe) + streaming progresivo por batches | 2.8–2.9 | ✅ |
 > | M4 | Color picker, temas, pulido de estados de error | 2.14 | pendiente |
 
 #### M1.5 — Dirección de arte aprobada («taller de dibujo técnico»)
@@ -241,6 +241,12 @@ Desglose de ejecución:
 > (`Control.Render(DrawingContext)`), no un `SKCanvasView` externo — mismo motor,
 > menos dependencias. La API real del orquestador es `Execute(source, file)` +
 > `Cancel()`; `RenderScene` ya existe como snapshot plano de figuras+colores.
+>
+> Desviación M3 (documentada): en vez de `IProgress<Scene>`/`Channel`
+> (tareas 2.8–2.9 originales), el streaming se resuelve con `RenderScene`
+> sincronizada (`Add`/`DrawCount`/`Snapshot()` bajo lock) + polling de la UI
+> cada 90 ms — mismo comportamiento visible, cero superficie nueva de API.
+> Limitación conocida: el token solo se chequea entre statements.
 
 **Duración**: ~3 semanas · **Objetivo**: UI moderna con MVVM puro, streaming progresivo, grid.
 
