@@ -17,7 +17,7 @@
         <!-- Header bar -->
         <Border Grid.Row="0" Background="{StaticResource BgSurfaceBrush}"
                 BorderBrush="{StaticResource HairlineBrush}" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="16,10,12,10">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="16,10,12,10">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
                     <Ellipse Width="11" Height="11" VerticalAlignment="Center"
                              Fill="{StaticResource AccentBrush}"/>
@@ -34,7 +34,17 @@
                         <TextBlock Text="Run" FontWeight="Medium"/>
                     </StackPanel>
                 </Button>
-                <Button Grid.Column="3" x:Name="ClearButton" Command="{Binding ClearCommand}"
+                <Button Grid.Column="3" x:Name="StopButton" Classes="danger"
+                        Command="{Binding StopCommand}" ToolTip.Tip="Cancel execution"
+                        IsVisible="{Binding IsProcessing}" Margin="8,0,0,0"
+                        MinWidth="96" Padding="14,7">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Width="9" Height="9" Foreground="{StaticResource ErrorBrush}"
+                                  Data="M 0 0 L 9 0 L 9 9 L 0 9 Z"/>
+                        <TextBlock Text="Stop"/>
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="4" x:Name="ClearButton" Command="{Binding ClearCommand}"
                         Margin="8,0,0,0" MinWidth="110" Padding="14,7">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <PathIcon Width="10" Height="10"

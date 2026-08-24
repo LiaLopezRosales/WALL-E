@@ -29,7 +29,7 @@ public partial class MainWindow : Window
 
     private void VmOnSceneChanged(object? sender, EventArgs e)
     {
-        Canvas.SetScene(_vm!.Scene);
+        Canvas.SetScene(_vm!.DisplayScene);
         ProcessButton.Focus();
     }
 
