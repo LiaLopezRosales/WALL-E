@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using Wall_E.Domain;
 using APoint = global::Avalonia.Point;
@@ -8,9 +11,10 @@ using DPoint = Wall_E.Domain.Point;
 namespace Wall_E.UI.Avalonia.Views;
 
 /// <summary>
-/// M1 renderer: maps RenderScene drawables to Avalonia vector primitives.
-/// Uses Avalonia's Skia-backed rendering pipeline (no external SKCanvasView).
-/// Fit-to-view transform with cartesian Y inversion; recomputed every frame.
+/// M2 renderer: fixed cartesian viewport (origin-centered world window),
+/// adaptive grid with highlighted axes, wheel zoom around the pointer,
+/// drag-to-pan, double-tap reset and cursor world-coordinate events.
+/// Still renders through Avalonia's Skia pipeline (Control.Render).
 /// </summary>
 public class DrawingCanvas : Control
 {
@@ -18,42 +22,99 @@ public class DrawingCanvas : Control
     private const double RayDrawLength = 300; // rays are infinite; draw a bounded stub
     private const int MaxSequenceDots = 2000; // UI responsiveness cap (< MaxElements invariant)
 
+    private const double MinScale = 0.05;
+    private const double MaxScale = 80;
+    private const double DefaultScale = 2.0;
+
     private RenderScene? _scene;
+    private List<Shape> _shapes = new();
+    private bool _shapesDirty = true;
+    private bool _pendingInitialFit = true;
+
+    private double _scale = DefaultScale;
+    private double _centerX;
+    private double _centerY;
+
+    private bool _panning;
+    private APoint _panLast;
+
+    public DrawingCanvas()
+    {
+        DoubleTapped += (_, _) => ResetView();
+    }
+
+    /// <summary>World coordinates under the pointer, raised on move.</summary>
+    public event Action<double, double>? CursorWorldPositionChanged;
+
+    /// <summary>Raised when the pointer leaves the drawable area.</summary>
+    public event Action? CursorLeftCanvas;
 
     public void SetScene(RenderScene? scene)
     {
         _scene = scene;
+        _shapesDirty = true;
+        if (scene is { ToDraw.Count: > 0 }) _pendingInitialFit = true;
         InvalidateVisual();
+    }
+
+    public void ResetView()
+    {
+        _scale = DefaultScale;
+        _centerX = 0;
+        _centerY = 0;
+        InvalidateVisual();
+    }
+
+    public void FitToContent()
+    {
+        ComputeFit();
+        InvalidateVisual();
+    }
+
+    /// <summary>Computes the fit transform without invalidating - safe to
+    /// call from inside Render, where InvalidateVisual is forbidden.</summary>
+    private void ComputeFit()
+    {
+        RebuildShapesIfNeeded();
+        if (_shapes.Count == 0 || !IsSizeValid()) return;
+
+        var (minX, minY, maxX, maxY) = ComputeBounds(_shapes);
+        double w = maxX - minX, h = maxY - minY;
+        if (w <= 1e-9 && h <= 1e-9)
+        {
+            ResetView();
+            return;
+        }
+
+        double availW = Bounds.Width - 2 * ViewMargin;
+        double availH = Bounds.Height - 2 * ViewMargin;
+        _scale = Math.Clamp(
+            Math.Min(availW / Math.Max(w, 1e-9), availH / Math.Max(h, 1e-9)),
+            MinScale, MaxScale);
+        _centerX = (minX + maxX) / 2;
+        _centerY = (minY + maxY) / 2;
     }
 
     public override void Render(DrawingContext context)
     {
-        // Paper-white background so the DSL's default black ink reads well.
         context.FillRectangle(Brushes.White, new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height));
+        if (!IsSizeValid()) return;
 
-        if (_scene is null || _scene.ToDraw.Count == 0) return;
-
-        var shapes = new List<Shape>();
-        foreach (var drawable in _scene.ToDraw)
-            Collect(shapes, drawable.Figures, drawable.UsedColor);
-
-        if (shapes.Count == 0) return;
-
-        var (minX, minY, maxX, maxY) = ComputeBounds(shapes);
-        double worldW = maxX - minX, worldH = maxY - minY;
-        double availW = Bounds.Width - 2 * ViewMargin, availH = Bounds.Height - 2 * ViewMargin;
-        double scale = worldW > 0 && worldH > 0
-            ? System.Math.Min(availW / worldW, availH / worldH)
-            : 1.0;
-
-        APoint Map(double x, double y) => new(
-            ViewMargin + (x - minX) * scale,
-            ViewMargin + (maxY - y) * scale); // Y inverted (cartesian look)
-
-        foreach (var shape in shapes)
+        if (_pendingInitialFit && _shapes.Count > 0)
         {
-            // 'white' would vanish on the paper background: draw it over a
-            // gray halo so every palette color keeps minimum contrast.
+            _pendingInitialFit = false;
+            ComputeFit();
+        }
+
+        DrawGrid(context);
+
+        RebuildShapesIfNeeded();
+        if (_shapes.Count == 0) return;
+
+        // 'white' would vanish on the paper background: draw it over a
+        // gray halo so every palette color keeps minimum contrast.
+        foreach (var shape in _shapes)
+        {
             bool isWhite = string.Equals(shape.Color.Trim(), "white", StringComparison.OrdinalIgnoreCase);
             var halo = new Pen(Brushes.Gray, 3);
             var pen = new Pen(isWhite ? Brushes.White : ParseColor(shape.Color), isWhite ? 1.5 : 2);
@@ -78,10 +139,10 @@ public class DrawingCanvas : Control
                     break;
                 case CircleShape c:
                 {
-                    // circles stay circular: uniform scale was chosen above
                     var topLeft = Map(c.X - c.R, c.Y + c.R);
                     Stroke(p => context.DrawEllipse(null, p,
-                        new global::Avalonia.Rect(topLeft.X, topLeft.Y, 2 * c.R * scale, 2 * c.R * scale)));
+                        new global::Avalonia.Rect(topLeft.X, topLeft.Y,
+                            2 * c.R * _scale, 2 * c.R * _scale)));
                     break;
                 }
                 case PolyShape p:
@@ -100,6 +161,173 @@ public class DrawingCanvas : Control
                 }
             }
         }
+    }
+
+    // ---- cartesian grid -------------------------------------------------
+
+    private void DrawGrid(DrawingContext context)
+    {
+        var visible = VisibleWorldRect();
+        double step = NiceStep(36 / _scale);
+        double majorEvery = 5;
+
+        double startX = Math.Floor(visible.MinX / step) * step;
+        double endX = visible.MaxX;
+        double startY = Math.Floor(visible.MinY / step) * step;
+        double endY = visible.MaxY;
+
+        var minor = new Pen(ColorFromHex("#E8ECF2"), 1);
+        var major = new Pen(ColorFromHex("#CBD4DF"), 1);
+        var axis = new Pen(ColorFromHex("#8A93A6"), 1.5);
+
+        for (double x = startX; x <= endX; x += step)
+        {
+            bool isMajor = IsNearMultipleOf(x, step * majorEvery);
+            if (!isMajor)
+                context.DrawLine(minor, Map(x, visible.MinY), Map(x, visible.MaxY));
+        }
+        for (double y = startY; y <= endY; y += step)
+        {
+            bool isMajor = IsNearMultipleOf(y, step * majorEvery);
+            if (!isMajor)
+                context.DrawLine(minor, Map(visible.MinX, y), Map(visible.MaxX, y));
+        }
+        for (double x = startX; x <= endX; x += step)
+        {
+            if (IsNearMultipleOf(x, step * majorEvery))
+                context.DrawLine(major, Map(x, visible.MinY), Map(x, visible.MaxY));
+        }
+        for (double y = startY; y <= endY; y += step)
+        {
+            if (IsNearMultipleOf(y, step * majorEvery))
+                context.DrawLine(major, Map(visible.MinX, y), Map(visible.MaxX, y));
+        }
+
+        // axes on top
+        if (visible.MinY <= 0 && visible.MaxY >= 0)
+            context.DrawLine(axis, Map(visible.MinX, 0), Map(visible.MaxX, 0));
+        if (visible.MinX <= 0 && visible.MaxX >= 0)
+            context.DrawLine(axis, Map(0, visible.MinY), Map(0, visible.MaxY));
+
+        // origin marker in accent amber
+        var o = Map(0, 0);
+        context.DrawEllipse(null, new Pen(ColorFromHex("#F5A623"), 2),
+            new global::Avalonia.Rect(o.X - 5, o.Y - 5, 10, 10));
+    }
+
+    private static double NiceStep(double minStep)
+    {
+        double pow = Math.Pow(10, Math.Floor(Math.Log10(Math.Max(minStep, 1e-9))));
+        foreach (var m in new[] { 1d, 2d, 5d, 10d })
+            if (m * pow >= minStep)
+                return m * pow;
+        return 10 * pow;
+    }
+
+    private static bool IsNearMultipleOf(double v, double m)
+    {
+        double r = v / m;
+        return Math.Abs(r - Math.Round(r)) < 1e-6;
+    }
+
+    private static IBrush ColorFromHex(string hex) =>
+        new SolidColorBrush(Color.Parse(hex));
+
+    // ---- transforms -----------------------------------------------------
+
+    private (double MinX, double MinY, double MaxX, double MaxY) VisibleWorldRect()
+    {
+        double hw = Bounds.Width / (2 * _scale);
+        double hh = Bounds.Height / (2 * _scale);
+        return (_centerX - hw, _centerY - hh, _centerX + hw, _centerY + hh);
+    }
+
+    private APoint Map(double x, double y) => new(
+        Bounds.Width / 2 + (x - _centerX) * _scale,
+        Bounds.Height / 2 - (y - _centerY) * _scale); // Y inverted (cartesian look)
+
+    private (double X, double Y) ScreenToWorld(APoint p) => (
+        _centerX + (p.X - Bounds.Width / 2) / _scale,
+        _centerY - (p.Y - Bounds.Height / 2) / _scale);
+
+    private void ZoomAt(APoint p, double factor)
+    {
+        if (!IsSizeValid()) return;
+        var (wx, wy) = ScreenToWorld(p);
+        _scale = Math.Clamp(_scale * factor, MinScale, MaxScale);
+        _centerX = wx - (p.X - Bounds.Width / 2) / _scale;
+        _centerY = wy + (p.Y - Bounds.Height / 2) / _scale;
+        InvalidateVisual();
+    }
+
+    private bool IsSizeValid() =>
+        Bounds.Width > 1 && Bounds.Height > 1 &&
+        !double.IsNaN(Bounds.Width) && !double.IsNaN(Bounds.Height);
+
+    // ---- input: zoom / pan / cursor readout ------------------------------
+
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        base.OnPointerWheelChanged(e);
+        double factor = Math.Pow(1.15, e.Delta.Y);
+        ZoomAt(e.GetPosition(this), factor);
+        e.Handled = true;
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        var props = e.GetCurrentPoint(this).Properties;
+        if (props.IsLeftButtonPressed)
+        {
+            _panning = true;
+            _panLast = e.GetPosition(this);
+            e.Pointer.Capture(this);
+            e.Handled = true;
+        }
+    }
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        var p = e.GetPosition(this);
+        if (_panning)
+        {
+            _centerX -= (p.X - _panLast.X) / _scale;
+            _centerY += (p.Y - _panLast.Y) / _scale;
+            _panLast = p;
+            InvalidateVisual();
+        }
+        var (wx, wy) = ScreenToWorld(p);
+        CursorWorldPositionChanged?.Invoke(wx, wy);
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        if (_panning)
+        {
+            _panning = false;
+            e.Pointer.Capture(null);
+        }
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        base.OnPointerExited(e);
+        CursorLeftCanvas?.Invoke();
+    }
+
+    // ---- scene flattening (unchanged mapping rules) ----------------------
+
+    private void RebuildShapesIfNeeded()
+    {
+        if (!_shapesDirty) return;
+        _shapesDirty = false;
+        _shapes = new List<Shape>();
+        if (_scene is null) return;
+        foreach (var drawable in _scene.ToDraw)
+            Collect(_shapes, drawable.Figures, drawable.UsedColor);
     }
 
     private abstract class Shape
@@ -202,8 +430,8 @@ public class DrawingCanvas : Control
         for (int i = 0; i <= Steps; i++)
         {
             double t = a.MainAngle + a.SweepAngle * i / Steps;
-            points.Add(new DPoint(a.center.x + a.measure * System.Math.Cos(t),
-                                  a.center.y + a.measure * System.Math.Sin(t)));
+            points.Add(new DPoint(a.center.x + System.Math.Cos(t) * a.measure,
+                                  a.center.y + System.Math.Sin(t) * a.measure));
         }
         return new PolyShape(points, color);
     }
