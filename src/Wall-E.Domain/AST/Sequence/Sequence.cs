@@ -2,8 +2,8 @@ namespace Wall_E.Domain;
 public class GenericSequence<T>:AbsSequence
 { //Una secuencia genérica tiene además un iterador para obtener sus valores
   //Si count==-1 su valor es undefined
-  public new long count{get;protected set;}
-  public new IEnumerable<T>? Sequence {get;set;}
+  public override long count{get;protected set;}
+  public IEnumerable<T>? Sequence {get;set;}
   protected IEnumerator<T> enumerator{get;set;}
   public GenericSequence()
   {

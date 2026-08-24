@@ -2,8 +2,6 @@ namespace Wall_E.Domain;
 public class Infinite_Sequence:GenericSequence<long>
 {   //La secuencia infinita habitual debe ser entera pues de similar manera a la acotado avanza de uno en uno
     public long StartsAd{get;set;}
-    public new IEnumerable<long> Sequence{ get;set;} 
-     private IEnumerator<long> enumerator{get;set;}
 
     public Infinite_Sequence(long start)
     {
@@ -47,8 +45,6 @@ public class Infinite_Sequence:GenericSequence<long>
 public class InfinitePointSequence:GenericSequence<Point>
 {
     public Point StartsAd{get;set;}
-    public new IEnumerable<Point> Sequence{protected get;set;} 
-    private IEnumerator<Point> enumerator{get;set;}
 
     public InfinitePointSequence(Point start)
     {
@@ -98,8 +94,6 @@ public class InfinitePointSequence:GenericSequence<Point>
  public class InfiniteDoubleSequence:GenericSequence<double>
     {
         public double StartsAd{get;set;}
-        public new IEnumerable<double> Sequence{protected get;set;} 
-        private IEnumerator<double> enumerator{get;set;}
 
     public InfiniteDoubleSequence(IEnumerable<double>s)
     {

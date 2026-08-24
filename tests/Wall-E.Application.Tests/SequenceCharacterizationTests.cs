@@ -19,6 +19,18 @@ public class SequenceCharacterizationTests
     }
 
     [Fact]
+    public void Concat_result_exposes_correct_count_through_WrapResult()
+    {
+        // Regression for the property-shadowing debt: WrapResult used to read
+        // AbsSequence.count (never assigned, always 0) when wrapping sequences
+        // produced by expression nodes like Sum.
+        var pipeline = Run("{1,2} + undefined;");
+        Assert.Empty(pipeline.Errors);
+        var result = Assert.IsType<SequenceResult>(pipeline.Context.Results[0]);
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
     public void Count_of_finite_sequence()
     {
         var pipeline = Run("count({1,2,3});");

@@ -2,10 +2,8 @@ namespace Wall_E.Domain;
 public class Finite_Sequence<T>:GenericSequence<T>
 {   //Una secuencia finita se define a partir de una lista de objetos(todos los objetos deben ser del mismo tipo)
     public List<T> values{get;set;}
-    public new IEnumerable<T> Sequence{get;set;}
     //Tipo de los objetos
     public SeqType type{get;set;}
-    private IEnumerator<T> enumerator{get;set;}
     
     public enum SeqType{number,text,circle,line,point,segment,ray,arc,sequence,no_declared,other}
 
