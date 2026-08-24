@@ -407,11 +407,15 @@ public class Parser
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "expression",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         globalvar.Branches = new List<Node> { var_name, value };
+        // Consume the terminating ';' only when present. Inside let-in bodies the
+        // next token can be 'in'; unconditionally advancing used to eat it and
+        // desynchronize the whole parse ("Invalid let-in expression").
         if (tokenstream.Position()==tokens.Count-1)
         {
             return globalvar;
         }
-        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value == ";")
+            tokenstream.MoveForward(1);
         return globalvar;
     }
     public Node GlobalSeq()

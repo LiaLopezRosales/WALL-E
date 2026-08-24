@@ -788,10 +788,13 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitVar(Node node)
     {
         string name = node.NodeExpression!.ToString()!;
-        if (_context.GlobalConstant.ContainsKey(name))
-            return WrapResult(_context.GlobalConstant[name]);
+        // Scope variables take precedence over global constants: a let-body or a
+        // function parameter may shadow a global. Checking globals first made any
+        // shadowing impossible (moot before T2 because let-in never parsed).
         if (_currentScope.Variables.ContainsKey(name))
             return WrapResult(_currentScope.Variables[name]);
+        if (_context.GlobalConstant.ContainsKey(name))
+            return WrapResult(_context.GlobalConstant[name]);
         _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,
             "variable", new Location(_file, _line, "column")));
         return new VoidResult();

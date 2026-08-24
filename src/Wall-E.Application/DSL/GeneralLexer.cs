@@ -57,6 +57,14 @@ public class GeneralLexer
                 }
                 index=i;
                 amount_of_open_let=amount_of_open_let+amount;
+                //Si el propio chunk contiene suficientes 'in' para cerrar todos sus lets,
+                //no queda ningún let abierto: sin esto, los statements siguientes se
+                //pegaban a este chunk y se perdían silenciosamente.
+                if (CountIns(lines[i]) >= amount_of_open_let)
+                {
+                    amount_of_open_let=0;
+                    index=-1;
+                }
             }  
         }
         
@@ -116,6 +124,11 @@ public class GeneralLexer
     {
         MatchCollection matches=Regex.Matches(s,"\\bin\\b",RegexOptions.IgnoreCase);
         return matches.Count>0;
+    }
+    private int CountIns(string s)
+    {
+        MatchCollection matches=Regex.Matches(s,"\\bin\\b",RegexOptions.IgnoreCase);
+        return matches.Count;
     }
     
 }
