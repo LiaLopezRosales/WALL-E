@@ -14,7 +14,7 @@ namespace Wall_E.UI.Avalonia.Views;
 /// </summary>
 public class DrawingCanvas : Control
 {
-    private const double Margin = 30;
+    private const double ViewMargin = 30;
     private const double RayDrawLength = 300; // rays are infinite; draw a bounded stub
     private const int MaxSequenceDots = 2000; // UI responsiveness cap (< MaxElements invariant)
 
@@ -41,14 +41,14 @@ public class DrawingCanvas : Control
 
         var (minX, minY, maxX, maxY) = ComputeBounds(shapes);
         double worldW = maxX - minX, worldH = maxY - minY;
-        double availW = Bounds.Width - 2 * Margin, availH = Bounds.Height - 2 * Margin;
+        double availW = Bounds.Width - 2 * ViewMargin, availH = Bounds.Height - 2 * ViewMargin;
         double scale = worldW > 0 && worldH > 0
             ? System.Math.Min(availW / worldW, availH / worldH)
             : 1.0;
 
         APoint Map(double x, double y) => new(
-            Margin + (x - minX) * scale,
-            Margin + (maxY - y) * scale); // Y inverted (cartesian look)
+            ViewMargin + (x - minX) * scale,
+            ViewMargin + (maxY - y) * scale); // Y inverted (cartesian look)
 
         foreach (var shape in shapes)
         {

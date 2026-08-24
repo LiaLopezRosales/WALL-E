@@ -4,37 +4,120 @@
         xmlns:vm="using:Wall_E.UI.Avalonia.ViewModels"
         x:Class="Wall_E.UI.Avalonia.MainWindow"
         x:DataType="vm:MainViewModel"
-        Title="GeoWall-E" Width="1200" Height="760">
+        Title="GeoWall-E" Width="1200" Height="760" MinWidth="900" MinHeight="600"
+        Background="{StaticResource BgBaseBrush}"
+        FontFamily="Segoe UI, Inter, Noto Sans, Ubuntu">
 
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,*,Auto,26">
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="8">
-            <Button x:Name="ProcessButton" Content="Process (F5)" Command="{Binding ProcessCommand}" MinWidth="110" />
-            <Button Content="Clear canvas" Command="{Binding ClearCommand}" MinWidth="110" />
-            <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Margin="12,0,0,0"
-                       Opacity="0.8" />
-        </StackPanel>
+        <!-- Header bar -->
+        <Border Grid.Row="0" Background="{StaticResource BgSurfaceBrush}"
+                BorderBrush="{StaticResource HairlineBrush}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="16,10,12,10">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                    <Ellipse Width="11" Height="11" VerticalAlignment="Center"
+                             Fill="{StaticResource AccentBrush}"/>
+                    <TextBlock Text="GeoWall-E" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                </StackPanel>
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,1.6*" Margin="8,0,8,0">
-            <TextBox Grid.Column="0"
-                     Text="{Binding Code}"
-                     AcceptsReturn="True"
-                     FontFamily="Cascadia Code,Consolas,Menlo,monospace"
-                     FontSize="14"
-                     TextWrapping="NoWrap" />
-            <Border Grid.Column="1" Margin="8,0,0,0" CornerRadius="4" BorderBrush="#444" BorderThickness="1">
-                <views:DrawingCanvas x:Name="Canvas" />
+                <Button Grid.Column="2" x:Name="ProcessButton" Classes="accent"
+                        Command="{Binding ProcessCommand}" ToolTip.Tip="F5"
+                        MinWidth="118" HorizontalContentAlignment="Center" Padding="14,7">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Width="11" Height="11" Foreground="#14161B"
+                                  Data="M 0 0 L 9 4.5 L 0 9 Z"/>
+                        <TextBlock Text="Run" FontWeight="Medium"/>
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="3" x:Name="ClearButton" Command="{Binding ClearCommand}"
+                        Margin="8,0,0,0" MinWidth="110" Padding="14,7">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Width="10" Height="10"
+                                  Data="M 0 0 L 2 0 L 5 3 L 8 0 L 10 2 L 7 5 L 10 8 L 8 10 L 5 7 L 2 10 L 0 8 L 3 5 Z"/>
+                        <TextBlock Text="Clear"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Editor | splitter | canvas -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,6,1.5*" Margin="12,12,12,8">
+
+            <Border Grid.Column="0" CornerRadius="10" ClipToBounds="True"
+                    Background="{StaticResource BgSurfaceBrush}"
+                    BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0" Text="PROGRAM" FontSize="11" FontWeight="SemiBold"
+                               LetterSpacing="2" Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="14,10,0,4"/>
+                    <TextBox Grid.Row="1" Text="{Binding Code}" AcceptsReturn="True"
+                             Background="Transparent" BorderThickness="0" Padding="14,6,14,12"
+                             FontFamily="Cascadia Code,Consolas,Menlo,monospace" FontSize="13.5"
+                             TextWrapping="NoWrap"/>
+                </Grid>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Background="Transparent"/>
+
+            <Border Grid.Column="2" CornerRadius="10" ClipToBounds="True" Margin="6,0,0,0"
+                    Background="{StaticResource BgSurfaceBrush}"
+                    BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0" Text="CANVAS" FontSize="11" FontWeight="SemiBold"
+                               LetterSpacing="2" Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="14,10,0,4"/>
+                    <Border Grid.Row="1" CornerRadius="0,0,10,10" ClipToBounds="True"
+                            Background="{StaticResource CanvasPaperBrush}">
+                        <views:DrawingCanvas x:Name="Canvas"/>
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
 
-        <Expander Grid.Row="2" Header="Errors" IsExpanded="{Binding Errors.Count}" Margin="8">
-            <ListBox ItemsSource="{Binding Errors}" MaxHeight="140"
-                     FontFamily="Cascadia Code,Consolas,Menlo,monospace" FontSize="12" />
+        <!-- Error strip -->
+        <Expander Grid.Row="2" IsExpanded="{Binding HasErrors}" IsVisible="{Binding HasErrors}"
+                  Margin="12,0,12,6" HorizontalAlignment="Stretch"
+                  Background="{StaticResource BgSurfaceBrush}"
+                  BorderBrush="{StaticResource HairlineBrush}" CornerRadius="8">
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Ellipse Width="9" Height="9" Fill="{StaticResource ErrorBrush}"
+                             VerticalAlignment="Center"/>
+                    <TextBlock Foreground="{StaticResource ErrorBrush}" FontWeight="SemiBold"
+                               Text="{Binding ErrorCount, StringFormat='{}{0} error(s)'}"/>
+                </StackPanel>
+            </Expander.Header>
+            <ListBox ItemsSource="{Binding Errors}" MaxHeight="150" Background="Transparent"
+                     BorderThickness="0" FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                     FontSize="12" Foreground="{StaticResource TextPrimaryBrush}"/>
         </Expander>
+
+        <!-- Statusbar -->
+        <Border Grid.Row="3" Background="{StaticResource BgSurfaceBrush}"
+                BorderBrush="{StaticResource HairlineBrush}" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto" Margin="14,3,14,3">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                             Fill="{StaticResource SuccessBrush}"
+                             IsVisible="{Binding !StatusIsError}"/>
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                             Fill="{StaticResource ErrorBrush}"
+                             IsVisible="{Binding StatusIsError}"/>
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1" x:Name="CursorPos" Text="x: —   y: —" FontSize="12"
+                           FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
 
     </Grid>
 </Window>

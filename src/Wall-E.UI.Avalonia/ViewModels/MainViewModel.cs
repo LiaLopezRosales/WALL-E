@@ -36,6 +36,16 @@ public class MainViewModel : ViewModelBase
 
     public ObservableCollection<string> Errors { get; } = new();
 
+    public bool HasErrors => Errors.Count > 0;
+    public int ErrorCount => Errors.Count;
+
+    private bool _statusIsError;
+    public bool StatusIsError
+    {
+        get => _statusIsError;
+        private set => SetField(ref _statusIsError, value);
+    }
+
     public event EventHandler? SceneChanged;
 
     public RelayCommand ProcessCommand { get; }
@@ -45,6 +55,11 @@ public class MainViewModel : ViewModelBase
     {
         ProcessCommand = new RelayCommand(_ => Execute(), _ => !IsProcessing);
         ClearCommand = new RelayCommand(_ => Clear());
+        Errors.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasErrors));
+            OnPropertyChanged(nameof(ErrorCount));
+        };
     }
 
     private void Execute()
@@ -52,6 +67,7 @@ public class MainViewModel : ViewModelBase
         Errors.Clear();
         IsProcessing = true;
         StatusMessage = "Processing...";
+        StatusIsError = false;
         try
         {
             _pipeline.Execute(Code, "main.geo");
@@ -64,15 +80,18 @@ public class MainViewModel : ViewModelBase
             StatusMessage = _pipeline.Errors.Count > 0
                 ? $"Finished with {_pipeline.Errors.Count} error(s)"
                 : $"OK - {figureCount} object(s) to draw";
+            StatusIsError = _pipeline.Errors.Count > 0;
         }
         catch (System.OperationCanceledException)
         {
             StatusMessage = "Cancelled";
+            StatusIsError = false;
         }
         catch (System.Exception ex)
         {
             Errors.Add(ex.Message);
             StatusMessage = "Unexpected error";
+            StatusIsError = true;
         }
         finally
         {
@@ -87,6 +106,7 @@ public class MainViewModel : ViewModelBase
         _scene = new RenderScene();
         Errors.Clear();
         StatusMessage = "Canvas cleared";
+        StatusIsError = false;
         OnPropertyChanged(nameof(Scene));
         SceneChanged?.Invoke(this, EventArgs.Empty);
     }

@@ -16,6 +16,7 @@
             <Color x:Key="SystemAccentColorDark2">#B37710</Color>
             <Color x:Key="SystemAccentColorDark3">#8C5C0C</Color>
 
+            <SolidColorBrush x:Key="AccentBrush" Color="#F5A623"/>
             <SolidColorBrush x:Key="BgBaseBrush" Color="#14161B"/>
             <SolidColorBrush x:Key="BgSurfaceBrush" Color="#1A1E26"/>
             <SolidColorBrush x:Key="BgInputBrush" Color="#232833"/>
