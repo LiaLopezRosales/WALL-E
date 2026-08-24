@@ -36,6 +36,18 @@ public class RenderScene
         lock (_sync) return new List<DrawObject>(ToDraw);
     }
 
+    /// <summary>Copy of everything drawn from <paramref name="start"/> on,
+    /// safe to take from another thread - lets a renderer consume draws
+    /// incrementally without re-walking the whole list.</summary>
+    public List<DrawObject> SnapshotRange(int start)
+    {
+        lock (_sync)
+        {
+            if (start >= ToDraw.Count) return new List<DrawObject>();
+            return ToDraw.GetRange(start, ToDraw.Count - start);
+        }
+    }
+
     public void Clear()
     {
         lock (_sync)

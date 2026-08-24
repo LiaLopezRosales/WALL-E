@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -11,10 +10,13 @@ using DPoint = Wall_E.Domain.Point;
 namespace Wall_E.UI.Avalonia.Views;
 
 /// <summary>
-/// M2 renderer: fixed cartesian viewport (origin-centered world window),
+/// M2/M3 renderer: fixed cartesian viewport (origin-centered world window),
 /// adaptive grid with highlighted axes, wheel zoom around the pointer,
 /// drag-to-pan, double-tap reset and cursor world-coordinate events.
-/// Still renders through Avalonia's Skia pipeline (Control.Render).
+/// Scenes are consumed INCREMENTALLY: only draw objects not yet seen are
+/// flattened into internal shapes, so streaming hundreds of thousands of
+/// draws stays cheap between repaints. Renders through Avalonia's Skia
+/// pipeline (Control.Render).
 /// </summary>
 public class DrawingCanvas : Control
 {
@@ -26,10 +28,12 @@ public class DrawingCanvas : Control
     private const double MaxScale = 80;
     private const double DefaultScale = 2.0;
 
-    private RenderScene? _scene;
+    private RenderScene? _sourceScene;
+    private int _builtCount;
     private List<Shape> _shapes = new();
-    private bool _shapesDirty = true;
-    private (double MinX, double MinY, double MaxX, double MaxY)? _contentBounds;
+
+    private bool _hasBounds;
+    private double _minX, _minY, _maxX, _maxY;
 
     private double _scale = DefaultScale;
     private double _centerX;
@@ -51,9 +55,31 @@ public class DrawingCanvas : Control
 
     public void SetScene(RenderScene? scene)
     {
-        _scene = scene;
-        _shapesDirty = true;
+        if (scene is null || !ReferenceEquals(_sourceScene, scene))
+        {
+            _sourceScene = scene;
+            _builtCount = 0;
+            _shapes = new List<Shape>();
+            _hasBounds = false;
+        }
+        AppendNewDraws();
         InvalidateVisual();
+    }
+
+    /// <summary>Flattens only the draw objects not yet consumed.</summary>
+    private void AppendNewDraws()
+    {
+        if (_sourceScene is null) return;
+        var fresh = _sourceScene.SnapshotRange(_builtCount);
+        if (fresh.Count == 0) return;
+        foreach (var drawable in fresh)
+        {
+            var shapeListStart = _shapes.Count;
+            Collect(_shapes, drawable.Figures, drawable.UsedColor);
+            for (int i = shapeListStart; i < _shapes.Count; i++)
+                GrowBounds(_shapes[i]);
+        }
+        _builtCount += fresh.Count;
     }
 
     public void ResetView()
@@ -74,17 +100,15 @@ public class DrawingCanvas : Control
     /// call from inside Render, where InvalidateVisual is forbidden.</summary>
     private void ComputeFit()
     {
-        RebuildShapesIfNeeded();
-        if (_contentBounds is null || !IsSizeValid()) return;
+        if (!_hasBounds || !IsSizeValid()) return;
 
-        var (minX, minY, maxX, maxY) = _contentBounds.Value;
-        double w = maxX - minX, h = maxY - minY;
+        double w = _maxX - _minX, h = _maxY - _minY;
         if (w <= 1e-9 && h <= 1e-9)
         {
             // single point: center on it instead of jumping to the origin
             _scale = DefaultScale;
-            _centerX = minX;
-            _centerY = minY;
+            _centerX = _minX;
+            _centerY = _minY;
             return;
         }
 
@@ -93,8 +117,8 @@ public class DrawingCanvas : Control
         _scale = Math.Clamp(
             Math.Min(availW / Math.Max(w, 1e-9), availH / Math.Max(h, 1e-9)),
             MinScale, MaxScale);
-        _centerX = (minX + maxX) / 2;
-        _centerY = (minY + maxY) / 2;
+        _centerX = (_minX + _maxX) / 2;
+        _centerY = (_minY + _maxY) / 2;
     }
 
     public override void Render(DrawingContext context)
@@ -102,15 +126,12 @@ public class DrawingCanvas : Control
         context.FillRectangle(Brushes.White, new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height));
         if (!IsSizeValid()) return;
 
-        RebuildShapesIfNeeded();
-
-        // Smart camera: move the viewport only when the fresh content falls
-        // outside it, so manual zoom survives iterative editing.
+        // Smart camera: move the viewport only when content falls outside
+        // it, so manual zoom survives iterative editing.
         if (_shapes.Count > 0 && !ContentFullyVisible())
             ComputeFit();
 
         DrawGrid(context);
-
         if (_shapes.Count == 0) return;
 
         // 'white' would vanish on the paper background: draw it over a
@@ -246,11 +267,10 @@ public class DrawingCanvas : Control
 
     private bool ContentFullyVisible()
     {
-        if (_contentBounds is null) return true;
+        if (!_hasBounds) return true;
         var v = VisibleWorldRect();
-        var b = _contentBounds.Value;
-        return b.MinX >= v.MinX && b.MaxX <= v.MaxX &&
-               b.MinY >= v.MinY && b.MaxY <= v.MaxY;
+        return _minX >= v.MinX && _maxX <= v.MaxX &&
+               _minY >= v.MinY && _maxY <= v.MaxY;
     }
 
     private APoint Map(double x, double y) => new(
@@ -329,19 +349,43 @@ public class DrawingCanvas : Control
         CursorLeftCanvas?.Invoke();
     }
 
-    // ---- scene flattening (unchanged mapping rules) ----------------------
+    // ---- shape model ------------------------------------------------------
 
-    private void RebuildShapesIfNeeded()
+    private void GrowBounds(Shape s)
     {
-        if (!_shapesDirty) return;
-        _shapesDirty = false;
-        _shapes = new List<Shape>();
-        _contentBounds = null;
-        if (_scene is null) return;
-        foreach (var drawable in _scene.ToDraw)
-            Collect(_shapes, drawable.Figures, drawable.UsedColor);
-        if (_shapes.Count > 0)
-            _contentBounds = ComputeBounds(_shapes);
+        switch (s)
+        {
+            case DotShape d:
+                GrowPoint(d.X, d.Y);
+                break;
+            case SegShape g:
+                GrowPoint(g.X1, g.Y1);
+                GrowPoint(g.X2, g.Y2);
+                break;
+            case CircleShape c:
+                GrowPoint(c.X - c.R, c.Y - c.R);
+                GrowPoint(c.X + c.R, c.Y + c.R);
+                break;
+            case PolyShape p:
+                foreach (var pt in p.Points)
+                    GrowPoint(pt.x, pt.y);
+                break;
+        }
+    }
+
+    private void GrowPoint(double x, double y)
+    {
+        if (!_hasBounds)
+        {
+            _hasBounds = true;
+            _minX = _maxX = x;
+            _minY = _maxY = y;
+            return;
+        }
+        if (x < _minX) _minX = x;
+        if (y < _minY) _minY = y;
+        if (x > _maxX) _maxX = x;
+        if (y > _maxY) _maxY = y;
     }
 
     private abstract class Shape
@@ -448,31 +492,6 @@ public class DrawingCanvas : Control
                                   a.center.y + System.Math.Sin(t) * a.measure));
         }
         return new PolyShape(points, color);
-    }
-
-    private static (double MinX, double MinY, double MaxX, double MaxY) ComputeBounds(List<Shape> shapes)
-    {
-        double minX = double.MaxValue, minY = double.MaxValue, maxX = double.MinValue, maxY = double.MinValue;
-        void Grow(double x, double y)
-        {
-            if (x < minX) minX = x;
-            if (y < minY) minY = y;
-            if (x > maxX) maxX = x;
-            if (y > maxY) maxY = y;
-        }
-        foreach (var s in shapes)
-        {
-            switch (s)
-            {
-                case DotShape d: Grow(d.X, d.Y); break;
-                case SegShape g: Grow(g.X1, g.Y1); Grow(g.X2, g.Y2); break;
-                case CircleShape c: Grow(c.X - c.R, c.Y - c.R); Grow(c.X + c.R, c.Y + c.R); break;
-                case PolyShape p:
-                    foreach (var pt in p.Points) Grow(pt.x, pt.y);
-                    break;
-            }
-        }
-        return (minX, minY, maxX, maxY);
     }
 
     private static IBrush ParseColor(string name) => name.ToLowerInvariant() switch

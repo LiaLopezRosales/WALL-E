@@ -34,6 +34,7 @@ public class MainViewModel : ViewModelBase
             {
                 ProcessCommand?.RaiseCanExecuteChanged();
                 StopCommand?.RaiseCanExecuteChanged();
+                StressRunCommand?.RaiseCanExecuteChanged();
                 OnPropertyChanged(nameof(DisplayScene));
             }
         }
@@ -68,17 +69,19 @@ public class MainViewModel : ViewModelBase
     public RelayCommand ProcessCommand { get; }
     public RelayCommand ClearCommand { get; }
     public RelayCommand StopCommand { get; }
+    public RelayCommand StressRunCommand { get; }
 
     public MainViewModel()
     {
         ProcessCommand = new RelayCommand(_ => _ = RunAsync(), _ => !IsProcessing);
         ClearCommand = new RelayCommand(_ => Clear(), _ => !IsProcessing);
         StopCommand = new RelayCommand(_ => _pipeline.Cancel(), _ => IsProcessing);
+        StressRunCommand = new RelayCommand(_ => _ = RunAsync(BuildStressProgram()), _ => !IsProcessing);
 
         // Progressive streaming (M3): poll the synchronized scene while the
         // pipeline runs on a background thread; each tick with new content
         // raises SceneChanged so the canvas repaints incrementally.
-        _streamTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(90) };
+        _streamTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
         _streamTimer.Tick += (_, _) => PollSceneProgress();
 
         Errors.CollectionChanged += (_, _) =>
@@ -88,18 +91,20 @@ public class MainViewModel : ViewModelBase
         };
     }
 
-    private async Task RunAsync()
+    private async Task RunAsync(string? sourceOverride = null)
     {
+        if (IsProcessing) return;
         Errors.Clear();
         IsProcessing = true;
         StatusIsError = false;
         StatusMessage = "Processing...";
         _lastDrawCount = 0;
 
+        string source = sourceOverride ?? Code;
         _streamTimer.Start();
         try
         {
-            await Task.Run(() => _pipeline.Execute(Code, "main.geo"));
+            await Task.Run(() => _pipeline.Execute(source, "main.geo"));
 
             foreach (var error in _pipeline.Errors)
                 Errors.Add(error.ToString());
@@ -151,5 +156,36 @@ public class MainViewModel : ViewModelBase
         StatusIsError = false;
         OnPropertyChanged(nameof(Scene));
         SceneChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private const int StressPoints = 300000; // ~3.8s at ~1.27ms/100 statements
+    private static readonly string[] DemoColors = { "cyan", "green", "yellow", "red", "magenta", "blue" };
+
+    /// <summary>Generates a long valid DSL program (a rainbow spiral of
+    /// points around two anchor circles). Public static: the stress probe
+    /// runs it through the pipeline without duplicating the generator.</summary>
+    public static string BuildStressProgram(int points = StressPoints)
+    {
+        var sb = new System.Text.StringBuilder(points * 26);
+        sb.AppendLine("c0 = circle(point(0,0), 30);");
+        sb.AppendLine("draw c0;");
+        sb.AppendLine("color blue;");
+        sb.AppendLine("draw circle(point(0,0), 12);");
+        int colorStride = System.Math.Max(points / DemoColors.Length, 1);
+        for (int i = 0; i < points; i++)
+        {
+            if (i % colorStride == 0)
+                sb.Append("color ").Append(DemoColors[i / colorStride]).Append(';').AppendLine();
+            double angle = i * System.Math.PI / 180 * 2.2;
+            double radius = 3 + i * 0.30;
+            double x = System.Math.Round(radius * System.Math.Cos(angle), 2);
+            double y = System.Math.Round(radius * System.Math.Sin(angle), 2);
+            sb.Append("draw point(")
+              .Append(x.ToString(System.Globalization.CultureInfo.InvariantCulture))
+              .Append(',')
+              .Append(y.ToString(System.Globalization.CultureInfo.InvariantCulture))
+              .Append(");").Append('\n');
+        }
+        return sb.ToString();
     }
 }

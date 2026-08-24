@@ -28,6 +28,20 @@ public class RenderSceneSnapshotTests
         Assert.Equal(2, scene.DrawCount);
     }
 
+    [Fact]
+    public void SnapshotRange_returns_only_objects_from_start()
+    {
+        var scene = new RenderScene();
+        scene.Add(MakeDraw("a"));
+        scene.Add(MakeDraw("b"));
+
+        var tail = scene.SnapshotRange(1);
+        var none = scene.SnapshotRange(5);
+
+        Assert.Single(tail);
+        Assert.Empty(none);
+    }
+
     private static DrawObject MakeDraw(string tag) =>
         new(new Point(0, 0), tag, "black");
 }
