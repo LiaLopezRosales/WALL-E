@@ -380,8 +380,8 @@ public class MainViewModel : ViewModelBase
 | 5.6 | Tests de intersección: cada combinación de figuras | 2 | `IntersectionTests.cs` |
 | 5.7 | Tests de integración: archivos `.geo` completos | 1 | `IntegrationTests.cs` |
 | 5.8 | Tests de ViewModel: ProcessCommand, Theme toggle, etc. | 1.5 | `MainViewModelTests.cs` |
-| 5.9 | GitHub Actions CI: build ubuntu + test windows-latest | 1 | `.github/workflows/ci.yml` |
-| 5.10 | `.editorconfig` con reglas del proyecto | 0.3 | `.editorconfig` |
+| 5.9 | GitHub Actions CI: build ubuntu + test ubuntu-latest — **adelantado, ✅** | 1 | `.github/workflows/ci.yml` |
+| 5.10 | `.editorconfig` con reglas del proyecto — **adelantado, ✅** | 0.3 | `.editorconfig` |
 | 5.11 | Roslynator + SonarAnalyzer configurados | 0.5 | `Directory.Build.props` |
 | 5.12 | XML doc comments en API pública de `Wall-E.Domain` + `Application` | 1 | todos los archivos |
 
