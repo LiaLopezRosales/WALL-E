@@ -360,11 +360,30 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     }
 
     public EvaluationResult VisitGlobalSeq(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitAssigment(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitConditional(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitConditional(Node node)
+    {
+        EvaluationResult condResult = Visit(node.Branches[0]);
+        if (condResult is ErrorResult) return condResult;
+        object? condition = UnwrapRaw(condResult);
+        if (condition is null)
+        {
+            AddError("valid value");
+            return new VoidResult();
+        }
+        if (CheckTrueORFalse.Check(condition))
+            return Visit(node.Branches[1]);
+        return Visit(node.Branches[2]);
+    }
+    // Parser never produces Else/If/Parameters nodes; kept as transparent no-ops.
     public EvaluationResult VisitIf(Node node) => VisitConditional(node);
-    public EvaluationResult VisitElse(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitParameters(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitElse(Node node) => new VoidResult();
+    public EvaluationResult VisitAssigment(Node node) => Visit(node.Branches[0]);
+    public EvaluationResult VisitParameters(Node node)
+    {
+        foreach (var branch in node.Branches)
+            Visit(branch);
+        return new VoidResult();
+    }
     public EvaluationResult VisitConcat(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitNegation(Node node)
     {
