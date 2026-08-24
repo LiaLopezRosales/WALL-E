@@ -344,7 +344,7 @@ public class MainViewModel : ViewModelBase
 
 | # | Tarea | Días | Archivos |
 |---|---|---|---|
-| 4.1 | Color `#hex` (16M colores) | 1 | Lexer/Parser/Evaluator |
+| 4.1 | Color `#hex` (16M colores) — **adelantado a post-Fase 2** ✅ | 1 | Lexer/Parser/Evaluator |
 | 4.2 | Color `rgb(r,g,b)` + `rgba(r,g,b,a)` | 1 | Lexer/Parser/Evaluator |
 | 4.3 | Color `hsl(h,s%,l%)` | 1 | Lexer/Parser/Evaluator |
 | 4.4 | Colores CSS completos (~140 nombres) | 0.5 | `ColorTable.cs` |
@@ -361,6 +361,8 @@ public class MainViewModel : ViewModelBase
 | 4.15 | **Animación paramétrica**: `animate(t from 0 to 2*PI) { ... }` | 2.5 | AST, Parser, Visitor, StreamRenderer |
 
 **Checkpoint**: DSL completo. Colores ilimitados. Polígono, elipse, texto, loops, animación.
+
+**Nota post-Fase 2 (ampliación de paleta)**: la paleta de 9 nombres del Lexer era el límite artificial más visible del DSL. Se resolvió por ambas vías: (a) `PipelineOrchestrator.InitialInk` — tinta inicial elegible desde la UI (flyout con ColorPicker junto a `ink:` en el header del canvas), aplicada como push sobre `black` al crear la escena, de modo que `restore;` vuelve al negro y los programas con `color` propio siguen mandando; sin inyección a mitad de ejecución ni persistencia entre sesiones. (b) Literales `#hex` en el lenguaje: todo el pipeline canaliza colores como strings (`NodeExpression` → `UsedColor` → renderizador), así que basta una rama léxica para aceptar `color #RRGGBB;` — parser y evaluador intactos. El renderizador resuelve cualquier string vía `DslPalette.ToBrush` con soporte hex y fallback gris.
 
 ---
 
