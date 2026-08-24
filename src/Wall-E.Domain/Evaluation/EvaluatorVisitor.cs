@@ -359,7 +359,65 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         }
     }
 
-    public EvaluationResult VisitGlobalSeq(Node node) => EvaluateFallback(node);
+    // Multiple assignment from a sequence: a, b, _ = {seq};
+    // '_' discards one element; the last target receives ALL remaining elements
+    // as a new finite sequence ("{}" when exhausted). Unified replacement of the
+    // ~600 duplicated legacy lines (one copy per sequence type).
+    public EvaluationResult VisitGlobalSeq(Node node)
+    {
+        EvaluationResult valueResult = Visit(node.Branches[1]);
+        if (valueResult is ErrorResult) return valueResult;
+        object value = UnwrapRaw(valueResult)!;
+        if (value is not AbsSequence seq)
+        {
+            AddError("sequence");
+            return new VoidResult();
+        }
+
+        List<Node> targets = node.Branches[0].Branches;
+        for (int i = 0; i < targets.Count; i++)
+        {
+            Node target = targets[i];
+            bool isLast = i == targets.Count - 1;
+
+            if (target.Type == Node.NodeType.Low_Hyphen)
+            {
+                ConsumeNext(seq);
+                continue;
+            }
+
+            string name = RawString(Visit(target));
+
+            if (!isLast)
+            {
+                object element = ConsumeNext(seq)!;
+                StoreVariable(name, IsExhausted(element) ? "undefined" : element);
+            }
+            else
+            {
+                List<object> rest = new();
+                object element = ConsumeNext(seq)!;
+                while (!IsExhausted(element))
+                {
+                    rest.Add(element);
+                    element = ConsumeNext(seq)!;
+                }
+                StoreVariable(name, rest.Count > 0 ? new Finite_Sequence<object>(rest) : "{}");
+            }
+        }
+        return new StringResult("end");
+    }
+
+    // ReturnValue is declared on GenericSequence<T>; sequences reaching GlobalSeq
+    // vary their T, so dispatch dynamically.
+    private static object? ConsumeNext(AbsSequence seq) => ((dynamic)seq).ReturnValue();
+
+    private static bool IsExhausted(object? v) =>
+        v is null
+        || (v is long l && l == long.MinValue)
+        || (v is double d && d == long.MinValue)
+        || (v is Point p && p.x == 0 && p.y == 0);
+
     // Parser never produces Concat nodes (sequence concatenation flows through Sum).
     public EvaluationResult VisitConcat(Node node) => new VoidResult();
     public EvaluationResult VisitConditional(Node node)
