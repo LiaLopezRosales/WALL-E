@@ -6,7 +6,7 @@ namespace Wall_E.UI.Avalonia.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    private string _code = "point p1 = point(100, 100);\ndraw p1;\n\ncircle c = circle(point(200, 200), 50);\ndraw c;\n\ncolor blue;\nsegment s = segment(point(80, 80), point(150, 260));\ndraw s;";
+    private string _code = "p1 = point(100, 100);\ndraw p1;\n\nc = circle(point(200, 200), 50);\ndraw c;\n\ncolor blue;\ns = segment(point(80, 80), point(150, 260));\ndraw s;";
     private bool _isProcessing;
     private string _statusMessage = "Ready";
     private RenderScene? _scene;
