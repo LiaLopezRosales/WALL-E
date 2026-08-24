@@ -360,6 +360,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     }
 
     public EvaluationResult VisitGlobalSeq(Node node) => EvaluateFallback(node);
+    // Parser never produces Concat nodes (sequence concatenation flows through Sum).
+    public EvaluationResult VisitConcat(Node node) => new VoidResult();
     public EvaluationResult VisitConditional(Node node)
     {
         EvaluationResult condResult = Visit(node.Branches[0]);
@@ -384,7 +386,6 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             Visit(branch);
         return new VoidResult();
     }
-    public EvaluationResult VisitConcat(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitNegation(Node node)
     {
         EvaluationResult valResult = Visit(node.Branches[0]);
@@ -1026,8 +1027,42 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         // sealed result hierarchy has no Measure variant yet.
         return new NumberResult(new Measure((Point)p1, (Point)p2).Value);
     }
-    public EvaluationResult VisitPointSeq(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitLineSeq(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitPointSeq(Node node)
+    {
+        List<Point> elements = new();
+        Random r = RandomProvider.Instance;
+        int amount = r.Next(1, 30);
+        for (int i = 0; i < amount; i++)
+        {
+            Point temp = new(0, 0);
+            temp.RandomPoint(_figures.ExistingPoints);
+            elements.Add(temp);
+            _figures.TryAddExistingPoint(temp);
+        }
+        Finite_Sequence<Point> pts = new(elements);
+        pts.type = Finite_Sequence<Point>.SeqType.point;
+        StoreVariable(node.NodeExpression!.ToString()!, pts);
+        return new StringResult("sequence of points created");
+    }
+
+    public EvaluationResult VisitLineSeq(Node node)
+    {
+        List<Line> elements = new();
+        Random r = RandomProvider.Instance;
+        int amount = r.Next(1, 30);
+        for (int i = 0; i < amount; i++)
+        {
+            Line l = new(new Point(0, 0), new Point(0, 1));
+            l.RandomLine(_figures.ExistingLines, _figures.ExistingPoints);
+            elements.Add(l);
+            _figures.TryAddExistingLine(l);
+        }
+        Finite_Sequence<Line> pts = new(elements);
+        pts.type = Finite_Sequence<Line>.SeqType.line;
+        StoreVariable(node.NodeExpression!.ToString()!, pts);
+        return new StringResult("sequence of lines created");
+    }
+
     public EvaluationResult VisitIntersect(Node node)
     {
         EvaluationResult r1 = Visit(node.Branches[0]);
@@ -1056,13 +1091,113 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         AddError("import requires UI/Infrastructure layer");
         return new VoidResult();
     }
-    public EvaluationResult VisitPoints(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitRandoms(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitSamples(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitEmptySeq(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitEnclosedInfiniteSeq(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitInfiniteSeq(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitFiniteSeq(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitEmptySeq(Node node)
+    {
+        Finite_Sequence<object> seq = new(new List<object>());
+        return new SequenceResult(seq, seq.count);
+    }
+
+    public EvaluationResult VisitInfiniteSeq(Node node)
+    {
+        EvaluationResult valueResult = Visit(node.Branches[0]);
+        if (valueResult is ErrorResult) return valueResult;
+        object value = UnwrapRaw(valueResult)!;
+        // Legacy required a long; the lexer only produces doubles, so integral
+        // doubles are accepted (deliberate fix of a latent legacy bug).
+        long start;
+        if (value is long l) start = l;
+        else if (value is double d && d % 1 == 0) start = Convert.ToInt64(d);
+        else
+        {
+            AddError("argument");
+            return new VoidResult();
+        }
+        Infinite_Sequence seq = new(start);
+        return new SequenceResult(seq, seq.count);
+    }
+
+    public EvaluationResult VisitEnclosedInfiniteSeq(Node node)
+    {
+        EvaluationResult firstResult = Visit(node.Branches[0]);
+        if (firstResult is ErrorResult) return firstResult;
+        EvaluationResult finalResult = Visit(node.Branches[1]);
+        if (finalResult is ErrorResult) return finalResult;
+        object firstvalue = UnwrapRaw(firstResult)!;
+        object finalvalue = UnwrapRaw(finalResult)!;
+        if ((firstvalue is double f && f % 1 == 0) && (finalvalue is double c && c % 1 == 0))
+        {
+            Enclosed_Infinite_Sequence seq = new(Convert.ToInt64(f), Convert.ToInt64(c));
+            return new SequenceResult(seq, seq.count);
+        }
+        AddError("boundries");
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitFiniteSeq(Node node)
+    {
+        EvaluationResult firstResult = Visit(node.Branches[0]);
+        if (firstResult is ErrorResult) return firstResult;
+        object firstvalue = UnwrapRaw(firstResult)!;
+        List<object> valuesofseq = new() { firstvalue };
+        for (int index = 1; index < node.Branches.Count; index++)
+        {
+            EvaluationResult itemResult = Visit(node.Branches[index]);
+            if (itemResult is ErrorResult) return itemResult;
+            object value = UnwrapRaw(itemResult)!;
+            if (firstvalue.GetType() != value.GetType())
+            {
+                AddError("sequence, all values must belong to the same type");
+                return new StringResult("Invalid sequence");
+            }
+            valuesofseq.Add(value);
+        }
+        Finite_Sequence<object> seq = new(valuesofseq);
+        seq.type = ClassifySequenceType(firstvalue);
+        return new SequenceResult(seq, seq.count);
+    }
+
+    private static Finite_Sequence<object>.SeqType ClassifySequenceType(object first) => first switch
+    {
+        double => Finite_Sequence<object>.SeqType.number,
+        string => Finite_Sequence<object>.SeqType.text,
+        Point => Finite_Sequence<object>.SeqType.point,
+        Line => Finite_Sequence<object>.SeqType.line,
+        Segment => Finite_Sequence<object>.SeqType.segment,
+        Ray => Finite_Sequence<object>.SeqType.ray,
+        Circle => Finite_Sequence<object>.SeqType.circle,
+        Arc => Finite_Sequence<object>.SeqType.arc,
+        GenericSequence<object> => Finite_Sequence<object>.SeqType.sequence,
+        _ => Finite_Sequence<object>.SeqType.other
+    };
+
+    public EvaluationResult VisitRandoms(Node node)
+    {
+        IEnumerable<double> rand = _context.Randoms["randoms"]();
+        InfiniteDoubleSequence randoms = new(rand);
+        return new SequenceResult(randoms, randoms.count);
+    }
+
+    public EvaluationResult VisitSamples(Node node)
+    {
+        IEnumerable<Point> sam = _context.Samples["samples"]();
+        InfinitePointSequence samples = new(sam);
+        return new SequenceResult(samples, samples.count);
+    }
+
+    public EvaluationResult VisitPoints(Node node)
+    {
+        EvaluationResult argResult = Visit(node.Branches[0]);
+        if (argResult is ErrorResult) return argResult;
+        object arg = UnwrapRaw(argResult)!;
+        if (arg is Circle circle)
+        {
+            IEnumerable<Point> point = _context.Points["points"](circle);
+            InfinitePointSequence samples = new(point);
+            return new SequenceResult(samples, samples.count);
+        }
+        AddError("argument");
+        return new VoidResult();
+    }
 
     private EvaluationResult EvaluateFallback(Node node)
     {
@@ -1082,12 +1217,15 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     private static EvaluationResult WrapResult(object? result)
     {
         if (result is null) return new VoidResult();
+        if (result is EvaluationResult er) return er;
         if (result is string s) return new StringResult(s);
         if (result is double d) return new NumberResult(d);
         if (result is long l) return new NumberResult(l);
         if (result is int i) return new NumberResult(i);
         if (result is Figure f) return new FigureResult(f);
-        if (result is EvaluationResult er) return er;
+        if (result is AbsSequence seq)
+            return new SequenceResult(seq, seq.count);
+        if (result is Measure m) return new NumberResult(m.Value);
         return new StringResult(result.ToString()!);
     }
 

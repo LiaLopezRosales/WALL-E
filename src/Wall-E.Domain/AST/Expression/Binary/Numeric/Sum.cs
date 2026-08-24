@@ -25,19 +25,23 @@ public class Sum:Binary
         {
             Value=((Measure)left).Sum((Measure)right);
         }
-        else if (left is AbsSequence && right is AbsSequence)
-        {
+            else if (left is AbsSequence && right is AbsSequence)
+            {
              if (((left is Enclosed_Infinite_Sequence || left is Infinite_Sequence)) || (right is Enclosed_Infinite_Sequence || right is Infinite_Sequence))
             {
+                // GenericSequence<T> hides AbsSequence.count with 'new'; read counts
+                // through GenericSequence references or base values return 0.
                 IEnumerable<object> Generate(AbsSequence r,AbsSequence l)
                 {
-                    long limit = r.IsInfinite ? r.MaxElements : r.count;
+                    var gr = (GenericSequence<object>)r;
+                    var gl = (GenericSequence<object>)l;
+                    long limit = gr.count < 0 ? gr.MaxElements : gr.count;
                     long taken = 0;
-                    foreach (object item in r.Sequence!)
+                    foreach (object item in gr.Sequence!)
                         if (taken++ >= limit) break; else yield return item;
                     taken = 0;
-                    limit = l.IsInfinite ? l.MaxElements : l.count;
-                    foreach (object item in l.Sequence!)
+                    limit = gl.count < 0 ? gl.MaxElements : gl.count;
+                    foreach (object item in gl.Sequence!)
                         if (taken++ >= limit) break; else yield return item;
                 }
                 IEnumerable<object> sum1=Generate((AbsSequence)left,(AbsSequence)right);
