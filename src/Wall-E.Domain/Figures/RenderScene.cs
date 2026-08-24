@@ -1,19 +1,48 @@
 namespace Wall_E.Domain;
 
+/// <summary>
+/// Mutable scene accumulated while statements execute. Draw mutations go
+/// through a lock so the UI can poll a consistent Snapshot() while the
+/// pipeline runs on a background thread (M3 progressive streaming).
+/// </summary>
 public class RenderScene
 {
+    private readonly object _sync = new();
+
     public List<DrawObject> ToDraw { get; set; } = new();
     public Stack<string> UtilizedColors { get; set; } = new();
+
+    /// <summary>Synchronized element count - safe to read mid-execution.</summary>
+    public int DrawCount
+    {
+        get { lock (_sync) return ToDraw.Count; }
+    }
 
     public RenderScene()
     {
         UtilizedColors.Push("black");
     }
 
+    /// <summary>Single mutation entry point for the evaluator.</summary>
+    public void Add(DrawObject drawable)
+    {
+        lock (_sync) ToDraw.Add(drawable);
+    }
+
+    /// <summary>Point-in-time copy of the drawn objects, safe to enumerate
+    /// from another thread while evaluation keeps appending.</summary>
+    public List<DrawObject> Snapshot()
+    {
+        lock (_sync) return new List<DrawObject>(ToDraw);
+    }
+
     public void Clear()
     {
-        ToDraw.Clear();
-        UtilizedColors.Clear();
-        UtilizedColors.Push("black");
+        lock (_sync)
+        {
+            ToDraw.Clear();
+            UtilizedColors.Clear();
+            UtilizedColors.Push("black");
+        }
     }
 }

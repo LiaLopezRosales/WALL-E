@@ -823,7 +823,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
                 "type,this type of object can't be draw", new Location(_file, _line, "column")));
         }
         else
-            _scene.ToDraw.Add(d);
+            _scene.Add(d);
         return new StringResult("Function to draw added");
     }
 
