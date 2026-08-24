@@ -13,17 +13,19 @@ Two codebases coexist in this repo:
 
 ## Critical environment gotcha
 
-**`dotnet` SDK is NOT installed on this machine** — no build, run, or test verification is possible. Verify changes by code review only. Do not claim "build passes". Legacy project additionally requires Windows (WinForms).
+**`dotnet` SDK is NOT on the default PATH** — it is installed user-mode at `~/.dotnet` (8.0.424). Every shell session needs `export PATH="$HOME/.dotnet:$PATH"` before any dotnet command. Legacy project additionally requires Windows (WinForms) and a `net6.0-windows` SDK.
 
 ## Commands
 
 ```bash
+export PATH="$HOME/.dotnet:$PATH"                          # required first, every session
 ./Wall-E.sh                                                # build + run legacy WinForms app
 dotnet build src/Wall-E.sln                                # build new architecture (Domain+App+Infra)
+dotnet test tests/Wall-E.Application.Tests/...csproj       # characterization test suite (43 tests)
 dotnet build Wall-E.csproj                                 # build legacy (needs net6.0-windows SDK)
 ```
 
-No tests, no CI, no lint/format config exist. Don't invent test commands.
+No CI or lint/format config exists. Don't invent commands.
 
 ## Commit discipline (hard rule)
 
@@ -62,8 +64,10 @@ Wall-E.Infrastructure/      FileSystem/GeoLibraryLoader
 
 ### Migration state (important)
 
-- `EvaluatorVisitor` (Domain/Evaluation/EvaluatorVisitor.cs) implements ~72 node types via `INodeVisitor<EvaluationResult>`, but most methods still **fall back to the legacy `Evaluator`** (it instantiates one near the bottom of the file). When migrating a node type, implement it directly in the visitor instead of adding fallback cases.
+- **Fase 1 is COMPLETE**: `EvaluatorVisitor` (Domain/Evaluation/EvaluatorVisitor.cs) implements every reachable node type directly via `INodeVisitor<EvaluationResult>`; the legacy-fallback bridge and the adapted 1933-line `Evaluator` class were deleted from `src/`. Full history in `MIGRATION_LOG.md`.
+- Known post-migration debts (see MIGRATION_LOG.md "Deudas conocidas"): broken let-in grammar, property shadowing (`new count`) between `GenericSequence<T>` and `AbsSequence`, `import` not wired to `GeoLibraryLoader`, expression nodes (`Sum` etc.) still self-evaluate internally.
 - `EvaluationContext`, `FigureRepository`, `RenderScene` replaced the old god-object `Context`.
+- Characterization tests: `dotnet test tests/Wall-E.Application.Tests/...csproj` — keep them green; they are the regression net for behavior changes.
 - Wall-E.UI.Avalonia (MVVM + SkiaSharp) is planned but **does not exist yet** — don't reference or build it.
 
 ## Architecture quirks (legacy project only)
@@ -80,8 +84,8 @@ Generators like `GenerateRandoms`/`GenerateSamples`/`GeneratePointsInFigure` are
 ## Deferred gaps (per ROADMAP.md)
 
 - `ArchiveAnalysis : Form` + `MessageBox` → Fase 2 (Avalonia UI)
-- `EvaluatorVisitor` fallback migration → progressive
-- Tests/CI → Fase 5
+- Post-migration debts (let-in grammar, sequence property shadowing, `import` wiring, expression-node self-evaluation) → see MIGRATION_LOG.md "Deudas conocidas"
+- CI → Fase 5 (characterization tests already exist)
 - Planning docs: `ROADMAP.md` (unified plan), `IMPROVEMENT_PLAN.md`, `PERFORMANCE_PLAN.md`, `ENHANCEMENTS.md`
 
 ## Other

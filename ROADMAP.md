@@ -90,6 +90,13 @@ Fase 6                                                  ████████
 
 ## Fase 1: Clean Architecture Extraction
 
+> **ESTADO: COMPLETA ✅** (ver `MIGRATION_LOG.md` para el historial completo).
+> Desviaciones respecto al plan original: target real es **net8.0** (no net6.0);
+> el visitor cubre **todos los tipos de nodo alcanzables** y el fallback al
+> `Evaluator` legacy fue eliminado; existen **43 tests de caracterización**
+> (`tests/Wall-E.Application.Tests`). Deudas post-migración listadas en
+> MIGRATION_LOG.md "Deudas conocidas".
+
 **Duración**: ~3 semanas · **Objetivo**: Separar en 4 capas limpias. Domain sin dependencias. Application con interfaces.
 
 | # | Tarea | Días | Archivos |

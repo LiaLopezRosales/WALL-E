@@ -3,7 +3,7 @@
 Documentación en vivo del plan **"cerrar Fase 1: migración completa del `EvaluatorVisitor` + red de tests"**.
 Cada sección registra qué se hizo, qué se encontró y cómo se verificó.
 
-Estado del plan al final de este archivo: **Fase A completa, Fase B en curso**.
+Estado del plan al final de este archivo: **COMPLETO — Fase 1 cerrada**.
 
 ---
 
@@ -55,34 +55,45 @@ permanente antes de tocar los lotes riesgosos de migración.
 | # | Bug | Estado |
 |---|---|---|
 | 1 | `VisitGlobalVar` almacenaba variables bajo el `ToString()` del record (`"StringResult { Value = x }"`), rompiendo toda lectura posterior. Ídem tags de `draw`. | **CORREGIDO** (`1087a50`, helper `RawString`) |
-| 2 | `Finite_Sequence<T>.ToString()` usa formato malformado `"Type {}"` → `FormatException`. Cualquier sentencia cuyo valor sea secuencia finita/vacía revienta el pipeline. | Documentado; se corrige en Lote 4 |
-| 3 | El puente fallback envuelve cualquier secuencia legacy como `StringResult(ToString())` → `count({1...100})` responde "can't count this type". | Documentado; desaparece al migrar secuencias (Lotes 4–5) |
-| 4 | `let-in` produce error sintáctico (`let x = 5 in ...`) o NRE (con `;`). | Documentado; se revisa en Lote 1/4 |
+| 2 | `Finite_Sequence<T>.ToString()` usa formato malformado `"Type {}"` → `FormatException`. Cualquier sentencia cuyo valor sea secuencia finita/vacía revienta el pipeline. | **CORREGIDO** (Lote 4, `88a39b2`) |
+| 3 | El puente fallback envuelve cualquier secuencia legacy como `StringResult(ToString())` → `count({1...100})` responde "can't count this type". | **CORREGIDO** (Lote 4: `WrapResult` mapea `AbsSequence → SequenceResult`; puente eliminado en Fase D) |
+| 4 | `let-in` produce error sintáctico (`let x = 5 in ...`) o NRE (con `;`). | Documentado; pendiente de decisión (ver "Deudas conocidas") |
+| 5 | **Property shadowing**: `GenericSequence<T>` declara `public new long count` / `new IEnumerable<T> Sequence`, ocultando los miembros de `AbsSequence` con almacenamiento distinto. Todo acceso vía referencia `AbsSequence` leía 0 (count nunca asignado) e `IsInfinite` era siempre falso → concatenaciones vacías (`count({1,2} + {3,4}) == 0`). Latente también en `Sum.cs`. | **CORREGIDO** (Lote 4, `88a39b2`: los consumidores castean a `GenericSequence<T>` antes de leer; nota: refactor mayor pendiente para eliminar el shadowing) |
 
-Los bugs 2–4 están capturados como tests marcados `KNOWN_BUG` / comentarios;
-al corregirlos se reemplazan las aserciones por el comportamiento correcto tipado.
+## Fase C — Migración de los 25 métodos restantes ✅
 
-## Fase C — Migración de los 25 métodos restantes ⏳
-
-| Lote | Métodos | Estado |
+| Lote | Métodos | Commit |
 |---|---|---|
-| 1 | Conditional, Else, Assigment, Parameters | ⬜ |
-| 2 | PointFuc, CircleFuc, LineFuc, SegmentFuc, RayFuc, Arc, Measure, MeasureFuc | ⬜ |
-| 3 | Intersect, Import (+ cablear GeoLibraryLoader) | ⬜ |
-| 4 | EmptySeq, Randoms, Samples, Points, FiniteSeq, InfiniteSeq, EnclosedInfiniteSeq, PointSeq, LineSeq, Concat | ⬜ |
-| 5 | GlobalSeq (~600 líneas legacy, extraer helpers compartidos) | ⬜ |
+| 1 | Conditional (impl. directa: evalúa condición, `CheckTrueORFalse.Check`, solo rama tomada); If = alias; Else/Parameters = no-ops fantasma (el parser nunca crea esos nodos); Assigment = wrapper transparente | `f3c436e` |
+| 2 | PointFuc, CircleFuc, LineFuc, SegmentFuc, RayFuc, MeasureFuc, Arc con `FigureResult` tipado y propagación de errores; `measure()` devuelve `NumberResult(Value)` (no existe variante Measure en la jerarquía sellada); Measure plano = fantasma; helper `IsDistance` | `5f06abc` |
+| 3 | Intersect → `SequenceResult(Finite_Sequence<Point>, count)` (`null → "undefined"`); Import reporta error semántico "import requires UI/Infrastructure layer" (cablear GeoLibraryLoader exige diseño a nivel pipeline, ver Deudas) | `8205543` |
+| 4 | EmptySeq, InfiniteSeq (fix deliberado: acepta doubles integrales — el lexer solo produce doubles; legacy exigía long y `{1...}` siempre fallaba), EnclosedInfiniteSeq, FiniteSeq (+`ClassifySequenceType`), Randoms, Samples, Points, PointSeq (`point sequence ps;`), LineSeq; Concat = fantasma (la concatenación fluye por Sum). **Bugs #2 y #5 corregidos aquí** | `88a39b2` |
+| 5 | GlobalSeq unificado: las ~600 líneas legacy (una copia por cada tipo de secuencia) se reducen a una sola implementación con dispatch polimórfico de `ReturnValue()`: `_` descarta, última posición recibe el resto como secuencia finita (`"{}"` si agotada), posiciones previas un elemento cada una (`"undefined"` si agotada); RHS no-secuencia ahora da error semántico en vez de ignorarse silenciosamente | `44b7243` |
 
-Verificación por lote: `dotnet build` + `dotnet test`.
+Suite final tras Lotes 1–5: **43 tests en verde**.
 
-## Fase D — Eliminar la muleta ⬜
+## Fase D — Eliminar la muleta ✅
 
-- [ ] Borrar `EvaluateFallback`, `WrapResult` y `Evaluator.cs` legacy (1933 líneas)
-- [ ] Scan final: cero referencias a WinForms en `src/`
+- [x] Borrar `EvaluateFallback` y `Evaluator.cs` legacy (1933 líneas) (`4e64be1`)
+- [x] `WrapResult` se conserva únicamente para envolver resultados de los nodos
+  expresión de Domain (`Sum`, `Pow`, …) que aún se autoevalúan internamente.
+- [x] Scan: cero referencias a WinForms/Evaluator en `src/`.
 
-## Fase E — Documentación ⬜
+## Fase E — Documentación ✅
 
-- [ ] AGENTS.md: quitar nota de fallback, actualizar comandos/tests, marcar Fase 1 cerrada
-- [ ] ROADMAP.md: reflejar estado real
+- [x] MIGRATION_LOG.md actualizado a estado final
+- [x] AGENTS.md: Fase 1 marcada cerrada, comandos de test añadidos, deudas referenciadas
+- [x] ROADMAP.md: nota de estado en Fase 1 con desviaciones reales (net8.0, visitor completo, 43 tests)
+
+---
+
+### Deudas conocidas (post-Fase 1)
+
+1. **let-in roto** (bug #4): requiere decisión de diseño sobre la gramática (`LetExp` ya está migrado pero el parser no lo alcanza bien).
+2. **Property shadowing** en `GenericSequence<T>` (`new count`/`new Sequence`): los fixes actuales castean en los puntos de consumo; el refactor limpio es eliminar los miembros sombreados de `AbsSequence`.
+3. **Import sin cablear**: `VisitImport` devuelve error; conectar `GeoLibraryLoader` requiere que el pipeline pase el loader al contexto (Infrastructure → Application ya tiene la dirección correcta).
+4. **Nodos expresión autoevaluados**: `Sum`, `Pow`, etc. aún ejecutan su propio `Evaluate`; `WrapResult` sigue en pie por ellos. Migrarlos al patrón visitor es opcional (no bloquea Fase 2).
+5. **Tests de GlobalSeq**: cubierto solo por probe manual; añadir casos de caracterización sería barato.
 
 ---
 
