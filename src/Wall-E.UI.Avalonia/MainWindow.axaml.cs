@@ -33,6 +33,22 @@ public partial class MainWindow : Window
                 PaperSwatch.Fill = Canvas.Paper;
             };
         }
+
+        // Same flyout resolution for the initial-ink picker: it feeds the
+        // orchestrator's InitialInk (applied on the next run) and repaints
+        // its swatch face.
+        if (InkPickerButton.Flyout is global::Avalonia.Controls.Flyout inkFlyout &&
+            inkFlyout.Content is global::Avalonia.Controls.ColorPicker inkPicker)
+        {
+            inkPicker.Color = global::Avalonia.Media.Colors.Black;
+            inkPicker.ColorChanged += (_, e) =>
+            {
+                var c = e.NewColor;
+                _vm?.SetDefaultInk(c);
+                InkSwatch.Fill = new global::Avalonia.Media.SolidColorBrush(
+                    global::Avalonia.Media.Color.FromArgb(255, c.R, c.G, c.B));
+            };
+        }
     }
 
     private void WireViewModel()

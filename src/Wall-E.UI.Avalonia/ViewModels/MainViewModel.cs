@@ -175,6 +175,17 @@ public class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsDarkTheme));
     }
 
+    /// <summary>Sets the initial ink used by programs without an explicit
+    /// color statement. Stored as hex on the orchestrator and applied when
+    /// the next run creates its scene (safe to change mid-run).</summary>
+    public void SetDefaultInk(global::Avalonia.Media.Color color)
+    {
+        var hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+        _pipeline.InitialInk = hex;
+        StatusMessage = $"Tinta inicial: {hex} (se aplica en la próxima ejecución)";
+        StatusIsError = false;
+    }
+
     /// <summary>Refreshes the ink swatch strip from the scene's color stack
     /// (top-first, capped at 8 for space).</summary>
     private void UpdateInkStrip()

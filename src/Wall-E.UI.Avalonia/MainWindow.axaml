@@ -102,7 +102,7 @@
                     Background="{DynamicResource BgSurfaceBrush}"
                     BorderBrush="{DynamicResource HairlineBrush}" BorderThickness="1">
                 <Grid RowDefinitions="Auto,*">
-                    <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,*,Auto" Margin="8,4,8,0">
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto" Margin="8,4,8,0">
                         <TextBlock Grid.Column="0" Text="CANVAS" FontSize="11" FontWeight="SemiBold"
                                    LetterSpacing="2" Foreground="{DynamicResource TextSecondaryBrush}"
                                    VerticalAlignment="Center" Margin="6,4,0,2"/>
@@ -132,8 +132,20 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </StackPanel>
-                        <Button Grid.Column="2" x:Name="PaperButton"
-                                ToolTip.Tip="Color del papel" Margin="10,0,0,0"
+                        <Button Grid.Column="2" x:Name="InkPickerButton"
+                                ToolTip.Tip="Tinta inicial para programas sin 'color' propio"
+                                MinWidth="40" Padding="7,4" HorizontalContentAlignment="Center"
+                                Margin="8,0,0,0">
+                            <Rectangle x:Name="InkSwatch" Width="13" Height="13" RadiusX="3" RadiusY="3"
+                                       Fill="Black" Stroke="{DynamicResource HairlineBrush}" StrokeThickness="1"/>
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedLeft">
+                                    <ColorPicker x:Name="InkPicker" Width="300"/>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Grid.Column="3" x:Name="PaperButton"
+                                ToolTip.Tip="Color del papel" Margin="6,0,0,0"
                                 MinWidth="40" Padding="7,4" HorizontalContentAlignment="Center">
                             <Rectangle x:Name="PaperSwatch" Width="13" Height="13" RadiusX="3" RadiusY="3"
                                        Fill="White" Stroke="{DynamicResource HairlineBrush}" StrokeThickness="1"/>
@@ -143,7 +155,7 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                        <Button Grid.Column="4" x:Name="FitButton" Content="Fit"
+                        <Button Grid.Column="5" x:Name="FitButton" Content="Fit"
                                 ToolTip.Tip="Ajustar al contenido · doble clic reinicia la vista"
                                 Padding="10,3" MinWidth="64" FontSize="12" HorizontalContentAlignment="Center"/>
                     </Grid>
