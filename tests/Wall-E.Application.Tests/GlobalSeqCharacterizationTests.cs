@@ -63,7 +63,9 @@ public class GlobalSeqCharacterizationTests
         // remainder (10000 - 1). Guards the infinite-sequence safety invariant.
         var pipeline = Run("n,x = {1...};");
         Assert.Empty(pipeline.Errors);
-        Assert.Equal(1.0, pipeline.Context.GlobalConstant["n"]);
+        // {1...} yields longs (Infinite_Sequence), unlike finite literals which
+        // hold doubles from the lexer — assert the unboxed type explicitly.
+        Assert.Equal(1L, pipeline.Context.GlobalConstant["n"]);
         var rest = Assert.IsType<Finite_Sequence<object>>(pipeline.Context.GlobalConstant["x"]);
         Assert.False(rest.IsInfinite);
         Assert.Equal((long)(AbsSequence.DefaultMaxElements - 1), rest.count);
