@@ -1,3 +1,5 @@
+using Wall_E.Domain;
+
 namespace Wall_E.Application.Interfaces;
 
 public interface ILexer

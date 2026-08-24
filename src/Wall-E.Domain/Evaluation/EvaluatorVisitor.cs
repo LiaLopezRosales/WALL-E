@@ -128,7 +128,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitLine(Node node)
     {
         Line l = new(new Point(0, 0), new Point(1, 1));
-        l.RandomLine(_figures.ExistingPoints, _figures.ExistingLines);
+        l.RandomLine(_figures.ExistingLines, _figures.ExistingPoints);
         _figures.TryAddExistingLine(l);
         StoreVariable(node.NodeExpression!.ToString()!, l);
         return new StringResult("line created");
@@ -137,7 +137,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitSegment(Node node)
     {
         Segment s = new(new Point(0, 0), new Point(1, 1));
-        s.RandomSegment(_figures.ExistingPoints, _figures.ExistingSegments);
+        s.RandomSegment(_figures.ExistingSegments, _figures.ExistingPoints);
         _figures.TryAddExistingSegment(s);
         StoreVariable(node.NodeExpression!.ToString()!, s);
         return new StringResult("segment created");
@@ -146,7 +146,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitRay(Node node)
     {
         Ray r = new(new Point(0, 0), new Point(1, 1));
-        r.RandomRay(_figures.ExistingPoints, _figures.ExistingRays);
+        r.RandomRay(_figures.ExistingRays, _figures.ExistingPoints);
         _figures.TryAddExistingRay(r);
         StoreVariable(node.NodeExpression!.ToString()!, r);
         return new StringResult("ray created");
@@ -165,16 +165,206 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");
 
     // Fallback to adapted Evaluator for all remaining types
-    public EvaluationResult VisitInstructions(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitInstructions(Node node)
+    {
+        // Instructions is a container node; each branch is individually evaluated by the caller.
+        // Individual branches are not evaluated here.
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitLetExp(Node node)
+    {
+        Scope expScope = CurrentScope.Child();
+        if (_currentScope.InFunction)
+            expScope.InFunction = true;
+        SetCurrentScope(expScope);
+        foreach (var instruction in node.Branches[0].Branches)
+            Visit(instruction);
+        EvaluationResult value = Visit(node.Branches[1].Branches[0]);
+        Scope parent = CurrentScope.Parent!;
+        SetCurrentScope(parent);
+        return value;
+    }
+
+    public EvaluationResult VisitDeclaredFuc(Node node)
+    {
+        string dfuncName = node.Branches[0].NodeExpression!.ToString()!;
+        Node funcParameters = node.Branches[1];
+        bool exist = false;
+
+        foreach (var function in _context.Available_Functions)
+        {
+            if (function.Name == dfuncName)
+            {
+                exist = true;
+                break;
+            }
+        }
+
+        int index = -1;
+        if (exist)
+        {
+            Scope funcScope = CurrentScope.Child();
+            funcScope.InFunction = true;
+            SetCurrentScope(funcScope);
+
+            for (int i = 0; i < _context.Available_Functions.Count; i++)
+            {
+                if (_context.Available_Functions[i].Name == dfuncName)
+                {
+                    if (_context.Available_Functions[i].Functions_Arguments.Count == funcParameters.Branches.Count)
+                    {
+                        int paramNumber = 0;
+                        foreach (var pName in _context.Available_Functions[i].Functions_Arguments.Keys)
+                        {
+                            _context.Available_Functions[i].Functions_Arguments[pName] = funcParameters.Branches[paramNumber];
+                            if (_currentScope.Variables.ContainsKey(pName))
+                                _currentScope.Variables[pName] = UnwrapRaw(Visit(funcParameters.Branches[paramNumber]));
+                            else
+                            {
+                                object parValue = UnwrapRaw(Visit(funcParameters.Branches[paramNumber]))!;
+                                _currentScope.Variables.Add(pName, parValue);
+                            }
+                            paramNumber++;
+                        }
+                        index = i;
+                        _context.Available_Functions[index].NumberofCalls++;
+                        if (_context.Available_Functions[index].NumberofCalls > 100)
+                        {
+                            _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,
+                                $"call,full stack for function {_context.Available_Functions[i].Name}", new Location(_file, _line, "column")));
+                            return new StringResult("");
+                        }
+                        EvaluationResult value = Visit(_context.Available_Functions[index].Code);
+                        Scope parent = CurrentScope.Parent!;
+                        SetCurrentScope(parent);
+                        return value;
+                    }
+                    else
+                    {
+                        _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected,
+                            $"{_context.Available_Functions[i].Functions_Arguments.Count} parameters but received {funcParameters.Branches.Count}", new Location(_file, _line, "column")));
+                    }
+                }
+            }
+        }
+        else
+        {
+            foreach (var function in CurrentScope.TemporalFunctions)
+            {
+                if (function.Key == dfuncName)
+                {
+                    exist = true;
+                    break;
+                }
+            }
+            if (exist)
+            {
+                Scope funcScope = CurrentScope.Child();
+                funcScope.InFunction = true;
+                SetCurrentScope(funcScope);
+                var func = CurrentScope.TemporalFunctions[dfuncName];
+                if (func.Functions_Arguments.Count == funcParameters.Branches.Count)
+                {
+                    int paramNumber = 0;
+                    foreach (var pName in func.Functions_Arguments.Keys)
+                    {
+                        func.Functions_Arguments[pName] = funcParameters.Branches[paramNumber];
+                        if (_currentScope.Variables.ContainsKey(pName))
+                            _currentScope.Variables[pName] = UnwrapRaw(Visit(funcParameters.Branches[paramNumber]));
+                        else
+                        {
+                            object parValue = UnwrapRaw(Visit(funcParameters.Branches[paramNumber]))!;
+                            _currentScope.Variables.Add(pName, parValue);
+                        }
+                        paramNumber++;
+                    }
+                    func.NumberofCalls++;
+                    if (func.NumberofCalls > 100)
+                    {
+                        _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,
+                            $"call,full stack for function {func.Name}", new Location(_file, _line, "column")));
+                        return new StringResult("");
+                    }
+                    EvaluationResult value = Visit(func.Code);
+                    Scope parent = CurrentScope.Parent!;
+                    SetCurrentScope(parent);
+                    return value;
+                }
+                else
+                {
+                    _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Expected,
+                        $"{func.Functions_Arguments.Count} parameters but received {funcParameters.Branches.Count}", new Location(_file, _line, "column")));
+                }
+            }
+            else
+            {
+                _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,
+                    "name,function has not been declared", new Location(_file, _line, "column")));
+            }
+        }
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitFuction(Node node)
+    {
+        string name = node.Branches[0].NodeExpression!.ToString()!;
+        Dictionary<string, object> arg = new();
+        string parName;
+        foreach (var item in node.Branches[1].Branches)
+        {
+            parName = (string)item.NodeExpression!;
+            arg.Add(parName, "");
+        }
+        var func = new Fuction(node.Branches[0].NodeExpression!.ToString()!, node.Branches[2], arg);
+        bool exist = false;
+
+        if (CurrentScope.Parent == null)
+        {
+            foreach (var function in _context.Available_Functions)
+            {
+                if (function.Name == name)
+                {
+                    exist = true;
+                    break;
+                }
+            }
+            if (exist)
+            {
+                _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,
+                    "function name, already exist a preexistent function with the same name", new Location(_file, _line, "column")));
+                return new VoidResult();
+            }
+            _context.Available_Functions.Add(func);
+            return new StringResult($"{node.Branches[0].NodeExpression!.ToString()!} Function created and saved");
+        }
+        else
+        {
+            foreach (var function in CurrentScope.TemporalFunctions)
+            {
+                if (function.Key == name)
+                {
+                    exist = true;
+                    break;
+                }
+            }
+            if (exist)
+            {
+                _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,
+                    "function name, already exist a preexistent function with the same name", new Location(_file, _line, "column")));
+                return new VoidResult();
+            }
+            CurrentScope.TemporalFunctions.Add(name, func);
+            return new StringResult($"{node.Branches[0].NodeExpression!.ToString()!} Function created and saved");
+        }
+    }
+
     public EvaluationResult VisitGlobalSeq(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitAssigment(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitLetExp(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitConditional(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitIf(Node node) => EvaluateFallback(node);
+    public EvaluationResult VisitIf(Node node) => VisitConditional(node);
     public EvaluationResult VisitElse(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitDeclaredFuc(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitParameters(Node node) => EvaluateFallback(node);
-    public EvaluationResult VisitFuction(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitConcat(Node node) => EvaluateFallback(node);
     public EvaluationResult VisitNegation(Node node)
     {
@@ -636,12 +826,6 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         // Try common sequence types for count
         switch (arg)
         {
-            case GenericSequence<object> gs:
-            {
-                long c = gs.count;
-                if (c < 0) return new StringResult("undefined");
-                return new NumberResult(c);
-            }
             case Finite_Sequence<Point> fsp:
             {
                 long c = fsp.count;
@@ -651,6 +835,12 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             case Finite_Sequence<object> fso:
             {
                 long c = fso.count;
+                if (c < 0) return new StringResult("undefined");
+                return new NumberResult(c);
+            }
+            case GenericSequence<object> gs:
+            {
+                long c = gs.count;
                 if (c < 0) return new StringResult("undefined");
                 return new NumberResult(c);
             }

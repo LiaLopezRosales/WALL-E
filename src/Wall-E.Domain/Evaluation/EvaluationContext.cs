@@ -4,12 +4,7 @@ public class EvaluationContext
 {
     public List<Fuction> Available_Functions { get; set; } = new();
     public Dictionary<string, object> GlobalConstant { get; set; } = new();
-    public Dictionary<string, Func<double, double>> Trig_functions { get; } = new()
-    {
-        ["sin"] = (double argument) => Sin(argument),
-        ["cos"] = (double argument) => Cos(argument),
-        ["sqrt"] = (double argument) => Math.Sqrt(argument),
-    };
+    public Dictionary<string, Func<double, double>> Trig_functions { get; }
     public Dictionary<string, Func<double>> Math_value { get; } = new()
     {
         ["PI"] = () => Math.PI,
@@ -19,21 +14,34 @@ public class EvaluationContext
     {
         ["log"] = (double Base, double argument) => Math.Log(argument, Base),
     };
-    public Dictionary<string, Func<IEnumerable<double>>> Randoms { get; } = new()
-    {
-        ["randoms"] = GenerateRandoms,
-    };
-    public Dictionary<string, Func<IEnumerable<Point>>> Samples { get; } = new()
-    {
-        ["samples"] = GenerateSamples,
-    };
-    public Dictionary<string, Func<Circle, IEnumerable<Point>>> Points { get; } = new()
-    {
-        ["points"] = GeneratePointsInFigure,
-    };
+    public Dictionary<string, Func<IEnumerable<double>>> Randoms { get; }
+    public Dictionary<string, Func<IEnumerable<Point>>> Samples { get; }
+    public Dictionary<string, Func<Circle, IEnumerable<Point>>> Points { get; }
 
     public List<object> Results { get; set; } = new();
     public bool HasErrors { get; set; }
+
+    public EvaluationContext()
+    {
+        Trig_functions = new Dictionary<string, Func<double, double>>
+        {
+            ["sin"] = Sin,
+            ["cos"] = Cos,
+            ["sqrt"] = (double argument) => Math.Sqrt(argument),
+        };
+        Randoms = new Dictionary<string, Func<IEnumerable<double>>>
+        {
+            ["randoms"] = GenerateRandoms,
+        };
+        Samples = new Dictionary<string, Func<IEnumerable<Point>>>
+        {
+            ["samples"] = GenerateSamples,
+        };
+        Points = new Dictionary<string, Func<Circle, IEnumerable<Point>>>
+        {
+            ["points"] = GeneratePointsInFigure,
+        };
+    }
 
     public void Clear()
     {
