@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -28,9 +29,23 @@ public class DrawingCanvas : Control
     private const double MaxScale = 80;
     private const double DefaultScale = 2.0;
 
+    /// <summary>Frame budget: beyond this many shapes, dots are decimated
+    /// (every stride-th one drawn) so streaming and zooming stay responsive.
+    /// Lines, circles, arcs and polygons are never decimated.</summary>
+    private const int MaxDrawnShapes = 25000;
+
     private RenderScene? _sourceScene;
     private int _builtCount;
     private List<Shape> _shapes = new();
+
+    // Pens are immutable and reused across frames; widths are quantized so
+    // the cache stays tiny even though sizes adapt to zoom.
+    private readonly Dictionary<string, Pen> _penCache = new();
+
+    private static readonly Pen GridMinorPen = new(ColorFromHex("#E8ECF2"), 1);
+    private static readonly Pen GridMajorPen = new(ColorFromHex("#CBD4DF"), 1);
+    private static readonly Pen GridAxisPen = new(ColorFromHex("#8A93A6"), 1.5);
+    private static readonly Pen OriginPen = new(ColorFromHex("#F5A623"), 2);
 
     private bool _hasBounds;
     private double _minX, _minY, _maxX, _maxY;
@@ -134,13 +149,26 @@ public class DrawingCanvas : Control
         DrawGrid(context);
         if (_shapes.Count == 0) return;
 
-        // 'white' would vanish on the paper background: draw it over a
-        // gray halo so every palette color keeps minimum contrast.
-        foreach (var shape in _shapes)
+        // Frame budget + zoom-adaptive sizes. Dots keep a fixed pixel look
+        // at normal zoom but shrink when zoomed far out, so dense scenes
+        // (the stress spiral) still show their structure instead of fusing
+        // into blobs.
+        int stride = _shapes.Count > MaxDrawnShapes
+            ? (int)Math.Ceiling((double)_shapes.Count / MaxDrawnShapes)
+            : 1;
+        double dotR = Math.Clamp(_scale * 2.0, 0.75, 4.0);
+        double strokeW = Math.Clamp(_scale, 0.6, 2.0);
+
+        for (int si = 0; si < _shapes.Count; si++)
         {
+            var shape = _shapes[si];
+            if (stride > 1 && shape is DotShape && si % stride != 0) continue;
+
+            // 'white' would vanish on the paper background: draw it over a
+            // gray halo so every palette color keeps minimum contrast.
             bool isWhite = string.Equals(shape.Color.Trim(), "white", StringComparison.OrdinalIgnoreCase);
-            var halo = new Pen(Brushes.Gray, 3);
-            var pen = new Pen(isWhite ? Brushes.White : ParseColor(shape.Color), isWhite ? 1.5 : 2);
+            Pen halo = GetPen("#halo", strokeW + 1.5);
+            Pen pen = GetPen(isWhite ? "white" : shape.Color, isWhite ? strokeW * 0.75 : strokeW);
             void Stroke(Action<Pen> draw)
             {
                 if (isWhite) draw(halo);
@@ -153,8 +181,8 @@ public class DrawingCanvas : Control
                 {
                     var c = Map(d.X, d.Y);
                     context.DrawEllipse(ParseColor(d.Color),
-                        isWhite ? new Pen(Brushes.Gray, 1) : null,
-                        new global::Avalonia.Rect(c.X - 4, c.Y - 4, 8, 8));
+                        isWhite ? GetPen("#halo", Math.Max(strokeW * 0.5, 1)) : null,
+                        new global::Avalonia.Rect(c.X - dotR, c.Y - dotR, 2 * dotR, 2 * dotR));
                     break;
                 }
                 case SegShape s:
@@ -199,9 +227,9 @@ public class DrawingCanvas : Control
         double startY = Math.Floor(visible.MinY / step) * step;
         double endY = visible.MaxY;
 
-        var minor = new Pen(ColorFromHex("#E8ECF2"), 1);
-        var major = new Pen(ColorFromHex("#CBD4DF"), 1);
-        var axis = new Pen(ColorFromHex("#8A93A6"), 1.5);
+        var minor = GridMinorPen;
+        var major = GridMajorPen;
+        var axis = GridAxisPen;
 
         for (double x = startX; x <= endX; x += step)
         {
@@ -234,7 +262,7 @@ public class DrawingCanvas : Control
 
         // origin marker in accent amber
         var o = Map(0, 0);
-        context.DrawEllipse(null, new Pen(ColorFromHex("#F5A623"), 2),
+        context.DrawEllipse(null, OriginPen,
             new global::Avalonia.Rect(o.X - 5, o.Y - 5, 10, 10));
     }
 
@@ -269,8 +297,13 @@ public class DrawingCanvas : Control
     {
         if (!_hasBounds) return true;
         var v = VisibleWorldRect();
-        return _minX >= v.MinX && _maxX <= v.MaxX &&
-               _minY >= v.MinY && _maxY <= v.MaxY;
+        // 7.5% hysteresis on each side: while content grows during streaming
+        // the camera holds still until it actually overflows the viewport,
+        // instead of micro-refitting on every tick.
+        double fx = (v.MaxX - v.MinX) * 0.075;
+        double fy = (v.MaxY - v.MinY) * 0.075;
+        return _minX >= v.MinX - fx && _maxX <= v.MaxX + fx &&
+               _minY >= v.MinY - fy && _maxY <= v.MaxY + fy;
     }
 
     private APoint Map(double x, double y) => new(
@@ -386,6 +419,20 @@ public class DrawingCanvas : Control
         if (y < _minY) _minY = y;
         if (x > _maxX) _maxX = x;
         if (y > _maxY) _maxY = y;
+    }
+
+    private Pen GetPen(string colorName, double width)
+    {
+        double w = Math.Round(width * 2, MidpointRounding.AwayFromZero) / 2;
+        string key = colorName + ":" + w.ToString(CultureInfo.InvariantCulture);
+        if (!_penCache.TryGetValue(key, out var pen))
+        {
+            pen = colorName == "#halo"
+                ? new Pen(Brushes.Gray, w)
+                : new Pen(ParseColor(colorName), w);
+            _penCache[key] = pen;
+        }
+        return pen;
     }
 
     private abstract class Shape
