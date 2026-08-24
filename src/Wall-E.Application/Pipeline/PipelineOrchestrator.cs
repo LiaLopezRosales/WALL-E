@@ -18,6 +18,12 @@ public class PipelineOrchestrator : IPipeline
     public FigureRepository Figures { get; private set; } = new();
     public RenderScene Scene { get; private set; } = new();
 
+    /// <summary>Optional initial ink (DSL color name or "#RRGGBB") pushed onto
+    /// the scene's color stack when a run starts, so programs without an
+    /// explicit `color` statement draw with it. Pushing over the black base
+    /// keeps `restore;` returning to black. Null = default (black).</summary>
+    public string? InitialInk { get; set; }
+
     public PipelineOrchestrator(IGeoLibrarySource? librarySource = null)
     {
         _librarySource = librarySource;
@@ -54,6 +60,8 @@ public class PipelineOrchestrator : IPipeline
         var context = new EvaluationContext();
         var figures = new FigureRepository();
         var scene = new RenderScene();
+        if (!string.IsNullOrWhiteSpace(InitialInk))
+            scene.PushColor(InitialInk);
         Context = context;
         Figures = figures;
         Scene = scene;
