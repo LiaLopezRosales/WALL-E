@@ -10,4 +10,10 @@ public static class DslRunner
         pipeline.Execute(code, "test");
         return pipeline;
     }
+
+    public static PipelineOrchestrator Run(string code, PipelineOrchestrator pipeline)
+    {
+        pipeline.Execute(code, "test");
+        return pipeline;
+    }
 }

@@ -1144,12 +1144,24 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new SequenceResult(result, result.count);
     }
 
-    // Real import wiring needs the pipeline layer (GeoLibrary lives in Infrastructure,
-    // which Domain cannot reference); same semantic error as legacy until then.
+    // Import wiring (T3): the pipeline layer injects a handler that resolves and
+    // evaluates library files sharing this visitor/context. Domain cannot reach
+    // Infrastructure directly. When no handler is set, imports report a semantic
+    // error (same as legacy until the UI wires a source).
+    public Func<string, EvaluationResult?>? ImportHandler { get; set; }
+
     public EvaluationResult VisitImport(Node node)
     {
-        AddError("import requires UI/Infrastructure layer");
-        return new VoidResult();
+        if (ImportHandler is null)
+        {
+            AddError("import requires UI/Infrastructure layer");
+            return new VoidResult();
+        }
+        // The text token keeps its quotes: "name.geo"
+        string name = node.NodeExpression!.ToString()!.Trim('"');
+        if (name.EndsWith(".geo")) name = name[..^4];
+        EvaluationResult? result = ImportHandler(name);
+        return result ?? new VoidResult();
     }
     public EvaluationResult VisitEmptySeq(Node node)
     {
