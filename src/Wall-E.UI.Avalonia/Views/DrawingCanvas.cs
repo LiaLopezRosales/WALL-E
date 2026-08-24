@@ -28,8 +28,8 @@ public class DrawingCanvas : Control
 
     public override void Render(DrawingContext context)
     {
-        var bg = new SolidColorBrush(Color.FromRgb(0x1B, 0x1E, 0x23));
-        context.FillRectangle(bg, new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height));
+        // Paper-white background so the DSL's default black ink reads well.
+        context.FillRectangle(Brushes.White, new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height));
 
         if (_scene is null || _scene.ToDraw.Count == 0) return;
 
@@ -52,25 +52,36 @@ public class DrawingCanvas : Control
 
         foreach (var shape in shapes)
         {
-            var pen = new Pen(ParseColor(shape.Color), 2);
+            // 'white' would vanish on the paper background: draw it over a
+            // gray halo so every palette color keeps minimum contrast.
+            bool isWhite = string.Equals(shape.Color.Trim(), "white", StringComparison.OrdinalIgnoreCase);
+            var halo = new Pen(Brushes.Gray, 3);
+            var pen = new Pen(isWhite ? Brushes.White : ParseColor(shape.Color), isWhite ? 1.5 : 2);
+            void Stroke(Action<Pen> draw)
+            {
+                if (isWhite) draw(halo);
+                draw(pen);
+            }
+
             switch (shape)
             {
                 case DotShape d:
                 {
                     var c = Map(d.X, d.Y);
-                    var brush = ParseColor(d.Color);
-                    context.DrawEllipse(brush, null, new global::Avalonia.Rect(c.X - 4, c.Y - 4, 8, 8));
+                    context.DrawEllipse(ParseColor(d.Color),
+                        isWhite ? new Pen(Brushes.Gray, 1) : null,
+                        new global::Avalonia.Rect(c.X - 4, c.Y - 4, 8, 8));
                     break;
                 }
                 case SegShape s:
-                    context.DrawLine(pen, Map(s.X1, s.Y1), Map(s.X2, s.Y2));
+                    Stroke(p => context.DrawLine(p, Map(s.X1, s.Y1), Map(s.X2, s.Y2)));
                     break;
                 case CircleShape c:
                 {
                     // circles stay circular: uniform scale was chosen above
                     var topLeft = Map(c.X - c.R, c.Y + c.R);
-                    context.DrawEllipse(null, pen,
-                        new global::Avalonia.Rect(topLeft.X, topLeft.Y, 2 * c.R * scale, 2 * c.R * scale));
+                    Stroke(p => context.DrawEllipse(null, p,
+                        new global::Avalonia.Rect(topLeft.X, topLeft.Y, 2 * c.R * scale, 2 * c.R * scale)));
                     break;
                 }
                 case PolyShape p:
@@ -84,7 +95,7 @@ public class DrawingCanvas : Control
                             gctx.LineTo(Map(p.Points[i].x, p.Points[i].y));
                         gctx.EndFigure(false);
                     }
-                    context.DrawGeometry(null, pen, geo);
+                    Stroke(pp => context.DrawGeometry(null, pp, geo));
                     break;
                 }
             }
@@ -233,6 +244,6 @@ public class DrawingCanvas : Control
         "cyan" => Brushes.Cyan,
         "magenta" => Brushes.Magenta,
         "grey" => Brushes.Gray,
-        _ => Brushes.White,
+        _ => Brushes.Gray,
     };
 }
