@@ -29,7 +29,7 @@ public class DrawingCanvas : Control
     private RenderScene? _scene;
     private List<Shape> _shapes = new();
     private bool _shapesDirty = true;
-    private bool _pendingInitialFit = true;
+    private (double MinX, double MinY, double MaxX, double MaxY)? _contentBounds;
 
     private double _scale = DefaultScale;
     private double _centerX;
@@ -53,7 +53,6 @@ public class DrawingCanvas : Control
     {
         _scene = scene;
         _shapesDirty = true;
-        if (scene is { ToDraw.Count: > 0 }) _pendingInitialFit = true;
         InvalidateVisual();
     }
 
@@ -76,13 +75,16 @@ public class DrawingCanvas : Control
     private void ComputeFit()
     {
         RebuildShapesIfNeeded();
-        if (_shapes.Count == 0 || !IsSizeValid()) return;
+        if (_contentBounds is null || !IsSizeValid()) return;
 
-        var (minX, minY, maxX, maxY) = ComputeBounds(_shapes);
+        var (minX, minY, maxX, maxY) = _contentBounds.Value;
         double w = maxX - minX, h = maxY - minY;
         if (w <= 1e-9 && h <= 1e-9)
         {
-            ResetView();
+            // single point: center on it instead of jumping to the origin
+            _scale = DefaultScale;
+            _centerX = minX;
+            _centerY = minY;
             return;
         }
 
@@ -100,15 +102,15 @@ public class DrawingCanvas : Control
         context.FillRectangle(Brushes.White, new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height));
         if (!IsSizeValid()) return;
 
-        if (_pendingInitialFit && _shapes.Count > 0)
-        {
-            _pendingInitialFit = false;
+        RebuildShapesIfNeeded();
+
+        // Smart camera: move the viewport only when the fresh content falls
+        // outside it, so manual zoom survives iterative editing.
+        if (_shapes.Count > 0 && !ContentFullyVisible())
             ComputeFit();
-        }
 
         DrawGrid(context);
 
-        RebuildShapesIfNeeded();
         if (_shapes.Count == 0) return;
 
         // 'white' would vanish on the paper background: draw it over a
@@ -242,6 +244,15 @@ public class DrawingCanvas : Control
         return (_centerX - hw, _centerY - hh, _centerX + hw, _centerY + hh);
     }
 
+    private bool ContentFullyVisible()
+    {
+        if (_contentBounds is null) return true;
+        var v = VisibleWorldRect();
+        var b = _contentBounds.Value;
+        return b.MinX >= v.MinX && b.MaxX <= v.MaxX &&
+               b.MinY >= v.MinY && b.MaxY <= v.MaxY;
+    }
+
     private APoint Map(double x, double y) => new(
         Bounds.Width / 2 + (x - _centerX) * _scale,
         Bounds.Height / 2 - (y - _centerY) * _scale); // Y inverted (cartesian look)
@@ -325,9 +336,12 @@ public class DrawingCanvas : Control
         if (!_shapesDirty) return;
         _shapesDirty = false;
         _shapes = new List<Shape>();
+        _contentBounds = null;
         if (_scene is null) return;
         foreach (var drawable in _scene.ToDraw)
             Collect(_shapes, drawable.Figures, drawable.UsedColor);
+        if (_shapes.Count > 0)
+            _contentBounds = ComputeBounds(_shapes);
     }
 
     private abstract class Shape
