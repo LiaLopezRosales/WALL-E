@@ -64,8 +64,16 @@ public class MainViewModel : ViewModelBase
     public bool HasErrors => Errors.Count > 0;
     public int ErrorCount => Errors.Count;
 
-    /// <summary>Active DSL ink stack (top-first), shown as swatches.</summary>
-    public System.Collections.ObjectModel.ObservableCollection<global::Avalonia.Media.IBrush> InkColors { get; } = new();
+    /// <summary>Active DSL ink stack (top-first), shown as named swatches
+    /// in the canvas header.</summary>
+    public System.Collections.ObjectModel.ObservableCollection<string> InkColors { get; } = new();
+
+    private bool _inkEmpty = true;
+    public bool InkEmpty
+    {
+        get => _inkEmpty;
+        private set => SetField(ref _inkEmpty, value);
+    }
 
     public bool IsDarkTheme =>
         global::Avalonia.Application.Current?.RequestedThemeVariant != global::Avalonia.Styling.ThemeVariant.Light;
@@ -171,10 +179,11 @@ public class MainViewModel : ViewModelBase
     /// (top-first, capped at 8 for space).</summary>
     private void UpdateInkStrip()
     {
-        var colors = _pipeline.Scene.ColorsSnapshot();
+        var colors = _pipeline.Scene.ColorsSnapshot().Take(8).ToList();
         InkColors.Clear();
-        foreach (var c in colors.Take(8))
-            InkColors.Add(Wall_E.UI.Avalonia.Views.DslPalette.ToBrush(c));
+        foreach (var c in colors)
+            InkColors.Add(c);
+        InkEmpty = InkColors.Count == 0;
     }
 
     private void Clear()
@@ -185,6 +194,7 @@ public class MainViewModel : ViewModelBase
         StatusMessage = "Canvas cleared";
         StatusIsError = false;
         InkColors.Clear();
+        InkEmpty = true;
         OnPropertyChanged(nameof(Scene));
         SceneChanged?.Invoke(this, EventArgs.Empty);
     }
