@@ -196,12 +196,46 @@ public readonly struct Result<T, E>
 
 > **EJECUCIÓN POR HITOS** (adaptación de las tareas 2.1–2.15 a la arquitectura real):
 >
-> | Hito | Alcance | Tareas |
-> |---|---|---|
-> | M1 | Proyecto Avalonia net8.0 + MVVM base + MainWindow (editor/canvas/errores) + ProcessCommand síncrono + render de `RenderScene` | 2.1–2.7, 2.10 |
-> | M2 | Grid cartesiano, sistema de coordenadas, zoom/pan, cursor y statusbar | 2.11–2.13, 2.15 |
-> | M3 | Cancelación UI (`PipelineOrchestrator.Cancel()` ya existe) + streaming progresivo por batches | 2.8–2.9 |
-> | M4 | Color picker, temas, pulido de estados de error | 2.14 |
+> | Hito | Alcance | Tareas | Estado |
+> |---|---|---|---|
+> | M1 | Proyecto Avalonia net8.0 + MVVM base + MainWindow (editor/canvas/errores) + ProcessCommand síncrono + render de `RenderScene` | 2.1–2.7, 2.10 | ✅ |
+> | M1.5 | Rediseño estético «taller de dibujo técnico»: FluentAvalonia dark + paleta propia, shell rediseñada (ver sección siguiente) | nuevo | ⏳ en curso |
+> | M2 | Grid cartesiano, sistema de coordenadas, zoom/pan, cursor y statusbar | 2.11–2.13, 2.15 | pendiente |
+> | M3 | Cancelación UI (`PipelineOrchestrator.Cancel()` ya existe) + streaming progresivo por batches | 2.8–2.9 | pendiente |
+> | M4 | Color picker, temas, pulido de estados de error | 2.14 | pendiente |
+
+#### M1.5 — Dirección de arte aprobada («taller de dibujo técnico»)
+
+El lienzo blanco con las 9 tintas del DSL es el protagonista; el cromo oscuro
+neutro hace que el papel resalte (referentes: Figma, VS Code) con guiño a la
+identidad WALL-E mediante el acento ámbar óxido del robot.
+
+Paleta de tokens (definida como recursos en `App.axaml`):
+
+| Token | Valor | Uso |
+|---|---|---|
+| BgBase | `#14161B` | fondo de ventana |
+| BgSurface | `#1A1E26` | tarjetas editor/canvas |
+| BgInput | `#232833` | textbox |
+| Hairline | `#303746` | bordes 1px |
+| TextPrimary / TextSecondary | `#E8EAED` / `#98A2B3` | jerarquía tipográfica |
+| Accent / AccentHover | `#F5A623` / `#FFB454` | botón Run, focos, origen del grid (M2) |
+| Error / Success | `#EF5350` / `#66BB6A` | chip de estado, panel de errores |
+
+Decisiones: lienzo permanece blanco puro (fidelidad de color del DSL); iconos
+como `PathIcon` vectorial inline (sin fuentes de iconos ausentes en Linux);
+**se rompe el cero-dependencias** con FluentAvalonia 2.x (decisión explícita
+del usuario) para controles más ricos; el resto sigue sin paquetes.
+
+Desglose de ejecución:
+
+- **Bloque A (cáscara)**: A1 tema+paleta+estilos base · A2 relayout de
+  `MainWindow` (header bar con Run acentuado, GridSplitter entre tarjetas
+  Program/Canvas con cabeceras, franja de errores colapsable, statusbar con
+  hueco para coordenadas) + propiedades `HasErrors`/`ErrorCount` en el VM.
+- **Bloque B (=M2)**: viewport cartesiano fijo con origen al centro, grid
+  adaptativo con ejes y origen ámbar, zoom Ctrl+rueda alrededor del puntero,
+  pan arrastrando, botón fit, readout de cursor en la statusbar.
 >
 > Nota técnica: el render usa el pipeline Skia **nativo de Avalonia**
 > (`Control.Render(DrawingContext)`), no un `SKCanvasView` externo — mismo motor,
