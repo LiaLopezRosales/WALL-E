@@ -830,16 +830,14 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitColor(Node node)
     {
         string color = node.NodeExpression!.ToString()!;
-        if (_scene.UtilizedColors.Peek() != color)
-            _scene.UtilizedColors.Push(color);
+        _scene.PushColor(color);
         return new StringResult($"Color changed to {color}");
     }
 
     public EvaluationResult VisitRestore(Node node)
     {
-        if (_scene.UtilizedColors.Count > 1)
-            _scene.UtilizedColors.Pop();
-        return new StringResult($"Used color has been restore to {_scene.UtilizedColors.Peek()}");
+        _scene.RestoreColor();
+        return new StringResult($"Used color has been restore to {_scene.CurrentColor}");
     }
 
     public EvaluationResult VisitSin(Node node)

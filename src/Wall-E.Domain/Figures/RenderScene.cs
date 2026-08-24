@@ -48,6 +48,37 @@ public class RenderScene
         }
     }
 
+    /// <summary>Single mutation entry point for 'color' statements.</summary>
+    public void PushColor(string color)
+    {
+        lock (_sync)
+        {
+            if (UtilizedColors.Peek() != color)
+                UtilizedColors.Push(color);
+        }
+    }
+
+    /// <summary>Single mutation entry point for 'restore' statements.</summary>
+    public void RestoreColor()
+    {
+        lock (_sync)
+        {
+            if (UtilizedColors.Count > 1)
+                UtilizedColors.Pop();
+        }
+    }
+
+    public string CurrentColor
+    {
+        get { lock (_sync) return UtilizedColors.Peek(); }
+    }
+
+    /// <summary>Top-first copy of the used-color stack, safe mid-execution.</summary>
+    public List<string> ColorsSnapshot()
+    {
+        lock (_sync) return UtilizedColors.ToList();
+    }
+
     public void Clear()
     {
         lock (_sync)
