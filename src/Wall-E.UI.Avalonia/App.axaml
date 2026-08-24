@@ -1,8 +1,36 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sty="using:FluentAvalonia.Styling"
              x:Class="Wall_E.UI.Avalonia.App"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Dark">
+
+    <!-- M1.5 'taller de dibujo tecnico' palette - see ROADMAP.md -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- WALL-E rust-amber accent -->
+            <Color x:Key="SystemAccentColor">#F5A623</Color>
+            <Color x:Key="SystemAccentColorLight1">#FFB454</Color>
+            <Color x:Key="SystemAccentColorLight2">#FFC678</Color>
+            <Color x:Key="SystemAccentColorLight3">#FFD89C</Color>
+            <Color x:Key="SystemAccentColorDark1">#D98E14</Color>
+            <Color x:Key="SystemAccentColorDark2">#B37710</Color>
+            <Color x:Key="SystemAccentColorDark3">#8C5C0C</Color>
+
+            <SolidColorBrush x:Key="BgBaseBrush" Color="#14161B"/>
+            <SolidColorBrush x:Key="BgSurfaceBrush" Color="#1A1E26"/>
+            <SolidColorBrush x:Key="BgInputBrush" Color="#232833"/>
+            <SolidColorBrush x:Key="HairlineBrush" Color="#303746"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E8EAED"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#98A2B3"/>
+            <SolidColorBrush x:Key="ErrorBrush" Color="#EF5350"/>
+            <SolidColorBrush x:Key="SuccessBrush" Color="#66BB6A"/>
+            <SolidColorBrush x:Key="CanvasPaperBrush" Color="#FFFFFF"/>
+
+            <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
-        <FluentTheme />
+        <sty:FluentAvaloniaTheme/>
     </Application.Styles>
 </Application>
