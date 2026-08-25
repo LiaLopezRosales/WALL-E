@@ -12,6 +12,7 @@ public class DrawObject
     public FillType FillType{get;set;}
     public string GradientColor1{get;set;} = "";
     public string GradientColor2{get;set;} = "";
+    public int Layer{get;set;}
 
     public bool IsFilled => FillType == FillType.Solid;
 
@@ -26,7 +27,7 @@ public class DrawObject
     }
 
     public DrawObject(object value,string tag,string color,LineStyle style,double width,FillType fill,
-        string grad1="",string grad2="")
+        string grad1="",string grad2="",int layer=0)
     {
         Figures=value;
         Tag=tag;
@@ -36,6 +37,7 @@ public class DrawObject
         FillType=fill;
         GradientColor1=grad1;
         GradientColor2=grad2;
+        Layer=layer;
     }
     //Método que revisa si el objeto es válido para gráficar(solo figuras y secuencias de figuras)
     public bool CheckValidType()

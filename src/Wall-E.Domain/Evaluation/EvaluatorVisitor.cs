@@ -115,6 +115,10 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.LineStyleStmt => VisitLineStyleStmt(node),
         Node.NodeType.GrosorStmt => VisitGrosorStmt(node),
         Node.NodeType.FillStmt => VisitFillStmt(node),
+        Node.NodeType.LayerStmt => VisitLayerStmt(node),
+        Node.NodeType.HideStmt => VisitHideStmt(node),
+        Node.NodeType.ShowStmt => VisitShowStmt(node),
+        Node.NodeType.SnapStmt => VisitSnapStmt(node),
         Node.NodeType.Points => VisitPoints(node),
         Node.NodeType.Randoms => VisitRandoms(node),
         Node.NodeType.Samples => VisitSamples(node),
@@ -482,6 +486,35 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         string raw = RawString(result);
         return ColorTable.Resolve(raw);
     }
+
+    public EvaluationResult VisitLayerStmt(Node node)
+    {
+        double layer = Convert.ToDouble(node.NodeExpression);
+        _scene.CurrentLayer = (int)layer;
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitHideStmt(Node node)
+    {
+        string labelName = node.NodeExpression!.ToString()!;
+        _scene.HiddenLabels.Add(labelName);
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitShowStmt(Node node)
+    {
+        string labelName = node.NodeExpression!.ToString()!;
+        _scene.HiddenLabels.Remove(labelName);
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitSnapStmt(Node node)
+    {
+        double snapVal = Convert.ToDouble(node.NodeExpression);
+        _scene.SnapValue = snapVal;
+        return new VoidResult();
+    }
+
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");
 
@@ -1137,7 +1170,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         string tag = " ";
         if (node.Branches[1].Type != Node.NodeType.Indefined)
             tag = RawString(Visit(node.Branches[1]));
-        var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek(), _scene.CurrentLineStyle, _scene.CurrentStrokeWidth, _scene.CurrentFillType, _scene.CurrentGradientColor1, _scene.CurrentGradientColor2);
+        var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek(), _scene.CurrentLineStyle, _scene.CurrentStrokeWidth, _scene.CurrentFillType, _scene.CurrentGradientColor1, _scene.CurrentGradientColor2, _scene.CurrentLayer);
         if (!d.CheckValidType())
         {
             _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,

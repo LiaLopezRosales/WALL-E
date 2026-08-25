@@ -20,6 +20,9 @@ public class RenderScene
     public string CurrentGradientColor1 { get; set; } = "";
     public string CurrentGradientColor2 { get; set; } = "";
     public bool CurrentFillEnabled => CurrentFillType != FillType.None;
+    public int CurrentLayer { get; set; } = 0;
+    public double SnapValue { get; set; } = 0;
+    public HashSet<string> HiddenLabels { get; set; } = new();
 
     /// <summary>Synchronized element count - safe to read mid-execution.</summary>
     public int DrawCount

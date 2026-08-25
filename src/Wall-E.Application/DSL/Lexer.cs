@@ -257,6 +257,22 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.complement,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "layer" )
+        {
+            token = new Token(Token.TokenType.layer,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "hide" )
+        {
+            token = new Token(Token.TokenType.hide,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "show" )
+        {
+            token = new Token(Token.TokenType.show,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "snap" )
+        {
+            token = new Token(Token.TokenType.snap,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken=="+")
         {
             token = new Token(Token.TokenType.sum,possibletoken,File,Line,index.ToString());

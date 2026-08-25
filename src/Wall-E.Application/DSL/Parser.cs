@@ -142,6 +142,19 @@ public class Parser
         {
             return ComplementStatement();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.layer)
+        {
+            return LayerStatement();
+        }
+        if ((tokenstream.Position() < tokens.Count) && (tokens[tokenstream.Position()].Type == Token.TokenType.hide
+            || tokens[tokenstream.Position()].Type == Token.TokenType.show))
+        {
+            return HideShowStatement();
+        }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.snap)
+        {
+            return SnapStatement();
+        }
          if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket && (tokenstream.Contains("=")))
         {
             return Function();
@@ -1257,6 +1270,67 @@ public class Parser
         else tokenstream.MoveForward(1);
         Node temp = new Node();
         temp.Type = Node.NodeType.Complement;
+        return temp;
+    }
+
+    public Node LayerStatement()
+    {
+        tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.LayerStmt;
+        if (tokenstream.Position() >= tokens.Count || tokens[tokenstream.Position()].Type != Token.TokenType.number)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected,
+                "number after 'layer'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else
+        {
+            temp.NodeExpression = Convert.ToDouble(tokens[tokenstream.Position()].Value, System.Globalization.CultureInfo.InvariantCulture);
+            tokenstream.MoveForward(1);
+        }
+        if (tokenstream.Position() >= tokens.Count || tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid,
+                "statement must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        return temp;
+    }
+
+    public Node HideShowStatement()
+    {
+        string op = tokenstream.tokens[tokenstream.Position()].Value;
+        tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = op == "hide" ? Node.NodeType.HideStmt : Node.NodeType.ShowStmt;
+        if (tokenstream.Position() >= tokens.Count || tokens[tokenstream.Position()].Type != Token.TokenType.identifier)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected,
+                "identifier after '" + op + "'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else
+        {
+            temp.NodeExpression = tokens[tokenstream.Position()].Value;
+            tokenstream.MoveForward(1);
+        }
+        if (tokenstream.Position() >= tokens.Count || tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid,
+                "statement must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        return temp;
+    }
+
+    public Node SnapStatement()
+    {
+        tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.SnapStmt;
+        if (tokenstream.Position() >= tokens.Count || tokens[tokenstream.Position()].Type != Token.TokenType.number)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected,
+                "number after 'snap'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else
+        {
+            temp.NodeExpression = Convert.ToDouble(tokens[tokenstream.Position()].Value, System.Globalization.CultureInfo.InvariantCulture);
+            tokenstream.MoveForward(1);
+        }
+        if (tokenstream.Position() >= tokens.Count || tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid,
+                "statement must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
         return temp;
     }
 
