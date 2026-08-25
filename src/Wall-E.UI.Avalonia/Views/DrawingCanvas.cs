@@ -105,7 +105,7 @@ public class DrawingCanvas : Control
         foreach (var drawable in fresh)
         {
             var shapeListStart = _shapes.Count;
-            Collect(_shapes, drawable.Figures, drawable.UsedColor, drawable.Tag, drawable.LineStyle, drawable.StrokeWidth, drawable.IsFilled);
+            Collect(_shapes, drawable.Figures, drawable.UsedColor, drawable.Tag, drawable.LineStyle, drawable.StrokeWidth, drawable.FillType, drawable.GradientColor1, drawable.GradientColor2);
             for (int i = shapeListStart; i < _shapes.Count; i++)
                 GrowBounds(_shapes[i]);
         }
@@ -182,18 +182,16 @@ public class DrawingCanvas : Control
                         break;
                     case CircleShape c:
                         var topLeft = Map(c.X - c.R, c.Y + c.R);
-                        if (c.IsFilled)
+                        var circleBounds = new global::Avalonia.Rect(topLeft.X, topLeft.Y, 2 * c.R * _scale, 2 * c.R * _scale);
+                        var cFill = GetFillBrush(c, circleBounds);
+                        if (cFill != null)
                         {
-                            var fillBrush = isWhite ? Brushes.White : ParseColor(c.Color);
-                            ctx.DrawEllipse(fillBrush, pen,
-                                new global::Avalonia.Rect(topLeft.X, topLeft.Y, 2 * c.R * _scale, 2 * c.R * _scale));
+                            ctx.DrawEllipse(cFill, pen, circleBounds);
                         }
                         else
                         {
-                            if (isWhite) ctx.DrawEllipse(null, halo,
-                                new global::Avalonia.Rect(topLeft.X, topLeft.Y, 2 * c.R * _scale, 2 * c.R * _scale));
-                            ctx.DrawEllipse(null, pen,
-                                new global::Avalonia.Rect(topLeft.X, topLeft.Y, 2 * c.R * _scale, 2 * c.R * _scale));
+                            if (isWhite) ctx.DrawEllipse(null, halo, circleBounds);
+                            ctx.DrawEllipse(null, pen, circleBounds);
                         }
                         break;
                     case PolyShape p:
@@ -206,10 +204,10 @@ public class DrawingCanvas : Control
                                 gctx.LineTo(Map(p.Points[i].x, p.Points[i].y));
                             gctx.EndFigure(false);
                         }
-                        if (p.IsFilled)
+                        var pFill = GetFillBrush(p, geo.Bounds);
+                        if (pFill != null)
                         {
-                            var fillBrush = isWhite ? Brushes.White : ParseColor(p.Color);
-                            ctx.DrawGeometry(fillBrush, pen, geo);
+                            ctx.DrawGeometry(pFill, pen, geo);
                         }
                         else
                         {
@@ -309,9 +307,10 @@ public class DrawingCanvas : Control
                 case CircleShape c:
                 {
                     var topLeft = Map(c.X - c.R, c.Y + c.R);
-                    Stroke(p => context.DrawEllipse(null, p,
-                        new global::Avalonia.Rect(topLeft.X, topLeft.Y,
-                            2 * c.R * _scale, 2 * c.R * _scale)));
+                    var bounds = new global::Avalonia.Rect(topLeft.X, topLeft.Y,
+                        2 * c.R * _scale, 2 * c.R * _scale);
+                    var fillBrush = GetFillBrush(c, bounds);
+                    Stroke(p => context.DrawEllipse(fillBrush, p, bounds));
                     break;
                 }
                 case PolyShape p:
@@ -325,7 +324,9 @@ public class DrawingCanvas : Control
                             gctx.LineTo(Map(p.Points[i].x, p.Points[i].y));
                         gctx.EndFigure(false);
                     }
-                    Stroke(pp => context.DrawGeometry(null, pp, geo));
+                    var geoBounds = geo.Bounds;
+                    var fillBrush = GetFillBrush(p, geoBounds);
+                    Stroke(pp => context.DrawGeometry(fillBrush, pp, geo));
                     break;
                 }
                 case TagShape t:
@@ -572,12 +573,16 @@ public class DrawingCanvas : Control
 
     private abstract class Shape
     {
-        protected Shape(string color, Wall_E.Domain.LineStyle lineStyle = default, double strokeWidth = 1.0, bool isFilled = false)
-        { Color = color; LineStyle = lineStyle; StrokeWidth = strokeWidth; IsFilled = isFilled; }
+        protected Shape(string color, Wall_E.Domain.LineStyle lineStyle = default, double strokeWidth = 1.0,
+            Wall_E.Domain.FillType fillType = default, string grad1 = "", string grad2 = "")
+        { Color = color; LineStyle = lineStyle; StrokeWidth = strokeWidth; FillType = fillType; GradientColor1 = grad1; GradientColor2 = grad2; }
         public string Color { get; }
         public Wall_E.Domain.LineStyle LineStyle { get; }
         public double StrokeWidth { get; }
-        public bool IsFilled { get; }
+        public Wall_E.Domain.FillType FillType { get; }
+        public bool IsFilled => FillType == Wall_E.Domain.FillType.Solid;
+        public string GradientColor1 { get; }
+        public string GradientColor2 { get; }
     }
 
     private sealed class DotShape : Shape
@@ -597,7 +602,9 @@ public class DrawingCanvas : Control
     private sealed class CircleShape : Shape
     {
         public CircleShape(double x, double y, double r, string color,
-            Wall_E.Domain.LineStyle ls = default, double sw = 1.0, bool filled = false) : base(color, ls, sw, filled)
+            Wall_E.Domain.LineStyle ls = default, double sw = 1.0,
+            Wall_E.Domain.FillType ft = default, string g1 = "", string g2 = "")
+            : base(color, ls, sw, ft, g1, g2)
         { X = x; Y = y; R = r; }
         public double X { get; } public double Y { get; } public double R { get; }
     }
@@ -605,7 +612,9 @@ public class DrawingCanvas : Control
     private sealed class PolyShape : Shape
     {
         public PolyShape(List<DPoint> points, string color,
-            Wall_E.Domain.LineStyle ls = default, double sw = 1.0, bool filled = false) : base(color, ls, sw, filled)
+            Wall_E.Domain.LineStyle ls = default, double sw = 1.0,
+            Wall_E.Domain.FillType ft = default, string g1 = "", string g2 = "")
+            : base(color, ls, sw, ft, g1, g2)
             => Points = points;
         public List<DPoint> Points { get; }
     }
@@ -619,7 +628,8 @@ public class DrawingCanvas : Control
     }
 
     private static void Collect(List<Shape> shapes, object? value, string color, string tag = "",
-        Wall_E.Domain.LineStyle lineStyle = default, double strokeWidth = 1.0, bool isFilled = false)
+        Wall_E.Domain.LineStyle lineStyle = default, double strokeWidth = 1.0,
+        Wall_E.Domain.FillType fillType = default, string grad1 = "", string grad2 = "")
     {
         switch (value)
         {
@@ -631,7 +641,7 @@ public class DrawingCanvas : Control
             case Circle c:
                 if (!string.IsNullOrEmpty(tag))
                     shapes.Add(new TagShape(tag, c.center.x, c.center.y + c.radio + 1, color));
-                shapes.Add(new CircleShape(c.center.x, c.center.y, c.radio, color, lineStyle, strokeWidth, isFilled));
+                shapes.Add(new CircleShape(c.center.x, c.center.y, c.radio, color, lineStyle, strokeWidth, fillType, grad1, grad2));
                 break;
             case Segment s:
                 if (!string.IsNullOrEmpty(tag))
@@ -678,20 +688,20 @@ public class DrawingCanvas : Control
                 if (!string.IsNullOrEmpty(tag))
                     shapes.Add(new TagShape(tag, poly.Center.x, poly.Center.y + poly.Radius + 1, color));
                 if (pts.Count >= 2)
-                    shapes.Add(new PolyShape(pts, color, lineStyle, strokeWidth, isFilled));
+                    shapes.Add(new PolyShape(pts, color, lineStyle, strokeWidth, fillType, grad1, grad2));
                 break;
             }
             case Ellipse ell:
                 if (!string.IsNullOrEmpty(tag))
                     shapes.Add(new TagShape(tag, ell.Center.x, ell.Center.y + Math.Max(ell.Rx, ell.Ry) + 1, color));
-                shapes.Add(SampleEllipse(ell, color, lineStyle, strokeWidth, isFilled));
+                shapes.Add(SampleEllipse(ell, color, lineStyle, strokeWidth, fillType, grad1, grad2));
                 break;
             case Finite_Sequence<object> fso:
                 int takenFso = 0;
                 foreach (var item in fso.Sequence!)
                 {
                     if (takenFso++ >= MaxSequenceDots) break;
-                    Collect(shapes, item, color, takenFso == 1 ? tag : "", lineStyle, strokeWidth, isFilled);
+                    Collect(shapes, item, color, takenFso == 1 ? tag : "", lineStyle, strokeWidth, fillType, grad1, grad2);
                 }
                 break;
             case InfinitePointSequence ips:
@@ -736,7 +746,8 @@ public class DrawingCanvas : Control
     }
 
     private static PolyShape SampleEllipse(Ellipse e, string color,
-        Wall_E.Domain.LineStyle ls = default, double sw = 1.0, bool filled = false)
+        Wall_E.Domain.LineStyle ls = default, double sw = 1.0,
+        Wall_E.Domain.FillType ft = default, string g1 = "", string g2 = "")
     {
         const int Steps = 64;
         var points = new List<DPoint>(Steps + 1);
@@ -746,8 +757,48 @@ public class DrawingCanvas : Control
             points.Add(new DPoint(e.Center.x + e.Rx * System.Math.Cos(t),
                                   e.Center.y + e.Ry * System.Math.Sin(t)));
         }
-        return new PolyShape(points, color, ls, sw, filled);
+        return new PolyShape(points, color, ls, sw, ft, g1, g2);
     }
 
     private static IBrush ParseColor(string name) => DslPalette.ToBrush(name);
+
+    private static IBrush? GetFillBrush(Shape shape, global::Avalonia.Rect bounds)
+    {
+        switch (shape.FillType)
+        {
+            case Wall_E.Domain.FillType.Solid:
+                return ParseColor(shape.Color);
+            case Wall_E.Domain.FillType.LinearGradient:
+            {
+                var c1 = global::Avalonia.Media.Color.Parse(shape.GradientColor1);
+                var c2 = global::Avalonia.Media.Color.Parse(shape.GradientColor2);
+                return new LinearGradientBrush
+                {
+                    StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                    EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
+                    GradientStops = new GradientStops
+                    {
+                        new GradientStop(c1, 0),
+                        new GradientStop(c2, 1)
+                    }
+                };
+            }
+            case Wall_E.Domain.FillType.RadialGradient:
+            {
+                var c1 = global::Avalonia.Media.Color.Parse(shape.GradientColor1);
+                var c2 = global::Avalonia.Media.Color.Parse(shape.GradientColor2);
+                return new RadialGradientBrush
+                {
+                    GradientOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
+                    GradientStops = new GradientStops
+                    {
+                        new GradientStop(c1, 0),
+                        new GradientStop(c2, 1)
+                    }
+                };
+            }
+            default:
+                return null;
+        }
+    }
 }

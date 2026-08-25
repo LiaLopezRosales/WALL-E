@@ -233,6 +233,14 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.unfill,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "linear" )
+        {
+            token = new Token(Token.TokenType.linear,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "radial" )
+        {
+            token = new Token(Token.TokenType.radial,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken == "lighten" )
         {
             token = new Token(Token.TokenType.lighten,possibletoken,File,Line,index.ToString());

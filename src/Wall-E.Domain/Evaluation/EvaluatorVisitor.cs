@@ -449,8 +449,38 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitFillStmt(Node node)
     {
         string fillName = node.NodeExpression!.ToString()!;
-        _scene.CurrentFillEnabled = fillName == "fill";
+        if (fillName == "unfill")
+        {
+            _scene.CurrentFillType = FillType.None;
+            _scene.CurrentGradientColor1 = "";
+            _scene.CurrentGradientColor2 = "";
+        }
+        else if (fillName == "fill")
+        {
+            _scene.CurrentFillType = FillType.Solid;
+            _scene.CurrentGradientColor1 = "";
+            _scene.CurrentGradientColor2 = "";
+        }
+        else if (fillName == "linear" && node.Branches != null && node.Branches.Count == 2)
+        {
+            _scene.CurrentFillType = FillType.LinearGradient;
+            _scene.CurrentGradientColor1 = ResolveColor(node.Branches[0]);
+            _scene.CurrentGradientColor2 = ResolveColor(node.Branches[1]);
+        }
+        else if (fillName == "radial" && node.Branches != null && node.Branches.Count == 2)
+        {
+            _scene.CurrentFillType = FillType.RadialGradient;
+            _scene.CurrentGradientColor1 = ResolveColor(node.Branches[0]);
+            _scene.CurrentGradientColor2 = ResolveColor(node.Branches[1]);
+        }
         return new VoidResult();
+    }
+
+    private string ResolveColor(Node colorNode)
+    {
+        EvaluationResult result = Visit(colorNode);
+        string raw = RawString(result);
+        return ColorTable.Resolve(raw);
     }
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");
@@ -1107,7 +1137,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         string tag = " ";
         if (node.Branches[1].Type != Node.NodeType.Indefined)
             tag = RawString(Visit(node.Branches[1]));
-        var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek(), _scene.CurrentLineStyle, _scene.CurrentStrokeWidth, _scene.CurrentFillEnabled);
+        var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek(), _scene.CurrentLineStyle, _scene.CurrentStrokeWidth, _scene.CurrentFillType, _scene.CurrentGradientColor1, _scene.CurrentGradientColor2);
         if (!d.CheckValidType())
         {
             _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,

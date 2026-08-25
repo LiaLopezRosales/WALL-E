@@ -1153,12 +1153,48 @@ public class Parser
     {
         string fillName = tokenstream.tokens[tokenstream.Position()].Value;
         tokenstream.MoveForward(1);
-        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
-            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, fill/unfill must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
-        else tokenstream.MoveForward(1);
+
         Node temp = new Node();
         temp.Type = Node.NodeType.FillStmt;
-        temp.NodeExpression = fillName;
+
+        if (fillName == "fill" && tokenstream.Position() < tokens.Count
+            && (tokens[tokenstream.Position()].Type == Token.TokenType.linear
+                || tokens[tokenstream.Position()].Type == Token.TokenType.radial))
+        {
+            string gradType = tokens[tokenstream.Position()].Value;
+            tokenstream.MoveForward(1);
+
+            if (tokenstream.tokens[tokenstream.Position()].Value != "(")
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected,
+                    "'(' after " + gradType, tokenstream.tokens[tokenstream.Position()].TokenLocation));
+            else tokenstream.MoveForward(1);
+
+            Node color1 = ParseExpression();
+
+            if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected,
+                    "',' between gradient colors", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+            else tokenstream.MoveForward(1);
+
+            Node color2 = ParseExpression();
+
+            if (tokenstream.tokens[tokenstream.Position()].Value != ")")
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected,
+                    "')' after gradient colors", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+            else tokenstream.MoveForward(1);
+
+            temp.NodeExpression = gradType;
+            temp.Branches = new List<Node> { color1, color2 };
+        }
+        else
+        {
+            if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+                errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid,
+                    "statement, fill/unfill must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+            else tokenstream.MoveForward(1);
+            temp.NodeExpression = fillName;
+        }
+
         return temp;
     }
 
