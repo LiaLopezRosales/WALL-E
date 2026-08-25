@@ -222,6 +222,14 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.solid_k,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "fill" )
+        {
+            token = new Token(Token.TokenType.fill,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "unfill" )
+        {
+            token = new Token(Token.TokenType.unfill,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken=="+")
         {
             token = new Token(Token.TokenType.sum,possibletoken,File,Line,index.ToString());

@@ -109,6 +109,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Label => VisitLabel(node),
         Node.NodeType.LineStyleStmt => VisitLineStyleStmt(node),
         Node.NodeType.GrosorStmt => VisitGrosorStmt(node),
+        Node.NodeType.FillStmt => VisitFillStmt(node),
         Node.NodeType.Points => VisitPoints(node),
         Node.NodeType.Randoms => VisitRandoms(node),
         Node.NodeType.Samples => VisitSamples(node),
@@ -379,6 +380,13 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
         _scene.CurrentStrokeWidth = Convert.ToDouble(w);
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitFillStmt(Node node)
+    {
+        string fillName = node.NodeExpression!.ToString()!;
+        _scene.CurrentFillEnabled = fillName == "fill";
         return new VoidResult();
     }
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
@@ -1036,7 +1044,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         string tag = " ";
         if (node.Branches[1].Type != Node.NodeType.Indefined)
             tag = RawString(Visit(node.Branches[1]));
-        var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek(), _scene.CurrentLineStyle, _scene.CurrentStrokeWidth);
+        var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek(), _scene.CurrentLineStyle, _scene.CurrentStrokeWidth, _scene.CurrentFillEnabled);
         if (!d.CheckValidType())
         {
             _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,

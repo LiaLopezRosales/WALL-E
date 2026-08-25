@@ -9,6 +9,7 @@ public class DrawObject
     public string UsedColor{get;set;}
     public LineStyle LineStyle{get;set;}
     public double StrokeWidth{get;set;}
+    public bool IsFilled{get;set;}
 
     public DrawObject(object value,string tag,string color)
     {
@@ -17,15 +18,17 @@ public class DrawObject
         UsedColor=color;
         LineStyle=LineStyle.Solid;
         StrokeWidth=1.0;
+        IsFilled=false;
     }
 
-    public DrawObject(object value,string tag,string color,LineStyle style,double width)
+    public DrawObject(object value,string tag,string color,LineStyle style,double width,bool filled)
     {
         Figures=value;
         Tag=tag;
         UsedColor=color;
         LineStyle=style;
         StrokeWidth=width;
+        IsFilled=filled;
     }
     //Método que revisa si el objeto es válido para gráficar(solo figuras y secuencias de figuras)
     public bool CheckValidType()

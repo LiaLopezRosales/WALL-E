@@ -16,6 +16,7 @@ public class RenderScene
     public Stack<string> UtilizedColors { get; set; } = new();
     public LineStyle CurrentLineStyle { get; set; } = LineStyle.Solid;
     public double CurrentStrokeWidth { get; set; } = 1.0;
+    public bool CurrentFillEnabled { get; set; } = false;
 
     /// <summary>Synchronized element count - safe to read mid-execution.</summary>
     public int DrawCount

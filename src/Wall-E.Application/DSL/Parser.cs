@@ -120,6 +120,11 @@ public class Parser
         {
             return LineStyleStatement();
         }
+        if ((tokenstream.Position() < tokens.Count) && (tokens[tokenstream.Position()].Type == Token.TokenType.fill
+            || tokens[tokenstream.Position()].Type == Token.TokenType.unfill))
+        {
+            return FillStatement();
+        }
          if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket && (tokenstream.Contains("=")))
         {
             return Function();
@@ -1097,6 +1102,19 @@ public class Parser
         Node temp = new Node();
         temp.Type = Node.NodeType.LineStyleStmt;
         temp.NodeExpression = styleName;
+        return temp;
+    }
+
+    public Node FillStatement()
+    {
+        string fillName = tokenstream.tokens[tokenstream.Position()].Value;
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, fill/unfill must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.FillStmt;
+        temp.NodeExpression = fillName;
         return temp;
     }
 
