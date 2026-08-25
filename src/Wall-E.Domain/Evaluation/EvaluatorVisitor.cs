@@ -104,6 +104,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Print => VisitPrint(node),
         Node.NodeType.ColorRgb => VisitColorRgb(node),
         Node.NodeType.ColorRgba => VisitColorRgba(node),
+        Node.NodeType.ColorHsl => VisitColorHsl(node),
         Node.NodeType.Repeat => VisitRepeat(node),
         Node.NodeType.For => VisitFor(node),
         Node.NodeType.Label => VisitLabel(node),
@@ -241,6 +242,20 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitColorRgba(Node node)
     {
         string hex = EvalColorHex(node.Branches, 4, node.Branches[3]);
+        _scene.PushColor(hex);
+        return new StringResult($"Color changed to {hex}");
+    }
+
+    public EvaluationResult VisitColorHsl(Node node)
+    {
+        double[] vals = new double[3];
+        for (int i = 0; i < 3; i++)
+        {
+            EvaluationResult r = Visit(node.Branches[i]);
+            if (r is ErrorResult) return r;
+            vals[i] = Convert.ToDouble(UnwrapRaw(r));
+        }
+        string hex = HslConverter.ToHex(vals[0], vals[1], vals[2]);
         _scene.PushColor(hex);
         return new StringResult($"Color changed to {hex}");
     }

@@ -97,6 +97,10 @@ public class Parser
         {
             return RgbaStatement();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.hsl)
+        {
+            return HslStatement();
+        }
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.repeat)
         {
             return RepeatStatement();
@@ -985,6 +989,33 @@ public class Parser
         Node temp = new Node();
         temp.Type = Node.NodeType.ColorRgba;
         temp.Branches = new List<Node> { r, g, b, a };
+        return temp;
+    }
+
+    public Node HslStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after hsl", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node h = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' separator", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node s = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' separator", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node l = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol to close hsl", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, hsl order must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.ColorHsl;
+        temp.Branches = new List<Node> { h, s, l };
         return temp;
     }
 

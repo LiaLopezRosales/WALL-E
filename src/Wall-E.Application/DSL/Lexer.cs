@@ -182,6 +182,10 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.rgba,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "hsl" )
+        {
+            token = new Token(Token.TokenType.hsl,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken == "polygon" )
         {
             token = new Token(Token.TokenType.polygon,possibletoken,File,Line,index.ToString());
