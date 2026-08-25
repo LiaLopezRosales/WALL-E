@@ -44,6 +44,8 @@ public class DrawingCanvas : Control
     private List<Shape> _shapes = new();
     private SkiaDrawOperation? _cachedOp;
     private bool _opDirty = true;
+    private List<Shape>? _sortedCache;
+    private List<TagShape>? _tagCache;
 
     // Pens are immutable and reused across frames; widths are quantized so
     // the cache stays tiny even though sizes adapt to zoom.
@@ -132,12 +134,14 @@ public class DrawingCanvas : Control
         _scale = DefaultScale;
         _centerX = 0;
         _centerY = 0;
+        _opDirty = true;
         InvalidateVisual();
     }
 
     public void FitToContent()
     {
         ComputeFit();
+        _opDirty = true;
         InvalidateVisual();
     }
 
@@ -240,23 +244,28 @@ public class DrawingCanvas : Control
     {
         if (!_hasBounds || !IsSizeValid()) return;
 
+        double oldScale = _scale, oldCX = _centerX, oldCY = _centerY;
+
         double w = _maxX - _minX, h = _maxY - _minY;
         if (w <= 1e-9 && h <= 1e-9)
         {
-            // single point: center on it instead of jumping to the origin
             _scale = DefaultScale;
             _centerX = _minX;
             _centerY = _minY;
-            return;
+        }
+        else
+        {
+            double availW = Bounds.Width - 2 * ViewMargin;
+            double availH = Bounds.Height - 2 * ViewMargin;
+            _scale = Math.Clamp(
+                Math.Min(availW / Math.Max(w, 1e-9), availH / Math.Max(h, 1e-9)),
+                MinScale, MaxScale);
+            _centerX = (_minX + _maxX) / 2;
+            _centerY = (_minY + _maxY) / 2;
         }
 
-        double availW = Bounds.Width - 2 * ViewMargin;
-        double availH = Bounds.Height - 2 * ViewMargin;
-        _scale = Math.Clamp(
-            Math.Min(availW / Math.Max(w, 1e-9), availH / Math.Max(h, 1e-9)),
-            MinScale, MaxScale);
-        _centerX = (_minX + _maxX) / 2;
-        _centerY = (_minY + _maxY) / 2;
+        if (_scale != oldScale || _centerX != oldCX || _centerY != oldCY)
+            _opDirty = true;
     }
 
     public override void Render(DrawingContext context)
@@ -270,31 +279,30 @@ public class DrawingCanvas : Control
         DrawGrid(context);
         if (_shapes.Count == 0) return;
 
-        var sorted = _shapes.OrderBy(s => s.Layer).ToList();
+        if (_opDirty || _sortedCache is null)
+        {
+            _sortedCache = _shapes.OrderBy(s => s.Layer).ToList();
+            _tagCache = _sortedCache.OfType<TagShape>().ToList();
+        }
 
-        int stride = sorted.Count > MaxDrawnShapes
-            ? (int)Math.Ceiling((double)sorted.Count / MaxDrawnShapes)
+        int stride = _sortedCache.Count > MaxDrawnShapes
+            ? (int)Math.Ceiling((double)_sortedCache.Count / MaxDrawnShapes)
             : 1;
         double dotR = Math.Clamp(_scale * 2.0, 0.75, 4.0);
         double strokeW = Math.Clamp(_scale, 0.6, 2.0);
         var hidden = _sourceScene?.HiddenLabels;
 
-        // Submit batch GPU draw operation for dots/lines/circles/polygons.
         if (_opDirty || _cachedOp is null)
         {
             _cachedOp = new SkiaDrawOperation(
                 new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height),
-                sorted, _scale, _centerX, _centerY, dotR, strokeW, stride, Paper, hidden);
+                _sortedCache, _scale, _centerX, _centerY, dotR, strokeW, stride, Paper, hidden);
             _opDirty = false;
         }
         context.Custom(_cachedOp);
 
-        // Tags still use Avalonia's FormattedText (needs font management not
-        // easily available on raw SKCanvas).
-        for (int si = 0; si < sorted.Count; si++)
+        foreach (var t in _tagCache!)
         {
-            var shape = sorted[si];
-            if (shape is not TagShape t) continue;
             if (hidden != null && hidden.Contains(t.Tag)) continue;
             var pos = Map(t.X, t.Y);
             var ft = new FormattedText(t.Tag,
@@ -412,6 +420,7 @@ public class DrawingCanvas : Control
         _scale = Math.Clamp(_scale * factor, MinScale, MaxScale);
         _centerX = wx - (p.X - Bounds.Width / 2) / _scale;
         _centerY = wy + (p.Y - Bounds.Height / 2) / _scale;
+        _opDirty = true;
         InvalidateVisual();
     }
 
@@ -451,6 +460,7 @@ public class DrawingCanvas : Control
             _centerX -= (p.X - _panLast.X) / _scale;
             _centerY += (p.Y - _panLast.Y) / _scale;
             _panLast = p;
+            _opDirty = true;
             InvalidateVisual();
         }
         var (wx, wy) = ScreenToWorld(p);

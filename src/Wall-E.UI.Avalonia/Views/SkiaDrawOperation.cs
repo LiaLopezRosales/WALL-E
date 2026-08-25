@@ -39,6 +39,11 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
         Color = new SKColor(0, 0, 0, 25), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 3f)
     };
 
+    // Reusable collections — cleared and rebuilt each frame, never reallocated.
+    private readonly Dictionary<string, List<SKPoint>> _dotsByColor = new();
+    private readonly List<DrawingCanvas.Shape> _others = new();
+    private readonly Dictionary<string, SKColor> _colorCache = new();
+
     public SkiaDrawOperation(
         Rect bounds,
         IReadOnlyList<DrawingCanvas.Shape> shapes,
@@ -62,8 +67,15 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
 
     public Rect Bounds { get; }
 
-    private static SKColor ResolveColor(string name) =>
-        SKColor.Parse(ColorTable.Resolve(name));
+    private SKColor ResolveColor(string name)
+    {
+        if (!_colorCache.TryGetValue(name, out var c))
+        {
+            c = SKColor.Parse(ColorTable.Resolve(name));
+            _colorCache[name] = c;
+        }
+        return c;
+    }
 
     public void Render(ImmediateDrawingContext context)
     {
@@ -82,10 +94,9 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
         float dotR = (float)(_dotRadius / _scale);
         float lineW = (float)(_strokeWidth / _scale);
 
-        // --- Batch dots per color ---
-        var dotsByColor = new Dictionary<string, List<SKPoint>>();
-        // Collect everything else for sequential draw.
-        var others = new List<DrawingCanvas.Shape>();
+        // --- Batch dots per color (reuse collections) ---
+        _dotsByColor.Clear();
+        _others.Clear();
 
         for (int i = 0; i < _shapes.Count; i++)
         {
@@ -96,21 +107,21 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
             switch (shape)
             {
                 case DrawingCanvas.DotShape d:
-                    if (!dotsByColor.TryGetValue(d.Color, out var list))
+                    if (!_dotsByColor.TryGetValue(d.Color, out var list))
                     {
                         list = new List<SKPoint>();
-                        dotsByColor[d.Color] = list;
+                        _dotsByColor[d.Color] = list;
                     }
                     list.Add(new SKPoint((float)d.X, (float)d.Y));
                     break;
                 default:
-                    others.Add(shape);
+                    _others.Add(shape);
                     break;
             }
         }
 
         // Draw batched dots.
-        foreach (var kvp in dotsByColor)
+        foreach (var kvp in _dotsByColor)
         {
             var pts = kvp.Value;
             if (pts.Count == 0) continue;
@@ -122,7 +133,7 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
         }
 
         // Draw remaining shapes (lines, circles, polygons, tags).
-        foreach (var shape in others)
+        foreach (var shape in _others)
         {
             DrawShape(canvas, shape, lineW);
         }
