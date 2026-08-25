@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Wall_E.Domain;
 using APoint = global::Avalonia.Point;
 using DPoint = Wall_E.Domain.Point;
@@ -119,6 +123,84 @@ public class DrawingCanvas : Control
     {
         ComputeFit();
         InvalidateVisual();
+    }
+
+    public async Task ExportPngAsync(string path, int width = 1920, int height = 1080)
+    {
+        var rtb = new RenderTargetBitmap(new PixelSize(width, height), new Vector(96, 96));
+        using (var ctx = rtb.CreateDrawingContext())
+        {
+            ctx.FillRectangle(Paper, new global::Avalonia.Rect(0, 0, width, height));
+
+            double origScale = _scale;
+            double origCX = _centerX, origCY = _centerY;
+            _scale = Math.Min(width / (Bounds.Width > 1 ? Bounds.Width : 1),
+                              height / (Bounds.Height > 1 ? Bounds.Height : 1)) * 0.9;
+            _centerX = 0; _centerY = 0;
+            if (_hasBounds)
+            {
+                double w = _maxX - _minX, h = _maxY - _minY;
+                if (w > 1e-9 || h > 1e-9)
+                {
+                    _scale = Math.Clamp(
+                        Math.Min(width / Math.Max(w, 1e-9), height / Math.Max(h, 1e-9)),
+                        MinScale, MaxScale) * 0.9;
+                    _centerX = (_minX + _maxX) / 2;
+                    _centerY = (_minY + _maxY) / 2;
+                }
+            }
+
+            double dotR = Math.Clamp(_scale * 2.0, 0.75, 4.0);
+            double strokeW = Math.Clamp(_scale, 0.6, 2.0);
+            for (int si = 0; si < _shapes.Count; si++)
+            {
+                var shape = _shapes[si];
+                bool isWhite = string.Equals(shape.Color.Trim(), "white", StringComparison.OrdinalIgnoreCase);
+                Pen halo = GetPen("#halo", strokeW + 1.5);
+                Pen pen = GetPen(isWhite ? "white" : shape.Color, isWhite ? strokeW * 0.75 : strokeW);
+
+                switch (shape)
+                {
+                    case DotShape d:
+                        var dc = Map(d.X, d.Y);
+                        ctx.DrawEllipse(ParseColor(d.Color),
+                            isWhite ? GetPen("#halo", Math.Max(strokeW * 0.5, 1)) : null,
+                            new global::Avalonia.Rect(dc.X - dotR, dc.Y - dotR, 2 * dotR, 2 * dotR));
+                        break;
+                    case SegShape s:
+                        if (isWhite) ctx.DrawLine(halo, Map(s.X1, s.Y1), Map(s.X2, s.Y2));
+                        ctx.DrawLine(pen, Map(s.X1, s.Y1), Map(s.X2, s.Y2));
+                        break;
+                    case CircleShape c:
+                        var topLeft = Map(c.X - c.R, c.Y + c.R);
+                        if (isWhite) ctx.DrawEllipse(null, halo,
+                            new global::Avalonia.Rect(topLeft.X, topLeft.Y, 2 * c.R * _scale, 2 * c.R * _scale));
+                        ctx.DrawEllipse(null, pen,
+                            new global::Avalonia.Rect(topLeft.X, topLeft.Y, 2 * c.R * _scale, 2 * c.R * _scale));
+                        break;
+                    case PolyShape p:
+                        if (p.Points.Count < 2) break;
+                        var geo = new StreamGeometry();
+                        using (var gctx = geo.Open())
+                        {
+                            gctx.BeginFigure(Map(p.Points[0].x, p.Points[0].y), false);
+                            for (int i = 1; i < p.Points.Count; i++)
+                                gctx.LineTo(Map(p.Points[i].x, p.Points[i].y));
+                            gctx.EndFigure(false);
+                        }
+                        if (isWhite) ctx.DrawGeometry(null, halo, geo);
+                        ctx.DrawGeometry(null, pen, geo);
+                        break;
+                }
+            }
+
+            _scale = origScale;
+            _centerX = origCX;
+            _centerY = origCY;
+        }
+
+        rtb.Save(path);
+        await Task.CompletedTask;
     }
 
     /// <summary>Computes the fit transform without invalidating - safe to
@@ -565,7 +647,7 @@ public class DrawingCanvas : Control
                 }
                 break;
             }
-            case GenericSequence<Point> gsp:
+            case GenericSequence<DPoint> gsp:
             {
                 int takenGsp = 0;
                 foreach (var pt in gsp.Sequence!)

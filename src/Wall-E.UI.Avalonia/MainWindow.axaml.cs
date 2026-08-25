@@ -18,6 +18,28 @@ public partial class MainWindow : Window
             CursorPos.Text = $"x: {x:F1}   y: {y:F1}";
         Canvas.CursorLeftCanvas += () => CursorPos.Text = "x: —   y: —";
         FitButton.Click += (_, _) => Canvas.FitToContent();
+        ExportPngButton.Click += async (_, _) =>
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel is null) return;
+            var file = await topLevel.StorageProvider.SaveFilePickerAsync(new global::Avalonia.Platform.Storage.FilePickerSaveOptions
+            {
+                Title = "Exportar como PNG",
+                SuggestedFileName = "scene.png",
+                FileTypeChoices = new[]
+                {
+                    new global::Avalonia.Platform.Storage.FilePickerFileType("PNG Image")
+                    {
+                        Patterns = new[] { "*.png" }
+                    }
+                }
+            });
+            if (file is not null)
+            {
+                var path = file.Path.LocalPath;
+                await Canvas.ExportPngAsync(path);
+            }
+        };
 
         // Named fields are not generated for controls inside a Flyout -
         // resolve the paper picker through the flyout's content.
