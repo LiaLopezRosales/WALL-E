@@ -20,10 +20,11 @@ Two codebases coexist in this repo:
 ```bash
 export PATH="$HOME/.dotnet:$PATH"                          # required first, every session
 ./Wall-E.sh                                                # build + run legacy WinForms app
-dotnet build src/Wall-E.sln                                # build new architecture (Domain+App+Infra)
+dotnet build src/Wall-E.sln                                # build new architecture (Domain+App+Infra+CLI)
 dotnet test tests/Wall-E.Application.Tests/...csproj       # characterization test suite (219+ tests)
 dotnet test tests/Wall-E.Domain.Tests/...csproj            # domain unit tests (61+ tests)
 dotnet build Wall-E.csproj                                 # build legacy (needs net6.0-windows SDK)
+dotnet run --project src/Wall-E.CLI -- input.geo out.png   # headless CLI render (PNG/SVG)
 ```
 
 No CI or lint/format config exists. Don't invent commands.
@@ -87,7 +88,7 @@ Generators like `GenerateRandoms`/`GenerateSamples`/`GeneratePointsInFigure` are
 
 - Fase 2 (Avalonia UI) COMPLETE — M1–M4: shell, viewport, streaming+Stop, temas/pickers/tira de tinta. Zero `MessageBox` in `src/`; errors render in an expander list.
 - Palette expansion COMPLETE (post-Fase 2): hex literals `#RGB`/`#RRGGBB`, orchestrator `InitialInk`, paper/ink pickers.
-- **Plan vigente = hitos M6–M12** (auditoría 2026-08-24 reordenó Fases 3–6; nothing dropped): see «Plan vigente tras la auditoría» in ROADMAP.md. M6–M10 COMPLETE; M11 next (ejemplos, CLI headless, README, screenshots).
+- **Plan vigente = hitos M6–M12** (auditoría 2026-08-24 reordenó Fases 3–6; nothing dropped): see «Plan vigente tras la auditoría» in ROADMAP.md. M6–M11 COMPLETE; M12 next (animation, syntax highlighting, WASM demo).
 - Post-migration debts → **sprint COMPLETE, record in `DEBT_SPRINT.md`**; only remaining debt: expression nodes still self-evaluate (explicitly deferred)
 - Planning docs: `ROADMAP.md` (unified plan + audit), `MIGRATION_LOG.md`, `DEBT_SPRINT.md`, `IMPROVEMENT_PLAN.md`, `PERFORMANCE_PLAN.md`, `ENHANCEMENTS.md`
 
