@@ -138,6 +138,34 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.E,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "tan" )
+        {
+            token = new Token(Token.TokenType.tan,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "atan" )
+        {
+            token = new Token(Token.TokenType.atan,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "abs" )
+        {
+            token = new Token(Token.TokenType.abs,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "floor" )
+        {
+            token = new Token(Token.TokenType.floor,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "ceil" )
+        {
+            token = new Token(Token.TokenType.ceil,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "phi" )
+        {
+            token = new Token(Token.TokenType.phi,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "sqrt2" )
+        {
+            token = new Token(Token.TokenType.sqrt2,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken=="+")
         {
             token = new Token(Token.TokenType.sum,possibletoken,File,Line,index.ToString());

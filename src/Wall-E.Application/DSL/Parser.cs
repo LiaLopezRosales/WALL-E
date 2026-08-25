@@ -1088,6 +1088,48 @@ public class Parser
             temp.Branches=new List<Node>{value};
             return temp;
         }
+        else if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.tan
+              || tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.atan
+              || tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.abs
+              || tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.floor
+              || tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.ceil)
+        {
+            var funcType = tokenstream.tokens[tokenstream.Position()].Type;
+            tokenstream.MoveForward(1);
+            if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.left_bracket)
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"'(' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
+            else tokenstream.MoveForward(1);
+            Node value=ParseExpression();
+            if (tokenstream.tokens[tokenstream.Position()].Type!=Token.TokenType.right_bracket)
+                errors.Add(new Error(Error.TypeError.Syntactic_Error,Error.ErrorCode.Expected,"')' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
+            else tokenstream.MoveForward(1);
+            Node temp=new Node();
+            temp.Type=funcType switch{
+                Token.TokenType.tan=>Node.NodeType.Tan,
+                Token.TokenType.atan=>Node.NodeType.Atan,
+                Token.TokenType.abs=>Node.NodeType.Abs,
+                Token.TokenType.floor=>Node.NodeType.Floor,
+                _=>Node.NodeType.Ceil
+            };
+            temp.Branches=new List<Node>{value};
+            return temp;
+        }
+        else if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.phi)
+        {
+            Node temp=new Node();
+            temp.Type=Node.NodeType.Phi;
+            temp.NodeExpression="phi";
+            tokenstream.MoveForward(1);
+            return temp;
+        }
+        else if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.sqrt2)
+        {
+            Node temp=new Node();
+            temp.Type=Node.NodeType.Sqrt2;
+            temp.NodeExpression="sqrt2";
+            tokenstream.MoveForward(1);
+            return temp;
+        }
         else if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.points)
         {
             tokenstream.MoveForward(1);

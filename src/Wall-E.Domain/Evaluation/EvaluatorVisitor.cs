@@ -91,6 +91,13 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Sin => VisitSin(node),
         Node.NodeType.Log => VisitLog(node),
         Node.NodeType.Sqrt => VisitSqrt(node),
+        Node.NodeType.Tan => VisitTan(node),
+        Node.NodeType.Atan => VisitAtan(node),
+        Node.NodeType.Abs => VisitAbs(node),
+        Node.NodeType.Floor => VisitFloor(node),
+        Node.NodeType.Ceil => VisitCeil(node),
+        Node.NodeType.Phi => VisitPhi(node),
+        Node.NodeType.Sqrt2 => VisitSqrt2(node),
         Node.NodeType.Points => VisitPoints(node),
         Node.NodeType.Randoms => VisitRandoms(node),
         Node.NodeType.Samples => VisitSamples(node),
@@ -161,6 +168,27 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitLowHyphen(Node node) => new StringResult(node.NodeExpression!.ToString()!);
     public EvaluationResult VisitPI(Node node) => new NumberResult(Math.PI);
     public EvaluationResult VisitE(Node node) => new NumberResult(Math.E);
+    public EvaluationResult VisitPhi(Node node) => new NumberResult(1.618033988749895);
+    public EvaluationResult VisitSqrt2(Node node) => new NumberResult(Math.Sqrt(2));
+
+    public EvaluationResult VisitTan(Node node) => VisitTrigFunc(node, "tan");
+    public EvaluationResult VisitAtan(Node node) => VisitTrigFunc(node, "atan");
+    public EvaluationResult VisitAbs(Node node) => VisitTrigFunc(node, "abs");
+    public EvaluationResult VisitFloor(Node node) => VisitTrigFunc(node, "floor");
+    public EvaluationResult VisitCeil(Node node) => VisitTrigFunc(node, "ceil");
+
+    private EvaluationResult VisitTrigFunc(Node node, string funcName)
+    {
+        EvaluationResult argResult = Visit(node.Branches[0]);
+        if (argResult is ErrorResult) return argResult;
+        object arg = UnwrapRaw(argResult)!;
+        if (!(arg is double) && !(arg is long))
+        {
+            AddError("numerical values");
+            return new VoidResult();
+        }
+        return new NumberResult(_context.Trig_functions[funcName](Convert.ToDouble(arg)));
+    }
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");
 

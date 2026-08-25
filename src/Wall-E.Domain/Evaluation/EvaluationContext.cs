@@ -28,6 +28,11 @@ public class EvaluationContext
             ["sin"] = Sin,
             ["cos"] = Cos,
             ["sqrt"] = (double argument) => Math.Sqrt(argument),
+            ["tan"] = (double a) => Math.Tan(a),
+            ["atan"] = (double a) => Math.Atan(a),
+            ["abs"] = (double a) => Math.Abs(a),
+            ["floor"] = (double a) => Math.Floor(a),
+            ["ceil"] = (double a) => Math.Ceiling(a),
         };
         Randoms = new Dictionary<string, Func<IEnumerable<double>>>
         {
