@@ -101,6 +101,27 @@ Suite final tras Lotes 1–5: **43 tests en verde**.
 
 ---
 
+## Post-migración: Hitos M6–M9 (2026-08)
+
+### M6 — Paridad y victorias rápidas
+- Tag rendering en canvas, comentarios `//`, `seed(n)` determinista, `print/debug`, constantes `phi`/`sqrt2` + `tan/atan/abs/floor/ceil`, `rgb(r,g,b)` / `rgba(r,g,b,a)`, export PNG, LICENSE MIT.
+
+### M7 — Lenguaje completo
+- `polygon(center,r,n)`, `ellipse(center,rx,ry)`, bucles `repeat(n){…}` y `for i in seq {…}`, `label(pos,"text",size)`, estilos de línea `dashed/dotted/dashdot/solid`, `grosor(n)`, `fill/unfill` toggle.
+
+### M8 — Sistema de color completo
+- `ColorTable.cs` con ~148 nombres CSS, `hsl(h,s%,l%)` con conversión HSL↔RGB, hex8 alpha `#RRGGBBAA`/`#RGBA`, operaciones cromáticas `lighten/darken/mix/complement`, gradientes `fill linear(c1,c2)` / `fill radial(c1,c2)`.
+
+### M9 — Render premium + performance
+- `layer N;` z-order, `hide/show label;` visibilidad, `snap 0.5;` grid snap.
+- Eliminación de `ExpressionCache` dead code (audit finding #2).
+- **Batch GPU** via `ICustomDrawOperation` + raw `SKCanvas`: dots batched per color con `DrawPoints`, `SKPath` nativo para líneas/polígonos/círculos.
+- **PaintPool**: brush cache por color.
+- **AA + sombras**: todas las figuras anti-aliased, drop shadow sutil en fill con `SKMaskFilter`.
+- `MaxDrawnShapes` 25k→100k.
+
+---
+
 ### Convenciones de esta migración
 
 - Implementación directa en el visitor con `EvaluationResult` sellado; prohibido copiar el patrón duplicado del legacy.

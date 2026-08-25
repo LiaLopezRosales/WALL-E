@@ -429,15 +429,12 @@ public class MainViewModel : ViewModelBase
 
 ### Hallazgos de la auditoría
 
-1. **Paridad rota**: `draw figura, "etiqueta";` se parsea y almacena el `Tag`,
-   pero el canvas Avalonia nunca lo dibuja (`DrawingCanvas.cs` solo usa
-   `Figures` y `UsedColor`). El legacy sí lo renderizaba (`Graphic/Form1.cs:96`).
-2. **ExpressionCache es código muerto**: instanciado en `PipelineOrchestrator`
-   pero `Execute` jamás lo consulta.
-3. **Cero archivos `.geo` de ejemplo** en el repositorio.
+1. ~~**Paridad rota**~~ → **RESUELTO** en M6: canvas Avalonia renderiza `TagShape` para todas las figuras.
+2. ~~**ExpressionCache es código muerto**~~ → **RESUELTO** en M9: eliminado junto con directorio `Caching/`.
+3. **Cero archivos `.geo` de ejemplo** en el repositorio. → PENDIENTE en M11.
 4. Colisión nueva: los comentarios `#` del catálogo chocan con los literales
-   hex (4.1). Los comentarios serán solo `//`.
-5. CI verde desde el primer run; suite en 74 tests al momento de la auditoría.
+   hex (4.1). Los comentarios serán solo `//`. → RESUELTO en M6.
+5. CI verde desde el primer run; suite en 74 tests al momento de la auditoría. → **169+ tests** a cierre de M9.
 6. La tabla «Lo que NO entra» del final sigue vigente como alcance excluido
    documentado (no es trabajo planificado).
 

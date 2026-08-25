@@ -8,7 +8,7 @@ Two codebases coexist in this repo:
 | | Legacy | New architecture |
 |---|---|---|
 | Project | root `Wall-E.csproj` (`net6.0-windows`, WinForms) | `src/Wall-E.{Domain,Application,Infrastructure}` (`net8.0`) |
-| Status | fully working, runs on Windows only | Fase 0–1 complete; Fase 2 (Avalonia UI) not started |
+| Status | fully working, runs on Windows only | Fase 0–2 complete; M6–M9 complete |
 | Solution | root `Wall-E.sln` (contains ONLY legacy project) | `src/Wall-E.sln` |
 
 ## Critical environment gotcha
@@ -21,7 +21,7 @@ Two codebases coexist in this repo:
 export PATH="$HOME/.dotnet:$PATH"                          # required first, every session
 ./Wall-E.sh                                                # build + run legacy WinForms app
 dotnet build src/Wall-E.sln                                # build new architecture (Domain+App+Infra)
-dotnet test tests/Wall-E.Application.Tests/...csproj       # characterization test suite (74+ tests)
+dotnet test tests/Wall-E.Application.Tests/...csproj       # characterization test suite (169+ tests)
 dotnet build Wall-E.csproj                                 # build legacy (needs net6.0-windows SDK)
 ```
 
@@ -69,12 +69,12 @@ Wall-E.Infrastructure/      FileSystem/GeoLibraryLoader
 - DSL semantics notes: infinite sequences yield **longs** while finite literals hold lexer doubles; GlobalSeq gives the last target ALL remaining elements as a finite sequence (trailing `_` absorbs it); `{seq} + undefined` returns the first sequence unchanged.
 - `EvaluationContext`, `FigureRepository`, `RenderScene` replaced the old god-object `Context`.
 - Characterization tests: `dotnet test tests/Wall-E.Application.Tests/...csproj` (169+ tests) — keep them green; they are the regression net for behavior changes. CI runs them on every push (`.github/workflows/ci.yml`, ubuntu, Release).
-- Wall-E.UI.Avalonia (MVVM + SkiaSharp) is planned but **does not exist yet** — don't reference or build it.
+- Wall-E.UI.Avalonia (MVVM + SkiaSharp) is the active UI — build with `dotnet build src/Wall-E.UI.Avalonia/Wall-E.UI.Avalonia.csproj`.
 
 ## Architecture quirks (legacy project only)
 
 - Non-UI classes inherit `Form` (`Figure`, `ArchiveAnalysis`, `Evaluator`).
-- Single `Node` class + `NodeType` enum (~82 values); the `Expression`/`Binary` subclasses are not used by the pipeline.
+- Single `Node` class + `NodeType` enum (~90 values); the `Expression`/`Binary` subclasses are not used by the pipeline.
 - Import system: `.geo` files must live in `GeoLibrary/`; filename must be unique across subdirectories.
 - Errors are collected per pipeline phase and shown via `MessageBox` popups (blocks execution until closed).
 
