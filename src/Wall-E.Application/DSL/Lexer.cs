@@ -198,6 +198,10 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.for_token,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "label" )
+        {
+            token = new Token(Token.TokenType.label,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken=="+")
         {
             token = new Token(Token.TokenType.sum,possibletoken,File,Line,index.ToString());

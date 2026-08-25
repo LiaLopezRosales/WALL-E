@@ -40,6 +40,7 @@ public class DrawingCanvas : Control
 
     private RenderScene? _sourceScene;
     private int _builtCount;
+    private int _labelBuiltCount;
     private List<Shape> _shapes = new();
 
     // Pens are immutable and reused across frames; widths are quantized so
@@ -109,6 +110,14 @@ public class DrawingCanvas : Control
                 GrowBounds(_shapes[i]);
         }
         _builtCount += fresh.Count;
+        var freshLabels = _sourceScene.Labels;
+        for (int li = _labelBuiltCount; li < freshLabels.Count; li++)
+        {
+            var lbl = freshLabels[li];
+            _shapes.Add(new TagShape(lbl.Text, lbl.Position.x, lbl.Position.y, lbl.Color));
+            GrowPoint(lbl.Position.x, lbl.Position.y);
+        }
+        _labelBuiltCount = freshLabels.Count;
     }
 
     public void ResetView()

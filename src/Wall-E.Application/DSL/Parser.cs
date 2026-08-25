@@ -105,6 +105,10 @@ public class Parser
         {
             return ForStatement();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.label)
+        {
+            return LabelStatement();
+        }
          if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket && (tokenstream.Contains("=")))
         {
             return Function();
@@ -1023,6 +1027,33 @@ public class Parser
         else
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'}' to close block", tokenstream.tokens[tokenstream.Position()].TokenLocation));
         return instructions;
+    }
+
+    public Node LabelStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after label", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node pos = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' separator", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node text = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' separator", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node size = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol to close label", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, label order must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.Label;
+        temp.Branches = new List<Node> { pos, text, size };
+        return temp;
     }
 
     public Node ParseOP()

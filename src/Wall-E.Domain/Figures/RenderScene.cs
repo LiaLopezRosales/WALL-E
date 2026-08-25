@@ -1,5 +1,7 @@
 namespace Wall_E.Domain;
 
+public record LabelObject(Point Position, string Text, double FontSize, string Color);
+
 /// <summary>
 /// Mutable scene accumulated while statements execute. Draw mutations go
 /// through a lock so the UI can poll a consistent Snapshot() while the
@@ -10,6 +12,7 @@ public class RenderScene
     private readonly object _sync = new();
 
     public List<DrawObject> ToDraw { get; set; } = new();
+    public List<LabelObject> Labels { get; set; } = new();
     public Stack<string> UtilizedColors { get; set; } = new();
 
     /// <summary>Synchronized element count - safe to read mid-execution.</summary>
@@ -27,6 +30,11 @@ public class RenderScene
     public void Add(DrawObject drawable)
     {
         lock (_sync) ToDraw.Add(drawable);
+    }
+
+    public void AddLabel(LabelObject label)
+    {
+        lock (_sync) Labels.Add(label);
     }
 
     /// <summary>Point-in-time copy of the drawn objects, safe to enumerate
@@ -84,6 +92,7 @@ public class RenderScene
         lock (_sync)
         {
             ToDraw.Clear();
+            Labels.Clear();
             UtilizedColors.Clear();
             UtilizedColors.Push("black");
         }

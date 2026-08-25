@@ -106,6 +106,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.ColorRgba => VisitColorRgba(node),
         Node.NodeType.Repeat => VisitRepeat(node),
         Node.NodeType.For => VisitFor(node),
+        Node.NodeType.Label => VisitLabel(node),
         Node.NodeType.Points => VisitPoints(node),
         Node.NodeType.Randoms => VisitRandoms(node),
         Node.NodeType.Samples => VisitSamples(node),
@@ -328,6 +329,28 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Scope parent = CurrentScope.Parent!;
         SetCurrentScope(parent);
         return last;
+    }
+
+    public EvaluationResult VisitLabel(Node node)
+    {
+        EvaluationResult posResult = Visit(node.Branches[0]);
+        if (posResult is ErrorResult) return posResult;
+        EvaluationResult textResult = Visit(node.Branches[1]);
+        if (textResult is ErrorResult) return textResult;
+        EvaluationResult sizeResult = Visit(node.Branches[2]);
+        if (sizeResult is ErrorResult) return sizeResult;
+        object pos = UnwrapRaw(posResult)!;
+        object text = UnwrapRaw(textResult)!;
+        object size = UnwrapRaw(sizeResult)!;
+        if (pos is not Point || text is not string || !(size is long || size is double))
+        {
+            AddError("a valid position point, text and font size");
+            return new VoidResult();
+        }
+        double fontSize = Convert.ToDouble(size);
+        string color = _scene.CurrentColor;
+        _scene.AddLabel(new LabelObject((Point)pos, ((string)text).Trim('"'), fontSize, color));
+        return new VoidResult();
     }
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");
