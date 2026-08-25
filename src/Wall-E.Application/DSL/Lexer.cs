@@ -233,6 +233,22 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.unfill,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "lighten" )
+        {
+            token = new Token(Token.TokenType.lighten,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "darken" )
+        {
+            token = new Token(Token.TokenType.darken,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "mix" )
+        {
+            token = new Token(Token.TokenType.mix,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "complement" )
+        {
+            token = new Token(Token.TokenType.complement,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken=="+")
         {
             token = new Token(Token.TokenType.sum,possibletoken,File,Line,index.ToString());

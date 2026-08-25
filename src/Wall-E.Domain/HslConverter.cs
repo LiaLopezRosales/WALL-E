@@ -54,4 +54,50 @@ public static class HslConverter
             if (h < 0) h += 360;
         }
     }
+
+    public static string Lighten(string hex, double amount)
+    {
+        var (r, g, b) = ParseHex(hex);
+        RgbToHsl(r, g, b, out double h, out double s, out double l);
+        l = Math.Min(1, l + amount / 100.0);
+        return ToHex(h, s * 100, l * 100);
+    }
+
+    public static string Darken(string hex, double amount)
+    {
+        var (r, g, b) = ParseHex(hex);
+        RgbToHsl(r, g, b, out double h, out double s, out double l);
+        l = Math.Max(0, l - amount / 100.0);
+        return ToHex(h, s * 100, l * 100);
+    }
+
+    public static string Mix(string hex1, string hex2, double ratio = 0.5)
+    {
+        var (r1, g1, b1) = ParseHex(hex1);
+        var (r2, g2, b2) = ParseHex(hex2);
+        int r = (int)Math.Round(r1 * (1 - ratio) + r2 * ratio);
+        int g = (int)Math.Round(g1 * (1 - ratio) + g2 * ratio);
+        int b = (int)Math.Round(b1 * (1 - ratio) + b2 * ratio);
+        return $"#{Math.Clamp(r, 0, 255):X2}{Math.Clamp(g, 0, 255):X2}{Math.Clamp(b, 0, 255):X2}";
+    }
+
+    public static string Complement(string hex)
+    {
+        var (r, g, b) = ParseHex(hex);
+        RgbToHsl(r, g, b, out double h, out double s, out double l);
+        h = (h + 180) % 360;
+        return ToHex(h, s * 100, l);
+    }
+
+    private static (int r, int g, int b) ParseHex(string hex)
+    {
+        string h = hex.TrimStart('#');
+        if (h.Length == 3) h = $"{h[0]}{h[0]}{h[1]}{h[1]}{h[2]}{h[2]}";
+        if (h.Length == 4) h = $"{h[0]}{h[0]}{h[1]}{h[1]}{h[2]}{h[2]}{h[3]}{h[3]}";
+        if (h.Length == 8) h = h[..6];
+        int r = Convert.ToInt32(h[..2], 16);
+        int g = Convert.ToInt32(h[2..4], 16);
+        int b = Convert.ToInt32(h[4..6], 16);
+        return (r, g, b);
+    }
 }

@@ -105,6 +105,10 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.ColorRgb => VisitColorRgb(node),
         Node.NodeType.ColorRgba => VisitColorRgba(node),
         Node.NodeType.ColorHsl => VisitColorHsl(node),
+        Node.NodeType.Lighten => VisitLighten(node),
+        Node.NodeType.Darken => VisitDarken(node),
+        Node.NodeType.MixColors => VisitMixColors(node),
+        Node.NodeType.Complement => VisitComplement(node),
         Node.NodeType.Repeat => VisitRepeat(node),
         Node.NodeType.For => VisitFor(node),
         Node.NodeType.Label => VisitLabel(node),
@@ -258,6 +262,50 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         string hex = HslConverter.ToHex(vals[0], vals[1], vals[2]);
         _scene.PushColor(hex);
         return new StringResult($"Color changed to {hex}");
+    }
+
+    public EvaluationResult VisitLighten(Node node)
+    {
+        EvaluationResult r = Visit(node.Branches[0]);
+        if (r is ErrorResult) return r;
+        double amount = Convert.ToDouble(UnwrapRaw(r));
+        string current = _scene.UtilizedColors.Peek();
+        string result = HslConverter.Lighten(current, amount);
+        _scene.PushColor(result);
+        return new StringResult($"Color lightened to {result}");
+    }
+
+    public EvaluationResult VisitDarken(Node node)
+    {
+        EvaluationResult r = Visit(node.Branches[0]);
+        if (r is ErrorResult) return r;
+        double amount = Convert.ToDouble(UnwrapRaw(r));
+        string current = _scene.UtilizedColors.Peek();
+        string result = HslConverter.Darken(current, amount);
+        _scene.PushColor(result);
+        return new StringResult($"Color darkened to {result}");
+    }
+
+    public EvaluationResult VisitMixColors(Node node)
+    {
+        EvaluationResult otherResult = Visit(node.Branches[0]);
+        if (otherResult is ErrorResult) return otherResult;
+        string otherHex = ColorTable.Resolve(RawString(otherResult));
+        EvaluationResult ratioResult = Visit(node.Branches[1]);
+        if (ratioResult is ErrorResult) return ratioResult;
+        double ratio = Convert.ToDouble(UnwrapRaw(ratioResult));
+        string current = _scene.UtilizedColors.Peek();
+        string result = HslConverter.Mix(current, otherHex, ratio);
+        _scene.PushColor(result);
+        return new StringResult($"Color mixed to {result}");
+    }
+
+    public EvaluationResult VisitComplement(Node node)
+    {
+        string current = _scene.UtilizedColors.Peek();
+        string result = HslConverter.Complement(current);
+        _scene.PushColor(result);
+        return new StringResult($"Color complement is {result}");
     }
 
     private string EvalColorHex(List<Node> channels, int count, Node? alphaNode)

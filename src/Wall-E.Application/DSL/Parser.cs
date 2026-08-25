@@ -129,6 +129,19 @@ public class Parser
         {
             return FillStatement();
         }
+        if ((tokenstream.Position() < tokens.Count) && (tokens[tokenstream.Position()].Type == Token.TokenType.lighten
+            || tokens[tokenstream.Position()].Type == Token.TokenType.darken))
+        {
+            return LightenDarkenStatement();
+        }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.mix)
+        {
+            return MixStatement();
+        }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.complement)
+        {
+            return ComplementStatement();
+        }
          if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket && (tokenstream.Contains("=")))
         {
             return Function();
@@ -1149,6 +1162,68 @@ public class Parser
         return temp;
     }
 
+    public Node LightenDarkenStatement()
+    {
+        string op = tokenstream.tokens[tokenstream.Position()].Value;
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after " + op, tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node amount = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = op == "lighten" ? Node.NodeType.Lighten : Node.NodeType.Darken;
+        temp.Branches = new List<Node> { amount };
+        return temp;
+    }
+
+    public Node MixStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after mix", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node other = ParseExpression();
+        Node ratioNode = new Node { Type = Node.NodeType.Number, NodeExpression = 0.5 };
+        if (tokenstream.tokens[tokenstream.Position()].Value == ",")
+        {
+            tokenstream.MoveForward(1);
+            ratioNode = ParseExpression();
+        }
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.MixColors;
+        temp.Branches = new List<Node> { other, ratioNode };
+        return temp;
+    }
+
+    public Node ComplementStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after complement", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.Complement;
+        return temp;
+    }
+
     public Node ParseOP()
     {
         Node left = ParseComparation();
@@ -1347,6 +1422,15 @@ public class Parser
             return temp;
         }
         else if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.text)
+        {
+           string value=(tokenstream.tokens[tokenstream.Position()].Value);
+           Node temp=new Node();
+           temp.Type=Node.NodeType.Text;
+           temp.NodeExpression=value;
+           tokenstream.MoveForward(1);
+           return temp;
+        }
+        else if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.color_value)
         {
            string value=(tokenstream.tokens[tokenstream.Position()].Value);
            Node temp=new Node();
