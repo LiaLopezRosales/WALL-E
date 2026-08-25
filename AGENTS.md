@@ -86,7 +86,7 @@ Generators like `GenerateRandoms`/`GenerateSamples`/`GeneratePointsInFigure` are
 
 - Fase 2 (Avalonia UI) COMPLETE — M1–M4: shell, viewport, streaming+Stop, temas/pickers/tira de tinta. Zero `MessageBox` in `src/`; errors render in an expander list.
 - Palette expansion COMPLETE (post-Fase 2): hex literals `#RGB`/`#RRGGBB`, orchestrator `InitialInk`, paper/ink pickers.
-- **Plan vigente = hitos M6–M12** (auditoría 2026-08-24 reordenó Fases 3–6; nothing dropped): see «Plan vigente tras la auditoría» in ROADMAP.md. M6–M8 COMPLETE; M9 DSL features complete (layers, hide/show, snap, ExpressionCache removed); remaining M9: batch GPU via ICustomDrawOperation.
+- **Plan vigente = hitos M6–M12** (auditoría 2026-08-24 reordenó Fases 3–6; nothing dropped): see «Plan vigente tras la auditoría» in ROADMAP.md. M6–M9 COMPLETE; M10 next (tests, analyzers, XML docs).
 - Post-migration debts → **sprint COMPLETE, record in `DEBT_SPRINT.md`**; only remaining debt: expression nodes still self-evaluate (explicitly deferred)
 - Planning docs: `ROADMAP.md` (unified plan + audit), `MIGRATION_LOG.md`, `DEBT_SPRINT.md`, `IMPROVEMENT_PLAN.md`, `PERFORMANCE_PLAN.md`, `ENHANCEMENTS.md`
 
