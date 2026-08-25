@@ -100,7 +100,7 @@ public class DrawingCanvas : Control
         foreach (var drawable in fresh)
         {
             var shapeListStart = _shapes.Count;
-            Collect(_shapes, drawable.Figures, drawable.UsedColor);
+            Collect(_shapes, drawable.Figures, drawable.UsedColor, drawable.Tag);
             for (int i = shapeListStart; i < _shapes.Count; i++)
                 GrowBounds(_shapes[i]);
         }
@@ -218,6 +218,16 @@ public class DrawingCanvas : Control
                         gctx.EndFigure(false);
                     }
                     Stroke(pp => context.DrawGeometry(null, pp, geo));
+                    break;
+                }
+                case TagShape t:
+                {
+                    var pos = Map(t.X, t.Y);
+                    var ft = new FormattedText(t.Tag,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        FlowDirection.LeftToRight,
+                        new Typeface("Arial"), 12, ParseColor(t.Color));
+                    context.DrawText(ft, new global::Avalonia.Point(pos.X + 6, pos.Y - 14));
                     break;
                 }
             }
@@ -477,20 +487,44 @@ public class DrawingCanvas : Control
         public List<DPoint> Points { get; }
     }
 
-    private static void Collect(List<Shape> shapes, object? value, string color)
+    private sealed class TagShape : Shape
+    {
+        public TagShape(string tag, double x, double y, string color) : base(color)
+        { Tag = tag; X = x; Y = y; }
+        public string Tag { get; }
+        public double X { get; } public double Y { get; }
+    }
+
+    private static void Collect(List<Shape> shapes, object? value, string color, string tag = "")
     {
         switch (value)
         {
             case DPoint p:
+                if (!string.IsNullOrEmpty(tag))
+                    shapes.Add(new TagShape(tag, p.x, p.y, color));
                 shapes.Add(new DotShape(p.x, p.y, color));
                 break;
             case Circle c:
+                if (!string.IsNullOrEmpty(tag))
+                    shapes.Add(new TagShape(tag, c.center.x, c.center.y + c.radio + 1, color));
                 shapes.Add(new CircleShape(c.center.x, c.center.y, c.radio, color));
                 break;
             case Segment s:
+                if (!string.IsNullOrEmpty(tag))
+                {
+                    double mx = (s.StartIn.x + s.EndsIn.x) / 2;
+                    double my = (s.StartIn.y + s.EndsIn.y) / 2;
+                    shapes.Add(new TagShape(tag, mx, my, color));
+                }
                 shapes.Add(new SegShape(s.StartIn.x, s.StartIn.y, s.EndsIn.x, s.EndsIn.y, color));
                 break;
             case Line l:
+                if (!string.IsNullOrEmpty(tag))
+                {
+                    double mx = (l.generalpoint1.x + l.generalpoint2.x) / 2;
+                    double my = (l.generalpoint1.y + l.generalpoint2.y) / 2;
+                    shapes.Add(new TagShape(tag, mx, my, color));
+                }
                 shapes.Add(new SegShape(l.generalpoint1.x, l.generalpoint1.y,
                     l.generalpoint2.x, l.generalpoint2.y, color));
                 break;
@@ -499,12 +533,16 @@ public class DrawingCanvas : Control
                 double dx = r.PassFor.x - r.StartIn.x, dy = r.PassFor.y - r.StartIn.y;
                 double len = System.Math.Sqrt(dx * dx + dy * dy);
                 if (len < 1e-9) len = 1;
+                if (!string.IsNullOrEmpty(tag))
+                    shapes.Add(new TagShape(tag, r.StartIn.x, r.StartIn.y, color));
                 shapes.Add(new SegShape(r.StartIn.x, r.StartIn.y,
                     r.StartIn.x + dx / len * RayDrawLength,
                     r.StartIn.y + dy / len * RayDrawLength, color));
                 break;
             }
             case Arc a:
+                if (!string.IsNullOrEmpty(tag))
+                    shapes.Add(new TagShape(tag, a.center.x, a.center.y + a.measure + 1, color));
                 shapes.Add(SampleArc(a, color));
                 break;
             case Finite_Sequence<object> fso:
@@ -512,7 +550,7 @@ public class DrawingCanvas : Control
                 foreach (var item in fso.Sequence!)
                 {
                     if (takenFso++ >= MaxSequenceDots) break;
-                    Collect(shapes, item, color);
+                    Collect(shapes, item, color, takenFso == 1 ? tag : "");
                 }
                 break;
             case InfinitePointSequence ips:
@@ -521,6 +559,8 @@ public class DrawingCanvas : Control
                 foreach (var pt in ips.Sequence!)
                 {
                     if (takenIps++ >= MaxSequenceDots) break;
+                    if (takenIps == 1 && !string.IsNullOrEmpty(tag))
+                        shapes.Add(new TagShape(tag, pt.x, pt.y, color));
                     shapes.Add(new DotShape(pt.x, pt.y, color));
                 }
                 break;
@@ -531,6 +571,8 @@ public class DrawingCanvas : Control
                 foreach (var pt in gsp.Sequence!)
                 {
                     if (takenGsp++ >= MaxSequenceDots) break;
+                    if (takenGsp == 1 && !string.IsNullOrEmpty(tag))
+                        shapes.Add(new TagShape(tag, pt.x, pt.y, color));
                     shapes.Add(new DotShape(pt.x, pt.y, color));
                 }
                 break;
