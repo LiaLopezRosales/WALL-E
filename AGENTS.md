@@ -58,7 +58,7 @@ Wall-E.Domain/              AST/, Figures/, Evaluation/ (EvaluationContext,
                             EvaluationResult sealed records, Result<T,E> monad),
                             Geometry/, RandomProvider.cs, Scope.cs, Function.cs
 Wall-E.Application/         DSL/ (lexers+parsers), Pipeline/PipelineOrchestrator,
-                            Caching/ExpressionCache, Interfaces/ (ILexer, IParser, IPipeline, IEvaluator)
+                            Interfaces/ (ILexer, IParser, IPipeline, IEvaluator)
 Wall-E.Infrastructure/      FileSystem/GeoLibraryLoader
 ```
 
@@ -68,7 +68,7 @@ Wall-E.Infrastructure/      FileSystem/GeoLibraryLoader
 - **Debt sprint COMPLETE** (see `DEBT_SPRINT.md`): sequence property shadowing removed (`count` abstract on `AbsSequence`), let-in grammar repaired (GlobalVar no longer eats `in`; GeneralLexer self-closes let chunks; scope variables shadow globals in `VisitVar`), `import` wired via `IGeoLibrarySource` injection with cycle guard. Remaining known debt: expression nodes (`Sum` etc.) still self-evaluate internally — explicitly deferred.
 - DSL semantics notes: infinite sequences yield **longs** while finite literals hold lexer doubles; GlobalSeq gives the last target ALL remaining elements as a finite sequence (trailing `_` absorbs it); `{seq} + undefined` returns the first sequence unchanged.
 - `EvaluationContext`, `FigureRepository`, `RenderScene` replaced the old god-object `Context`.
-- Characterization tests: `dotnet test tests/Wall-E.Application.Tests/...csproj` (74+ tests) — keep them green; they are the regression net for behavior changes. CI runs them on every push (`.github/workflows/ci.yml`, ubuntu, Release).
+- Characterization tests: `dotnet test tests/Wall-E.Application.Tests/...csproj` (169+ tests) — keep them green; they are the regression net for behavior changes. CI runs them on every push (`.github/workflows/ci.yml`, ubuntu, Release).
 - Wall-E.UI.Avalonia (MVVM + SkiaSharp) is planned but **does not exist yet** — don't reference or build it.
 
 ## Architecture quirks (legacy project only)
@@ -86,7 +86,7 @@ Generators like `GenerateRandoms`/`GenerateSamples`/`GeneratePointsInFigure` are
 
 - Fase 2 (Avalonia UI) COMPLETE — M1–M4: shell, viewport, streaming+Stop, temas/pickers/tira de tinta. Zero `MessageBox` in `src/`; errors render in an expander list.
 - Palette expansion COMPLETE (post-Fase 2): hex literals `#RGB`/`#RRGGBB`, orchestrator `InitialInk`, paper/ink pickers.
-- **Plan vigente = hitos M6–M12** (auditoría 2026-08-24 reordenó Fases 3–6; nothing dropped): see «Plan vigente tras la auditoría» in ROADMAP.md. Known audit findings still open there: Tag labels not rendered by new canvas; ExpressionCache instantiated but unused; no sample `.geo` files yet.
+- **Plan vigente = hitos M6–M12** (auditoría 2026-08-24 reordenó Fases 3–6; nothing dropped): see «Plan vigente tras la auditoría» in ROADMAP.md. M6–M8 COMPLETE; M9 DSL features complete (layers, hide/show, snap, ExpressionCache removed); remaining M9: batch GPU via ICustomDrawOperation.
 - Post-migration debts → **sprint COMPLETE, record in `DEBT_SPRINT.md`**; only remaining debt: expression nodes still self-evaluate (explicitly deferred)
 - Planning docs: `ROADMAP.md` (unified plan + audit), `MIGRATION_LOG.md`, `DEBT_SPRINT.md`, `IMPROVEMENT_PLAN.md`, `PERFORMANCE_PLAN.md`, `ENHANCEMENTS.md`
 
