@@ -104,6 +104,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Print => VisitPrint(node),
         Node.NodeType.ColorRgb => VisitColorRgb(node),
         Node.NodeType.ColorRgba => VisitColorRgba(node),
+        Node.NodeType.Repeat => VisitRepeat(node),
+        Node.NodeType.For => VisitFor(node),
         Node.NodeType.Points => VisitPoints(node),
         Node.NodeType.Randoms => VisitRandoms(node),
         Node.NodeType.Samples => VisitSamples(node),
@@ -257,6 +259,75 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return $"#{vals[0]:X2}{vals[1]:X2}{vals[2]:X2}{ai:X2}";
         }
         return $"#{vals[0]:X2}{vals[1]:X2}{vals[2]:X2}";
+    }
+
+    public EvaluationResult VisitRepeat(Node node)
+    {
+        EvaluationResult countResult = Visit(node.Branches[0]);
+        if (countResult is ErrorResult) return countResult;
+        object countRaw = UnwrapRaw(countResult)!;
+        if (!(countRaw is long) && !(countRaw is double))
+        {
+            AddError("numerical value for repeat count");
+            return new VoidResult();
+        }
+        int count = Convert.ToInt32(countRaw);
+        Node body = node.Branches[1];
+        EvaluationResult last = new VoidResult();
+        for (int i = 0; i < count; i++)
+        {
+            foreach (var stmt in body.Branches)
+            {
+                last = Visit(stmt);
+                if (last is ErrorResult) return last;
+            }
+        }
+        return last;
+    }
+
+    public EvaluationResult VisitFor(Node node)
+    {
+        string varName = node.NodeExpression!.ToString()!;
+        EvaluationResult seqResult = Visit(node.Branches[0]);
+        if (seqResult is ErrorResult) return seqResult;
+        Node body = node.Branches[1];
+        EvaluationResult last = new VoidResult();
+        IEnumerable<object>? items = null;
+        object seqObj = UnwrapRaw(seqResult)!;
+        switch (seqObj)
+        {
+            case Finite_Sequence<Point> fps:
+                items = fps.Sequence!.Cast<object>();
+                break;
+            case InfinitePointSequence ips:
+                items = ips.Sequence!.Take(10000).Cast<object>();
+                break;
+            case GenericSequence<Point> gsp:
+                items = gsp.Sequence!.Cast<object>();
+                break;
+            case Finite_Sequence<object> fso:
+                items = fso.Sequence!;
+                break;
+        }
+        if (items is null)
+        {
+            AddError("a valid sequence for for-loop");
+            return new VoidResult();
+        }
+        Scope loopScope = CurrentScope.Child();
+        SetCurrentScope(loopScope);
+        foreach (var item in items)
+        {
+            _currentScope.Variables[varName] = item;
+            foreach (var stmt in body.Branches)
+            {
+                last = Visit(stmt);
+                if (last is ErrorResult) { SetCurrentScope(loopScope.Parent!); return last; }
+            }
+        }
+        Scope parent = CurrentScope.Parent!;
+        SetCurrentScope(parent);
+        return last;
     }
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");

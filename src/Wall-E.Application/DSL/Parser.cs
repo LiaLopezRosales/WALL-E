@@ -97,6 +97,14 @@ public class Parser
         {
             return RgbaStatement();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.repeat)
+        {
+            return RepeatStatement();
+        }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.for_token)
+        {
+            return ForStatement();
+        }
          if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket && (tokenstream.Contains("=")))
         {
             return Function();
@@ -958,6 +966,63 @@ public class Parser
         temp.Type = Node.NodeType.ColorRgba;
         temp.Branches = new List<Node> { r, g, b, a };
         return temp;
+    }
+
+    public Node RepeatStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after repeat", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node count = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol to close repeat count", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node body = ParseBlock();
+        Node temp = new Node();
+        temp.Type = Node.NodeType.Repeat;
+        temp.Branches = new List<Node> { count, body };
+        return temp;
+    }
+
+    public Node ForStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "loop variable name", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        string varName = tokenstream.tokens[tokenstream.Position()].Value;
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != "in")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'in' keyword", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node seq = ParseExpression();
+        Node body = ParseBlock();
+        Node temp = new Node();
+        temp.Type = Node.NodeType.For;
+        temp.NodeExpression = varName;
+        temp.Branches = new List<Node> { seq, body };
+        return temp;
+    }
+
+    private Node ParseBlock()
+    {
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_key)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'{' to open block", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node instructions = new Node();
+        instructions.Type = Node.NodeType.Instructions;
+        while (tokenstream.Position() < tokens.Count &&
+               tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_key)
+        {
+            Node stmt = ParseStatement();
+            instructions.Branches.Add(stmt);
+        }
+        if (tokenstream.Position() < tokens.Count &&
+            tokenstream.tokens[tokenstream.Position()].Type == Token.TokenType.right_key)
+            tokenstream.MoveForward(1);
+        else
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'}' to close block", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        return instructions;
     }
 
     public Node ParseOP()

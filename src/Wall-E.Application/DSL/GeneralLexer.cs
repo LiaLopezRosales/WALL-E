@@ -17,9 +17,16 @@ public class GeneralLexer
         string[] lines=this.code.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries);
         int index=-1;
         int amount_of_open_let=0;
+        int brace_depth=0;
         //Para tratar el caso especial del let-in se recorren las expresiones separadas existentes
         for (int i = 0; i < lines.Length; i++)
-        {  
+        {
+            // Track brace depth for repeat/for blocks
+            foreach (char c in lines[i])
+            {
+                if (c == '{') brace_depth++;
+                else if (c == '}') brace_depth--;
+            }
             //Si el índice es mayor que 0 hay un let abierto  se concatenan las dos líneas
             if (index>=0 && !(ContainIn(lines[i])))
             {
@@ -65,7 +72,20 @@ public class GeneralLexer
                     amount_of_open_let=0;
                     index=-1;
                 }
-            }  
+            }
+            // If braces are still open (repeat/for block), continue concatenating
+            if (brace_depth > 0)
+            {
+                if (index < 0)
+                {
+                    index = i;
+                    amount_of_open_let = 0;
+                }
+            }
+            else if (brace_depth == 0 && index >= 0 && amount_of_open_let == 0)
+            {
+                index = -1;
+            }
         }
         
         this.lines=new List<string>();
