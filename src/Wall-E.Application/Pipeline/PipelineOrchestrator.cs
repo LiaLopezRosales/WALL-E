@@ -1,19 +1,16 @@
 using Wall_E.Domain;
 using Wall_E.Application.DSL;
 using Wall_E.Application.Interfaces;
-using Wall_E.Application.Caching;
 
 namespace Wall_E.Application.Pipeline;
 
 public class PipelineOrchestrator : IPipeline
 {
-    private readonly ExpressionCache _cache;
     private readonly List<Error> _errors = new();
     private readonly IGeoLibrarySource? _librarySource;
     private CancellationTokenSource? _cts;
 
     public List<Error> Errors => _errors;
-    public ExpressionCache Cache => _cache;
     public EvaluationContext Context { get; private set; } = new();
     public FigureRepository Figures { get; private set; } = new();
     public RenderScene Scene { get; private set; } = new();
@@ -27,7 +24,6 @@ public class PipelineOrchestrator : IPipeline
     public PipelineOrchestrator(IGeoLibrarySource? librarySource = null)
     {
         _librarySource = librarySource;
-        _cache = new ExpressionCache();
     }
 
     public void Execute(string source, string file)
