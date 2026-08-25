@@ -1,5 +1,6 @@
 namespace Wall_E.Domain;
 
+/// <summary>Functional Result monad that holds either a success value or an error.</summary>
 public readonly struct Result<T, E>
 {
     private readonly T? _value;
@@ -25,15 +26,21 @@ public readonly struct Result<T, E>
         _isSuccess = false;
     }
 
+    /// <summary>Creates a successful result wrapping the given value.</summary>
     public static Result<T, E> Ok(T value) => new(value);
+
+    /// <summary>Creates a failed result wrapping the given error.</summary>
     public static Result<T, E> Fail(E error) => new(error);
 
+    /// <summary>Transforms the success value using the given function, propagating errors unchanged.</summary>
     public Result<TNext, E> Map<TNext>(Func<T, TNext> map) =>
         _isSuccess ? Result<TNext, E>.Ok(map(_value!)) : Result<TNext, E>.Fail(_error!);
 
+    /// <summary>Chains a computation that produces a new result from the success value.</summary>
     public Result<TNext, E> Bind<TNext>(Func<T, Result<TNext, E>> bind) =>
         _isSuccess ? bind(_value!) : Result<TNext, E>.Fail(_error!);
 
+    /// <summary>Returns the success value or the given fallback if the result is an error.</summary>
     public T ValueOr(T fallback) => _isSuccess ? _value! : fallback;
 
     public void Deconstruct(out bool success, out T? value, out E? error)

@@ -1,6 +1,7 @@
 namespace Wall_E.Domain;
-﻿using System;
+ ﻿using System;
 
+/// <summary>Lexical scope holding variables and temporal functions during evaluation.</summary>
 public class Scope
 {
     public Scope? Parent { get; set; }
@@ -15,6 +16,7 @@ public class Scope
         InFunction=false;
     }
 
+    /// <summary>Creates a child scope that inherits this scope's variables and functions.</summary>
     public Scope Child()
     {
         Scope child = new Scope();

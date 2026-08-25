@@ -1,6 +1,7 @@
 using System.Globalization;
 using Wall_E.Domain;
 namespace Wall_E.Application.DSL;
+/// <summary>Recursive-descent parser that converts a list of tokens into an abstract syntax tree.</summary>
 public class Parser
 {
     List<Token> tokens;
@@ -16,16 +17,19 @@ public class Parser
         errors = new List<Error>();
     }
 
+    /// <summary>Parses all tokens and returns the root AST node.</summary>
     public Node Parse()
     {
         Node AST = ParseStatement();
         return AST;
     }
+    /// <summary>Returns the list of syntactic errors found during parsing.</summary>
     public List<Error> Syntactic_Errors()
     {
         return errors;
     }
 
+    /// <summary>Parses a single statement (declaration, command, or control structure).</summary>
     public Node ParseStatement()
     {
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Value == "import")
@@ -162,6 +166,7 @@ public class Parser
         return ParseExpression();
 
     }
+    /// <summary>Parses an expression (let-in, if-then-else, figure constructors, or arithmetic).</summary>
     public Node ParseExpression()
     {
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Value == "let")

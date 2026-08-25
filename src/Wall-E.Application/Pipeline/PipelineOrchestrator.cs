@@ -4,15 +4,20 @@ using Wall_E.Application.Interfaces;
 
 namespace Wall_E.Application.Pipeline;
 
+/// <summary>Coordinates the full DSL execution pipeline: lexing, parsing, and evaluation.</summary>
 public class PipelineOrchestrator : IPipeline
 {
     private readonly List<Error> _errors = new();
     private readonly IGeoLibrarySource? _librarySource;
     private CancellationTokenSource? _cts;
 
+    /// <summary>All errors accumulated across lexing, parsing, and evaluation.</summary>
     public List<Error> Errors => _errors;
+    /// <summary>Evaluation context holding variable bindings and results.</summary>
     public EvaluationContext Context { get; private set; } = new();
+    /// <summary>Repository of named geometric figures created during execution.</summary>
     public FigureRepository Figures { get; private set; } = new();
+    /// <summary>Render scene containing the drawing commands and color stack.</summary>
     public RenderScene Scene { get; private set; } = new();
 
     /// <summary>Optional initial ink (DSL color name or "#RRGGBB") pushed onto
@@ -26,6 +31,7 @@ public class PipelineOrchestrator : IPipeline
         _librarySource = librarySource;
     }
 
+    /// <summary>Runs the full pipeline on the given source code, populating errors and scene state.</summary>
     public void Execute(string source, string file)
     {
         _errors.Clear();
@@ -147,6 +153,7 @@ public class PipelineOrchestrator : IPipeline
         }
     }
 
+    /// <summary>Cancels any in-progress pipeline execution.</summary>
     public void Cancel()
     {
         _cts?.Cancel();

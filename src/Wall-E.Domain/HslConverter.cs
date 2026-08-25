@@ -1,7 +1,9 @@
 namespace Wall_E.Domain;
 
+/// <summary>Provides HSL/RGB color conversions and color manipulation utilities.</summary>
 public static class HslConverter
 {
+    /// <summary>Converts HSL values (h in degrees 0-360, s and l in 0-100) to RGB.</summary>
     public static (int r, int g, int b) HslToRgb(double h, double s, double l)
     {
         h = ((h % 360) + 360) % 360;
@@ -26,12 +28,14 @@ public static class HslConverter
         return (Math.Clamp(r, 0, 255), Math.Clamp(g, 0, 255), Math.Clamp(b, 0, 255));
     }
 
+    /// <summary>Converts HSL values to a #RRGGBB hex string.</summary>
     public static string ToHex(double h, double s, double l)
     {
         var (r, g, b) = HslToRgb(h, s, l);
         return $"#{r:X2}{g:X2}{b:X2}";
     }
 
+    /// <summary>Converts RGB values (0-255) to HSL via output parameters.</summary>
     public static void RgbToHsl(int r, int g, int b, out double h, out double s, out double l)
     {
         double rd = r / 255.0, gd = g / 255.0, bd = b / 255.0;
@@ -55,6 +59,7 @@ public static class HslConverter
         }
     }
 
+    /// <summary>Returns a lighter version of the given hex color by the specified percentage.</summary>
     public static string Lighten(string hex, double amount)
     {
         var (r, g, b) = ParseHex(hex);
@@ -63,6 +68,7 @@ public static class HslConverter
         return ToHex(h, s * 100, l * 100);
     }
 
+    /// <summary>Returns a darker version of the given hex color by the specified percentage.</summary>
     public static string Darken(string hex, double amount)
     {
         var (r, g, b) = ParseHex(hex);
@@ -71,6 +77,7 @@ public static class HslConverter
         return ToHex(h, s * 100, l * 100);
     }
 
+    /// <summary>Blends two hex colors by the given ratio (0 = first, 1 = second).</summary>
     public static string Mix(string hex1, string hex2, double ratio = 0.5)
     {
         var (r1, g1, b1) = ParseHex(hex1);
@@ -81,6 +88,7 @@ public static class HslConverter
         return $"#{Math.Clamp(r, 0, 255):X2}{Math.Clamp(g, 0, 255):X2}{Math.Clamp(b, 0, 255):X2}";
     }
 
+    /// <summary>Returns the complementary color (180° hue rotation) of the given hex color.</summary>
     public static string Complement(string hex)
     {
         var (r, g, b) = ParseHex(hex);

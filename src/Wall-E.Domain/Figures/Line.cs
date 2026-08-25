@@ -1,10 +1,13 @@
 namespace Wall_E.Domain;
+
+/// <summary>An infinite line defined by two distinct reference points.</summary>
 public class Line : Figure, IEquatable<Line>
 { //Clase que define una recta
     //Contiene dos puntos cualesquiera por donde pasa la recta 
     public Point generalpoint1 { get; set; }
     public Point generalpoint2 { get; set; }
 
+    /// <summary>Creates a line passing through the two given points.</summary>
     public Line(Point p1, Point p2)
     {
         generalpoint1 = p1;

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 
 namespace Wall_E.Domain;
 
+/// <summary>A regular polygon defined by center, radius, and number of sides.</summary>
 public class Polygon : Figure, IEquatable<Polygon>
 {
     public Point Center { get; }
     public double Radius { get; }
     public int Sides { get; }
 
+    /// <summary>Creates a regular polygon with at least 3 sides.</summary>
     public Polygon(Point center, double radius, int sides)
     {
         Center = center;
@@ -16,6 +18,7 @@ public class Polygon : Figure, IEquatable<Polygon>
         Sides = Math.Max(sides, 3);
     }
 
+    /// <summary>Computes and returns the list of vertex points in order.</summary>
     public List<Point> Vertices()
     {
         var pts = new List<Point>(Sides);

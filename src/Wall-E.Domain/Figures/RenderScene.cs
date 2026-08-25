@@ -1,5 +1,6 @@
 namespace Wall_E.Domain;
 
+/// <summary>A text label placed at a position on the scene.</summary>
 public record LabelObject(Point Position, string Text, double FontSize, string Color);
 
 /// <summary>
@@ -11,15 +12,21 @@ public class RenderScene
 {
     private readonly object _sync = new();
 
+    /// <summary>All drawable objects added during evaluation.</summary>
     public List<DrawObject> ToDraw { get; set; } = new();
     public List<LabelObject> Labels { get; set; } = new();
+    /// <summary>Stack of colors used by color/restore statements.</summary>
     public Stack<string> UtilizedColors { get; set; } = new();
+    /// <summary>Current stroke style applied to newly drawn figures.</summary>
     public LineStyle CurrentLineStyle { get; set; } = LineStyle.Solid;
+    /// <summary>Current stroke width applied to newly drawn figures.</summary>
     public double CurrentStrokeWidth { get; set; } = 1.0;
+    /// <summary>Current fill type applied to newly drawn figures.</summary>
     public FillType CurrentFillType { get; set; } = FillType.None;
     public string CurrentGradientColor1 { get; set; } = "";
     public string CurrentGradientColor2 { get; set; } = "";
     public bool CurrentFillEnabled => CurrentFillType != FillType.None;
+    /// <summary>Current layer index for newly drawn figures.</summary>
     public int CurrentLayer { get; set; } = 0;
     public double SnapValue { get; set; } = 0;
     public HashSet<string> HiddenLabels { get; set; } = new();
@@ -85,6 +92,7 @@ public class RenderScene
         }
     }
 
+    /// <summary>The active drawing color from the top of the color stack.</summary>
     public string CurrentColor
     {
         get { lock (_sync) return UtilizedColors.Peek(); }
@@ -96,6 +104,7 @@ public class RenderScene
         lock (_sync) return UtilizedColors.ToList();
     }
 
+    /// <summary>Resets the scene to its initial empty state.</summary>
     public void Clear()
     {
         lock (_sync)

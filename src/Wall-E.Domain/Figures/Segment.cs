@@ -1,9 +1,12 @@
 namespace Wall_E.Domain;
+
+/// <summary>A finite line segment between two endpoints.</summary>
 public class Segment:Figure,IEquatable<Segment>
 {   //Clase que define un segmento
     public Point StartIn{get;set;}
     public Point EndsIn{get;set;}
 
+    /// <summary>Creates a segment between the two specified endpoints.</summary>
     public Segment(Point start,Point ends)
     {
         StartIn=start;

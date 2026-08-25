@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Wall_E.Domain;
 namespace Wall_E.Application.DSL;
+/// <summary>Splits multi-line DSL source code into logical statement chunks, handling let-in and block concatenation.</summary>
 public class GeneralLexer
 {    //Divide un código en expresiones y declaraciones
     public string code{get;set;}
@@ -105,6 +106,7 @@ public class GeneralLexer
         File=file;
     }
 
+    /// <summary>Lexes each statement chunk into a list of tokens, accumulating lexical errors.</summary>
     public List<List<Token>> Process(List<string> group_of_lines)
     {
         List<List<Token>> tokens=new List<List<Token>>();
@@ -131,6 +133,7 @@ public class GeneralLexer
         return tokens;
     }
 
+    /// <summary>Returns all lexical errors collected during processing.</summary>
     public List<List<Error>> LexicalErrors()
     {
         return errors;

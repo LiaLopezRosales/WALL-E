@@ -1,5 +1,6 @@
 using Wall_E.Domain;
 namespace Wall_E.Application.DSL;
+/// <summary>Parses an entire WALL-E source file by delegating each tokenized line to a statement parser.</summary>
 public class GeneralParser
 {
     List<List<Token>> lines{get;set;}
@@ -13,6 +14,7 @@ public class GeneralParser
         File=file;
     }
 
+    /// <summary>Parses all tokenized lines and returns a list of AST root nodes.</summary>
     public List<Node> ParseArchive()
     {
         List<Node> Trees=new List<Node>();
@@ -59,6 +61,7 @@ public class GeneralParser
        }
        return -1;
     }
+    /// <summary>Returns all syntactic errors accumulated across every parsed line.</summary>
     public List<List<Error>> ParserErrors()
     {
         return all_the_errors;

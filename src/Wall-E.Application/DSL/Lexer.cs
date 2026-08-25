@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using Wall_E.Domain;
 namespace Wall_E.Application.DSL;
+    /// <summary>Lexical analyzer that converts a single line of DSL source code into a list of tokens.</summary>
     public class Lexer
     {
         public List<Error> lexererrors;
@@ -14,6 +15,7 @@ namespace Wall_E.Application.DSL;
         File=file;
         Line=line;
     }
+    /// <summary>Tokenizes the given source code string into a list of tokens.</summary>
     public List<Token> Tokens(string code)
     {
         string patronNumeroNegativo = @"-?\d+(\.\d+)?";
@@ -45,6 +47,7 @@ namespace Wall_E.Application.DSL;
         return possibletokens;
     }
 
+    /// <summary>Returns the list of lexical errors encountered during tokenization.</summary>
     public List<Error> Lexic_Errors()
     {
         return lexererrors;

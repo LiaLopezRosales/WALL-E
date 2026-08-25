@@ -1,4 +1,6 @@
 namespace Wall_E.Domain;
+
+/// <summary>Represents a user-defined function with its name, parameters, and AST body.</summary>
 public class Fuction
 {
    public string Name{get;set;}

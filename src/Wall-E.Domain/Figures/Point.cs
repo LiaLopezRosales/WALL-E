@@ -1,9 +1,12 @@
 namespace Wall_E.Domain;
+
+/// <summary>A geometric point defined by (x, y) coordinates in the plane.</summary>
 public class Point : Figure, IEquatable<Point>
 {   //Clase que describe un punto en el plano
     public double x { get; set; }
     public double y { get; set; }
     //Crea un punto con las coordenadas indicadas
+    /// <summary>Creates a point with the given coordinates.</summary>
     public Point(double x1, double y1)
     {
         x = x1;

@@ -1,9 +1,12 @@
 namespace Wall_E.Domain;
+
+/// <summary>A ray starting at one point and extending infinitely through another.</summary>
 public class Ray:Figure,IEquatable<Ray>
 {   //Clase que describe un rayo
     public Point StartIn{get;set;}
     public Point PassFor{get;set;}
 
+    /// <summary>Creates a ray starting at <paramref name="start"/> and passing through <paramref name="pass"/>.</summary>
     public Ray(Point start,Point pass)
     {
         StartIn=start;

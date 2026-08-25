@@ -3,12 +3,14 @@ using System.Collections.Generic;
 
 namespace Wall_E.Domain;
 
+/// <summary>An ellipse defined by center and horizontal/vertical radii.</summary>
 public class Ellipse : Figure, IEquatable<Ellipse>
 {
     public Point Center { get; }
     public double Rx { get; }
     public double Ry { get; }
 
+    /// <summary>Creates an ellipse with the given center and semi-axis lengths.</summary>
     public Ellipse(Point center, double rx, double ry)
     {
         Center = center;

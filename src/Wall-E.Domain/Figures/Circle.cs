@@ -1,9 +1,12 @@
 namespace Wall_E.Domain;
+
+/// <summary>A circle defined by a center point and a radius.</summary>
 public class Circle:Figure,IEquatable<Circle>
 {
     public Point center{get;set;}
     public double radio{get;set;}
 
+    /// <summary>Creates a circle with the specified center and radius.</summary>
     public Circle(Point p,double r)
     {
         center=p;

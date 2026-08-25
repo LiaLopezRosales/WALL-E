@@ -1,4 +1,6 @@
 namespace Wall_E.Domain;
+
+/// <summary>A circular arc defined by center, two direction points, and a radius.</summary>
 public class Arc:Figure,IEquatable<Arc>
 {
     public Point center{get;set;}
@@ -11,6 +13,7 @@ public class Arc:Figure,IEquatable<Arc>
     public Point CircleRay1_Intersection{get;}
     public Point CircleRay2Intersection{get;}
 
+    /// <summary>Creates an arc with the given center, direction points, and radius.</summary>
     public Arc(Point c,Point p1,Point p2,double m)
     {
         center=c;

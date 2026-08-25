@@ -1,5 +1,6 @@
 namespace Wall_E.Domain;
 
+/// <summary>Maps CSS color names to their #RRGGBB hex representations.</summary>
 public static class ColorTable
 {
     private static readonly Dictionary<string, string> Names = new(StringComparer.OrdinalIgnoreCase)
@@ -154,15 +155,18 @@ public static class ColorTable
         ["yellowgreen"] = "#9ACD32",
     };
 
+    /// <summary>Attempts to resolve a CSS color name to its hex value.</summary>
     public static bool TryGetHex(string name, out string hex)
     {
         return Names.TryGetValue(name.Trim(), out hex!);
     }
 
+    /// <summary>Returns the hex value for a color name, or the input unchanged if unknown.</summary>
     public static string Resolve(string name)
     {
         return TryGetHex(name, out var hex) ? hex : name;
     }
 
+    /// <summary>Gets all known CSS color names.</summary>
     public static IReadOnlyCollection<string> AllNames => Names.Keys;
 }
