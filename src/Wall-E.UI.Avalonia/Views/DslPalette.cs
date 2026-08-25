@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using Wall_E.Domain;
 
 namespace Wall_E.UI.Avalonia.Views;
 
@@ -15,18 +16,9 @@ public static class DslPalette
                 return new SolidColorBrush(c);
             return Brushes.Gray;
         }
-        return trimmed.ToLowerInvariant() switch
-        {
-            "black" => Brushes.Black,
-            "white" => Brushes.White,
-            "blue" => Brushes.DodgerBlue,
-            "red" => Brushes.Red,
-            "yellow" => Brushes.Yellow,
-            "green" => Brushes.LimeGreen,
-            "cyan" => Brushes.Cyan,
-            "magenta" => Brushes.Magenta,
-            "grey" => Brushes.Gray,
-            _ => Brushes.Gray,
-        };
+        if (ColorTable.TryGetHex(trimmed, out var hex) &&
+            global::Avalonia.Media.Color.TryParse(hex, out var css))
+            return new SolidColorBrush(css);
+        return Brushes.Gray;
     }
 }

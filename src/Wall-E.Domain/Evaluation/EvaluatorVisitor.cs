@@ -1058,8 +1058,9 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     public EvaluationResult VisitColor(Node node)
     {
         string color = node.NodeExpression!.ToString()!;
-        _scene.PushColor(color);
-        return new StringResult($"Color changed to {color}");
+        string resolved = ColorTable.TryGetHex(color, out var hex) ? hex : color;
+        _scene.PushColor(resolved);
+        return new StringResult($"Color changed to {resolved}");
     }
 
     public EvaluationResult VisitRestore(Node node)

@@ -38,7 +38,7 @@ public class InitialInkCharacterizationTests
 
         Assert.Empty(pipeline.Errors);
         var draw = Assert.IsType<DrawObject>(pipeline.Scene.Snapshot()[0]);
-        Assert.Equal("blue", draw.UsedColor);
+        Assert.Equal("#0000FF", draw.UsedColor);
     }
 
     [Fact]

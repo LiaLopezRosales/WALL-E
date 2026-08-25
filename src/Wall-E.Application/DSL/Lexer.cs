@@ -322,7 +322,7 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.And, possibletoken,File,Line,index.ToString());
         } 
-        else if (possibletoken == "black" || possibletoken == "white"|| possibletoken == "blue"|| possibletoken == "red"|| possibletoken == "yellow"|| possibletoken == "green"|| possibletoken == "cyan"|| possibletoken == "magenta"|| possibletoken == "grey")
+        else if (Wall_E.Domain.ColorTable.TryGetHex(possibletoken, out _))
         {
             token = new Token(Token.TokenType.color_value, possibletoken,File,Line,index.ToString());
         }

@@ -76,7 +76,7 @@ public class HexColorCharacterizationTests
         var first = Assert.IsType<DrawObject>(snapshot[0]);
         var second = Assert.IsType<DrawObject>(snapshot[1]);
         Assert.Equal("#00FF00", first.UsedColor);
-        Assert.Equal("red", second.UsedColor);
+        Assert.Equal("#FF0000", second.UsedColor);
     }
 
     [Fact]
