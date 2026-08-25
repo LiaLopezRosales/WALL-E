@@ -105,7 +105,7 @@ public class DrawingCanvas : Control
         foreach (var drawable in fresh)
         {
             var shapeListStart = _shapes.Count;
-            Collect(_shapes, drawable.Figures, drawable.UsedColor, drawable.Tag);
+            Collect(_shapes, drawable.Figures, drawable.UsedColor, drawable.Tag, drawable.LineStyle, drawable.StrokeWidth);
             for (int i = shapeListStart; i < _shapes.Count; i++)
                 GrowBounds(_shapes[i]);
         }
@@ -160,20 +160,20 @@ public class DrawingCanvas : Control
             }
 
             double dotR = Math.Clamp(_scale * 2.0, 0.75, 4.0);
-            double strokeW = Math.Clamp(_scale, 0.6, 2.0);
             for (int si = 0; si < _shapes.Count; si++)
             {
                 var shape = _shapes[si];
                 bool isWhite = string.Equals(shape.Color.Trim(), "white", StringComparison.OrdinalIgnoreCase);
-                Pen halo = GetPen("#halo", strokeW + 1.5);
-                Pen pen = GetPen(isWhite ? "white" : shape.Color, isWhite ? strokeW * 0.75 : strokeW);
+                double shapeW = Math.Clamp(shape.StrokeWidth * _scale, 0.6, 6.0);
+                Pen halo = GetPen("#halo", shapeW + 1.5);
+                Pen pen = GetPen(isWhite ? "white" : shape.Color, isWhite ? shapeW * 0.75 : shapeW, shape.LineStyle);
 
                 switch (shape)
                 {
                     case DotShape d:
                         var dc = Map(d.X, d.Y);
                         ctx.DrawEllipse(ParseColor(d.Color),
-                            isWhite ? GetPen("#halo", Math.Max(strokeW * 0.5, 1)) : null,
+                            isWhite ? GetPen("#halo", Math.Max(shapeW * 0.5, 1)) : null,
                             new global::Avalonia.Rect(dc.X - dotR, dc.Y - dotR, 2 * dotR, 2 * dotR));
                         break;
                     case SegShape s:
@@ -532,15 +532,22 @@ public class DrawingCanvas : Control
         if (y > _maxY) _maxY = y;
     }
 
-    private Pen GetPen(string colorName, double width)
+    private Pen GetPen(string colorName, double width, Wall_E.Domain.LineStyle ls = default)
     {
         double w = Math.Round(width * 2, MidpointRounding.AwayFromZero) / 2;
-        string key = colorName + ":" + w.ToString(CultureInfo.InvariantCulture);
+        string key = colorName + ":" + w.ToString(CultureInfo.InvariantCulture) + ":" + ((int)ls).ToString();
         if (!_penCache.TryGetValue(key, out var pen))
         {
+            global::Avalonia.Media.IDashStyle? dash = ls switch
+            {
+                Wall_E.Domain.LineStyle.Dashed => global::Avalonia.Media.DashStyle.Dash,
+                Wall_E.Domain.LineStyle.Dotted => global::Avalonia.Media.DashStyle.Dot,
+                Wall_E.Domain.LineStyle.DashDot => global::Avalonia.Media.DashStyle.DashDot,
+                _ => null,
+            };
             pen = colorName == "#halo"
-                ? new Pen(Brushes.Gray, w)
-                : new Pen(ParseColor(colorName), w);
+                ? new Pen(Brushes.Gray, w, dashStyle: dash)
+                : new Pen(ParseColor(colorName), w, dashStyle: dash);
             _penCache[key] = pen;
         }
         return pen;
@@ -548,8 +555,11 @@ public class DrawingCanvas : Control
 
     private abstract class Shape
     {
-        protected Shape(string color) => Color = color;
+        protected Shape(string color, Wall_E.Domain.LineStyle lineStyle = default, double strokeWidth = 1.0)
+        { Color = color; LineStyle = lineStyle; StrokeWidth = strokeWidth; }
         public string Color { get; }
+        public Wall_E.Domain.LineStyle LineStyle { get; }
+        public double StrokeWidth { get; }
     }
 
     private sealed class DotShape : Shape
@@ -560,21 +570,24 @@ public class DrawingCanvas : Control
 
     private sealed class SegShape : Shape
     {
-        public SegShape(double x1, double y1, double x2, double y2, string color) : base(color)
+        public SegShape(double x1, double y1, double x2, double y2, string color,
+            Wall_E.Domain.LineStyle ls = default, double sw = 1.0) : base(color, ls, sw)
         { X1 = x1; Y1 = y1; X2 = x2; Y2 = y2; }
         public double X1 { get; } public double Y1 { get; } public double X2 { get; } public double Y2 { get; }
     }
 
     private sealed class CircleShape : Shape
     {
-        public CircleShape(double x, double y, double r, string color) : base(color)
+        public CircleShape(double x, double y, double r, string color,
+            Wall_E.Domain.LineStyle ls = default, double sw = 1.0) : base(color, ls, sw)
         { X = x; Y = y; R = r; }
         public double X { get; } public double Y { get; } public double R { get; }
     }
 
     private sealed class PolyShape : Shape
     {
-        public PolyShape(List<DPoint> points, string color) : base(color) => Points = points;
+        public PolyShape(List<DPoint> points, string color,
+            Wall_E.Domain.LineStyle ls = default, double sw = 1.0) : base(color, ls, sw) => Points = points;
         public List<DPoint> Points { get; }
     }
 
@@ -586,7 +599,8 @@ public class DrawingCanvas : Control
         public double X { get; } public double Y { get; }
     }
 
-    private static void Collect(List<Shape> shapes, object? value, string color, string tag = "")
+    private static void Collect(List<Shape> shapes, object? value, string color, string tag = "",
+        Wall_E.Domain.LineStyle lineStyle = default, double strokeWidth = 1.0)
     {
         switch (value)
         {
@@ -598,7 +612,7 @@ public class DrawingCanvas : Control
             case Circle c:
                 if (!string.IsNullOrEmpty(tag))
                     shapes.Add(new TagShape(tag, c.center.x, c.center.y + c.radio + 1, color));
-                shapes.Add(new CircleShape(c.center.x, c.center.y, c.radio, color));
+                shapes.Add(new CircleShape(c.center.x, c.center.y, c.radio, color, lineStyle, strokeWidth));
                 break;
             case Segment s:
                 if (!string.IsNullOrEmpty(tag))
@@ -607,7 +621,7 @@ public class DrawingCanvas : Control
                     double my = (s.StartIn.y + s.EndsIn.y) / 2;
                     shapes.Add(new TagShape(tag, mx, my, color));
                 }
-                shapes.Add(new SegShape(s.StartIn.x, s.StartIn.y, s.EndsIn.x, s.EndsIn.y, color));
+                shapes.Add(new SegShape(s.StartIn.x, s.StartIn.y, s.EndsIn.x, s.EndsIn.y, color, lineStyle, strokeWidth));
                 break;
             case Line l:
                 if (!string.IsNullOrEmpty(tag))
@@ -617,7 +631,7 @@ public class DrawingCanvas : Control
                     shapes.Add(new TagShape(tag, mx, my, color));
                 }
                 shapes.Add(new SegShape(l.generalpoint1.x, l.generalpoint1.y,
-                    l.generalpoint2.x, l.generalpoint2.y, color));
+                    l.generalpoint2.x, l.generalpoint2.y, color, lineStyle, strokeWidth));
                 break;
             case Ray r:
             {
@@ -628,13 +642,13 @@ public class DrawingCanvas : Control
                     shapes.Add(new TagShape(tag, r.StartIn.x, r.StartIn.y, color));
                 shapes.Add(new SegShape(r.StartIn.x, r.StartIn.y,
                     r.StartIn.x + dx / len * RayDrawLength,
-                    r.StartIn.y + dy / len * RayDrawLength, color));
+                    r.StartIn.y + dy / len * RayDrawLength, color, lineStyle, strokeWidth));
                 break;
             }
             case Arc a:
                 if (!string.IsNullOrEmpty(tag))
                     shapes.Add(new TagShape(tag, a.center.x, a.center.y + a.measure + 1, color));
-                shapes.Add(SampleArc(a, color));
+                shapes.Add(SampleArc(a, color, lineStyle, strokeWidth));
                 break;
             case Polygon poly:
             {
@@ -645,20 +659,20 @@ public class DrawingCanvas : Control
                 if (!string.IsNullOrEmpty(tag))
                     shapes.Add(new TagShape(tag, poly.Center.x, poly.Center.y + poly.Radius + 1, color));
                 if (pts.Count >= 2)
-                    shapes.Add(new PolyShape(pts, color));
+                    shapes.Add(new PolyShape(pts, color, lineStyle, strokeWidth));
                 break;
             }
             case Ellipse ell:
                 if (!string.IsNullOrEmpty(tag))
                     shapes.Add(new TagShape(tag, ell.Center.x, ell.Center.y + Math.Max(ell.Rx, ell.Ry) + 1, color));
-                shapes.Add(SampleEllipse(ell, color));
+                shapes.Add(SampleEllipse(ell, color, lineStyle, strokeWidth));
                 break;
             case Finite_Sequence<object> fso:
                 int takenFso = 0;
                 foreach (var item in fso.Sequence!)
                 {
                     if (takenFso++ >= MaxSequenceDots) break;
-                    Collect(shapes, item, color, takenFso == 1 ? tag : "");
+                    Collect(shapes, item, color, takenFso == 1 ? tag : "", lineStyle, strokeWidth);
                 }
                 break;
             case InfinitePointSequence ips:
@@ -688,7 +702,8 @@ public class DrawingCanvas : Control
         }
     }
 
-    private static PolyShape SampleArc(Arc a, string color)
+    private static PolyShape SampleArc(Arc a, string color,
+        Wall_E.Domain.LineStyle ls = default, double sw = 1.0)
     {
         const int Steps = 64;
         var points = new List<DPoint>(Steps + 1);
@@ -698,10 +713,11 @@ public class DrawingCanvas : Control
             points.Add(new DPoint(a.center.x + System.Math.Cos(t) * a.measure,
                                   a.center.y + System.Math.Sin(t) * a.measure));
         }
-        return new PolyShape(points, color);
+        return new PolyShape(points, color, ls, sw);
     }
 
-    private static PolyShape SampleEllipse(Ellipse e, string color)
+    private static PolyShape SampleEllipse(Ellipse e, string color,
+        Wall_E.Domain.LineStyle ls = default, double sw = 1.0)
     {
         const int Steps = 64;
         var points = new List<DPoint>(Steps + 1);
@@ -711,7 +727,7 @@ public class DrawingCanvas : Control
             points.Add(new DPoint(e.Center.x + e.Rx * System.Math.Cos(t),
                                   e.Center.y + e.Ry * System.Math.Sin(t)));
         }
-        return new PolyShape(points, color);
+        return new PolyShape(points, color, ls, sw);
     }
 
     private static IBrush ParseColor(string name) => DslPalette.ToBrush(name);

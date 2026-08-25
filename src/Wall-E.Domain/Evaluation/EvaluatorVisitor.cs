@@ -107,6 +107,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Repeat => VisitRepeat(node),
         Node.NodeType.For => VisitFor(node),
         Node.NodeType.Label => VisitLabel(node),
+        Node.NodeType.LineStyleStmt => VisitLineStyleStmt(node),
+        Node.NodeType.GrosorStmt => VisitGrosorStmt(node),
         Node.NodeType.Points => VisitPoints(node),
         Node.NodeType.Randoms => VisitRandoms(node),
         Node.NodeType.Samples => VisitSamples(node),
@@ -350,6 +352,33 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         double fontSize = Convert.ToDouble(size);
         string color = _scene.CurrentColor;
         _scene.AddLabel(new LabelObject((Point)pos, ((string)text).Trim('"'), fontSize, color));
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitLineStyleStmt(Node node)
+    {
+        string styleName = node.NodeExpression!.ToString()!;
+        _scene.CurrentLineStyle = styleName switch
+        {
+            "dashed" => LineStyle.Dashed,
+            "dotted" => LineStyle.Dotted,
+            "dashdot" => LineStyle.DashDot,
+            _ => LineStyle.Solid,
+        };
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitGrosorStmt(Node node)
+    {
+        EvaluationResult widthResult = Visit(node.Branches[0]);
+        if (widthResult is ErrorResult) return widthResult;
+        object w = UnwrapRaw(widthResult)!;
+        if (!(w is long) && !(w is double))
+        {
+            AddError("numerical value for grosor");
+            return new VoidResult();
+        }
+        _scene.CurrentStrokeWidth = Convert.ToDouble(w);
         return new VoidResult();
     }
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
@@ -1007,7 +1036,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         string tag = " ";
         if (node.Branches[1].Type != Node.NodeType.Indefined)
             tag = RawString(Visit(node.Branches[1]));
-        var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek());
+        var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek(), _scene.CurrentLineStyle, _scene.CurrentStrokeWidth);
         if (!d.CheckValidType())
         {
             _semanticErrors.Add(new Error(Error.TypeError.Semantic_Error, Error.ErrorCode.Invalid,

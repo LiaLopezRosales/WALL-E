@@ -7,12 +7,25 @@ public class DrawObject
     public string Tag{get;set;}
     //Color que tenía la "brocha" en el momento que se indica su graficación 
     public string UsedColor{get;set;}
+    public LineStyle LineStyle{get;set;}
+    public double StrokeWidth{get;set;}
 
     public DrawObject(object value,string tag,string color)
     {
         Figures=value;
         Tag=tag;
         UsedColor=color;
+        LineStyle=LineStyle.Solid;
+        StrokeWidth=1.0;
+    }
+
+    public DrawObject(object value,string tag,string color,LineStyle style,double width)
+    {
+        Figures=value;
+        Tag=tag;
+        UsedColor=color;
+        LineStyle=style;
+        StrokeWidth=width;
     }
     //Método que revisa si el objeto es válido para gráficar(solo figuras y secuencias de figuras)
     public bool CheckValidType()

@@ -109,6 +109,17 @@ public class Parser
         {
             return LabelStatement();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.grosor)
+        {
+            return GrosorStatement();
+        }
+        if ((tokenstream.Position() < tokens.Count) && (tokens[tokenstream.Position()].Type == Token.TokenType.dashed
+            || tokens[tokenstream.Position()].Type == Token.TokenType.dotted
+            || tokens[tokenstream.Position()].Type == Token.TokenType.dashdot
+            || tokens[tokenstream.Position()].Type == Token.TokenType.solid_k))
+        {
+            return LineStyleStatement();
+        }
          if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket && (tokenstream.Contains("=")))
         {
             return Function();
@@ -1053,6 +1064,39 @@ public class Parser
         Node temp = new Node();
         temp.Type = Node.NodeType.Label;
         temp.Branches = new List<Node> { pos, text, size };
+        return temp;
+    }
+
+    public Node GrosorStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after grosor", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node width = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, grosor must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.GrosorStmt;
+        temp.Branches = new List<Node> { width };
+        return temp;
+    }
+
+    public Node LineStyleStatement()
+    {
+        Token.TokenType style = tokenstream.tokens[tokenstream.Position()].Type;
+        string styleName = tokenstream.tokens[tokenstream.Position()].Value;
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, line style must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.LineStyleStmt;
+        temp.NodeExpression = styleName;
         return temp;
     }
 

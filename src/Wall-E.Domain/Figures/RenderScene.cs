@@ -14,6 +14,8 @@ public class RenderScene
     public List<DrawObject> ToDraw { get; set; } = new();
     public List<LabelObject> Labels { get; set; } = new();
     public Stack<string> UtilizedColors { get; set; } = new();
+    public LineStyle CurrentLineStyle { get; set; } = LineStyle.Solid;
+    public double CurrentStrokeWidth { get; set; } = 1.0;
 
     /// <summary>Synchronized element count - safe to read mid-execution.</summary>
     public int DrawCount

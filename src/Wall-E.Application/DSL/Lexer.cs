@@ -202,6 +202,26 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.label,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "grosor" )
+        {
+            token = new Token(Token.TokenType.grosor,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "dashed" )
+        {
+            token = new Token(Token.TokenType.dashed,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "dotted" )
+        {
+            token = new Token(Token.TokenType.dotted,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "dashdot" )
+        {
+            token = new Token(Token.TokenType.dashdot,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "solid" )
+        {
+            token = new Token(Token.TokenType.solid_k,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken=="+")
         {
             token = new Token(Token.TokenType.sum,possibletoken,File,Line,index.ToString());
