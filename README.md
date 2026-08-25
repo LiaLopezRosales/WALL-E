@@ -2,79 +2,139 @@
 
 [![CI](https://github.com/LiaLopezRosales/WALL-E/actions/workflows/ci.yml/badge.svg)](https://github.com/LiaLopezRosales/WALL-E/actions/workflows/ci.yml)
 
-**GeoWall-E** is a geometric drawing interpreter for a small DSL: write short programs (points, lines, circles, sequences, functions, conditionals) and render them on a canvas. Pipeline: **Lexer → Parser → Evaluator → Canvas**.
+**GeoWall-E** is a geometric drawing interpreter for a small DSL: write short programs (points, lines, circles, sequences, functions) and render them on a canvas. Pipeline: **Lexer → Parser → Evaluator → Canvas**.
 
-```
-point p1 = point(100, 100);
-circle c = circle(point(200, 200), 50);
-draw p1, "A"; draw c;
-count({1,2,3});                    // 3
-f(x) = x * 2; f(21);               // 42
-let y = (let z = 2 in z) in y * 3; // 6
-```
+![Basic shapes](docs/screenshots/basic.png)
 
-## Project status
-
-Two codebases coexist in this repository:
-
-| | Legacy | New architecture |
-|---|---|---|
-| Project | root `Wall-E.csproj` (`net6.0-windows`, WinForms) | `src/Wall-E.{Domain,Application,Infrastructure}` (`net8.0`) |
-| Status | fully working, Windows only | Clean Architecture, complete visitor-based evaluator, 74 characterization tests, CI on every push |
-| UI | WinForms | Avalonia 11 + FluentAvalonia, MVVM, streaming canvas with pan/zoom (Fase 2 complete) |
-
-The new architecture follows a strict dependency direction (**Infrastructure → Application → Domain**, zero external dependencies in Domain), replaces the legacy god-object evaluator with the Visitor pattern and sealed result records, and wires `import` through an injectable `IGeoLibrarySource`.
-
-### Build & test (new architecture)
+## Quick start
 
 ```bash
+# Build everything
 dotnet build src/Wall-E.sln
-dotnet test tests/Wall-E.Application.Tests/Wall-E.Application.Tests.csproj
+
+# Render a .geo file to PNG
+dotnet run --project src/Wall-E.CLI -- GeoLibrary/basic.geo output.png
+
+# Render to SVG
+dotnet run --project src/Wall-E.CLI -- GeoLibrary/colors.geo output.svg
+
+# Custom resolution
+dotnet run --project src/Wall-E.CLI -- GeoLibrary/samples.geo output.png --width 1200 --height 800
+
+# Run tests
+dotnet test tests/Wall-E.Application.Tests/Wall-E.Application.Tests.csproj    # 219 tests
+dotnet test tests/Wall-E.Domain.Tests/Wall-E.Domain.Tests.csproj              # 61 tests
 ```
 
-### Run the legacy app (Windows)
+## DSL examples
+
+```geo
+// Points, lines, circles
+A = point(100, 300);
+B = point(300, 100);
+draw line(A, B);
+draw circle(point(200, 200), 80) "circle";
+
+// Colors and fills
+color red;
+fill;
+draw polygon(point(300, 300), 120, 6) "hexagon";
+fill linear(red, blue);
+draw circle(point(300, 300), 60) "gradient";
+
+// Loops and functions
+f(x) = x * x;
+repeat(5) { draw circle(point(300, 300), f(30)); }
+```
+
+![Colors and fills](docs/screenshots/colors.png)
+
+## Features
+
+| Category | Features |
+|---|---|
+| **Figures** | `point`, `line`, `segment`, `ray`, `circle`, `arc`, `polygon`, `ellipse` |
+| **Draw** | `draw fig;`, `draw fig "label";`, `label(pos, "text", size)` |
+| **Colors** | 148 CSS names, `rgb()`, `rgba()`, `hsl()`, hex `#RGB`/`#RRGGBB`/`#RRGGBBAA` |
+| **Chromatic ops** | `lighten(n)`, `darken(n)`, `mix(color, ratio)`, `complement()` |
+| **Fills** | `fill`, `unfill`, `fill linear(c1, c2)`, `fill radial(c1, c2)` |
+| **Styles** | `dashed`, `dotted`, `dashdot`, `solid`, `grosor(n)` |
+| **Control flow** | `repeat(n) {…}`, `for i in seq {…}`, `if(cond) {…}` |
+| **Functions** | `f(x) = expr;`, `let x = expr in expr` |
+| **Sequences** | `{1,2,3}`, `seq s = a..b`, `randoms`, `points`, `samples` |
+| **Math** | `sin`, `cos`, `sqrt`, `abs`, `floor`, `ceil`, `phi`, `sqrt2`, `PI` |
+| **Organization** | `layer n`, `hide label`, `show label`, `snap n` |
+| **I/O** | `print(expr)`, `seed(n)`, `import "file"` |
+| **Export** | PNG and SVG via CLI headless renderer |
+
+![Grid with layers](docs/screenshots/grid.png)
+
+## Project structure
+
+| Project | Path | Description |
+|---|---|---|
+| **Wall-E.Domain** | `src/Wall-E.Domain/` | AST, figures, evaluation — zero external deps |
+| **Wall-E.Application** | `src/Wall-E.Application/` | Lexers, parsers, pipeline orchestrator |
+| **Wall-E.Infrastructure** | `src/Wall-E.Infrastructure/` | File system, GeoLibrary loader |
+| **Wall-E.CLI** | `src/Wall-E.CLI/` | Headless renderer (PNG/SVG via SkiaSharp) |
+| **Wall-E.UI.Avalonia** | `src/Wall-E.UI.Avalonia/` | Desktop UI (Avalonia 11 + SkiaSharp) |
+| **Wall-E (legacy)** | `Wall-E.csproj` | WinForms app (Windows only) |
+
+Two test suites:
+
+| Suite | Tests | What it covers |
+|---|---|---|
+| `Wall-E.Application.Tests` | 219 | Full pipeline characterization + lexer/parser isolated |
+| `Wall-E.Domain.Tests` | 61 | Domain unit tests (ColorTable, HSL, Result monad, etc.) |
+
+![Samples showcase](docs/screenshots/samples.png)
+
+## Build & test
 
 ```bash
-./Wall-E.sh          # or: dotnet build Wall-E.csproj && dotnet run
+export PATH="$HOME/.dotnet:$PATH"  # dotnet SDK is at ~/.dotnet
+
+dotnet build src/Wall-E.sln                     # build all new-arch projects
+dotnet test tests/Wall-E.Application.Tests/...   # 219 characterization tests
+dotnet test tests/Wall-E.Domain.Tests/...        # 61 domain unit tests
 ```
 
-Requires the `net6.0-windows` SDK; `.geo` importable files live under `GeoLibrary/`.
+CI runs on every push (`.github/workflows/ci.yml`, ubuntu, Release).
+
+## Sample files
+
+| File | Description |
+|---|---|
+| [`GeoLibrary/basic.geo`](GeoLibrary/basic.geo) | Basic shapes: points, lines, circles, segments |
+| [`GeoLibrary/colors.geo`](GeoLibrary/colors.geo) | Full color system: CSS names, HSL, gradients |
+| [`GeoLibrary/grid.geo`](GeoLibrary/grid.geo) | Grid with layers, snap, hide/show |
+| [`GeoLibrary/samples.geo`](GeoLibrary/samples.geo) | Polygons, ellipses, concentric circles |
 
 ## Documentation
 
-- [`AGENTS.md`](./AGENTS.md) — architecture map, conventions, DSL semantics quirks
-- [`ROADMAP.md`](./ROADMAP.md) — unified implementation plan (Fases 0–6)
-- [`MIGRATION_LOG.md`](./MIGRATION_LOG.md) — complete record of the evaluator migration
-- [`DEBT_SPRINT.md`](./DEBT_SPRINT.md) — post-migration debt sprint record
+| Document | Contents |
+|---|---|
+| [`AGENTS.md`](AGENTS.md) | Architecture, conventions, DSL semantics |
+| [`ROADMAP.md`](ROADMAP.md) | Implementation plan (M6–M12) |
+| [`MIGRATION_LOG.md`](MIGRATION_LOG.md) | Evaluator migration record |
+| [`DEBT_SPRINT.md`](DEBT_SPRINT.md) | Post-migration debt sprint |
 
 ---
 
 ## Español
 
-**GeoWall-E** es un intérprete de dibujo geométrico para un lenguaje pequeño: se escriben programas cortos (puntos, segmentos, circunferencias, secuencias, funciones) y se grafican en una pizarra. El proyecto original se desarrolló con interfaz gráfica en WindowsForms, que presenta un espacio de gráficos o pizarra, un recuadro para introducir los comandos y tres botones cuyas funciones se especifican más adelante.
+**GeoWall-E** es un intérprete de dibujo geométrico para un lenguaje pequeño: se escriben programas cortos (puntos, segmentos, circunferencias, secuencias, funciones) y se grafican en una pizarra. Pipeline: **Lexer → Parser → Evaluator → Canvas**.
 
-### Funcionamiento básico (aplicación legacy)
+### Arquitectura
 
-1. Abrir la aplicación de WindowsForm: ejecutando el programa desde un editor de código o desde la consola mediante el script `Wall-E.sh`.
-2. Escribir el programa en la caja de texto: no debe dejarse vacía.
-   - **Importar archivos**: el archivo a importar debe estar en `\WALL-E\GeoLibrary` con extensión `.geo`; puede estar en una subcarpeta pero su nombre debe ser único.
-3. Procesar con el botón "Process Commands".
-4. Cerrar o escribir un nuevo programa: terminado el procesamiento se puede introducir código nuevo sin reiniciar.
-
-### Características de la aplicación de WindowsForm
-
-- El botón "Clean" limpia la pizarra para seguir dibujando figuras encima.
-- El botón "Jump seq" detiene la impresión de una secuencia infinita sin cerrar el programa.
-- Los cuadros de mensajes detienen el ciclo de ejecuciones: hay que cerrar la última ventana emergente para concluir y limpiar el TextBox.
-- Si hay figuras que dibujar, esa es la última acción; si no, se muestran en ventanas emergentes los elementos procesados y los errores encontrados hasta ese punto.
+La nueva arquitectura sigue Clean Architecture con dirección de dependencia estricta (**Infrastructure → Application → Domain**, cero dependencias externas en Domain). Reemplaza el evaluator monolítico legacy con el patrón Visitor y registros sellados `Result<T,E>`.
 
 ### El lenguaje DSL
 
-- **Puntos con coordenadas**: deben estar en un rango de 50 a 310 para ambos elementos, y la diferencia entre un punto y otro debe ser de al menos 15 unidades para distinguirlos. El radio directo de una circunferencia conviene mayor a 25 unidades para que sea visible.
-- **Operaciones matemáticas**: dejar espacio entre el símbolo `-` y el número siguiente.
-- El símbolo `;` determina el fin de una instrucción; su mala colocación no se detecta por sí sola pero puede ocasionar el procesamiento de instrucciones inválidas.
+- **Puntos con coordenadas**: `A = point(100, 200);` o `draw point(100, 200);`
+- **Operaciones matemáticas**: `+`, `-`, `*`, `/`, `^`, `%` con precedencia estándar.
+- El símbolo `;` determina el fin de una instrucción.
 - `{secuencia} + undefined` devuelve la primera secuencia sin cambios (comportamiento de concatenación, por diseño).
-- Los errores informan tipo, explicación y localización (archivo, línea y columna; los semánticos solo archivo y línea).
-- El procesamiento es por etapas (tokenizado línea a línea → parseo → evaluación) y cada instrucción produce un mensaje:
-  - `color blue;` → `Color changed to blue`
-  - `point p1;` → `Point created`
+- Los errores informan tipo, explicación y localización (archivo, línea y columna).
+- El procesamiento es por etapas: tokenizado → parseo → evaluación.
+- **Exportar PNG/SVG**: `dotnet run --project src/Wall-E.CLI -- archivo.geo salida.png`
