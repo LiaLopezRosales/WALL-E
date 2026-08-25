@@ -166,6 +166,14 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.sqrt2,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "seed" )
+        {
+            token = new Token(Token.TokenType.seed,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "print" )
+        {
+            token = new Token(Token.TokenType.print,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken=="+")
         {
             token = new Token(Token.TokenType.sum,possibletoken,File,Line,index.ToString());

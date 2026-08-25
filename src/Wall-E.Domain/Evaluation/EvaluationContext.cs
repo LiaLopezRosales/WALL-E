@@ -19,6 +19,7 @@ public class EvaluationContext
     public Dictionary<string, Func<Circle, IEnumerable<Point>>> Points { get; }
 
     public List<object> Results { get; set; } = new();
+    public List<string> PrintOutput { get; set; } = new();
     public bool HasErrors { get; set; }
 
     public EvaluationContext()
@@ -53,6 +54,7 @@ public class EvaluationContext
         Available_Functions.Clear();
         GlobalConstant.Clear();
         Results.Clear();
+        PrintOutput.Clear();
         HasErrors = false;
     }
 

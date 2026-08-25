@@ -98,6 +98,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Ceil => VisitCeil(node),
         Node.NodeType.Phi => VisitPhi(node),
         Node.NodeType.Sqrt2 => VisitSqrt2(node),
+        Node.NodeType.Seed => VisitSeed(node),
+        Node.NodeType.Print => VisitPrint(node),
         Node.NodeType.Points => VisitPoints(node),
         Node.NodeType.Randoms => VisitRandoms(node),
         Node.NodeType.Samples => VisitSamples(node),
@@ -188,6 +190,35 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
         return new NumberResult(_context.Trig_functions[funcName](Convert.ToDouble(arg)));
+    }
+
+    public EvaluationResult VisitSeed(Node node)
+    {
+        EvaluationResult argResult = Visit(node.Branches[0]);
+        if (argResult is ErrorResult) return argResult;
+        object arg = UnwrapRaw(argResult)!;
+        if (!(arg is double) && !(arg is long))
+        {
+            AddError("numerical values");
+            return new VoidResult();
+        }
+        RandomProvider.Seed(Convert.ToInt32(arg));
+        return new VoidResult();
+    }
+
+    public EvaluationResult VisitPrint(Node node)
+    {
+        EvaluationResult argResult = Visit(node.Branches[0]);
+        if (argResult is ErrorResult) return argResult;
+        object raw = UnwrapRaw(argResult)!;
+        string text = raw switch
+        {
+            double d => d.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            long l => l.ToString(),
+            _ => raw.ToString()!
+        };
+        _context.PrintOutput.Add(text);
+        return new VoidResult();
     }
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");

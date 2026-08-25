@@ -81,6 +81,14 @@ public class Parser
         {
             return Draw();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.seed)
+        {
+            return SeedStatement();
+        }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.print)
+        {
+            return PrintStatement();
+        }
          if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket && (tokenstream.Contains("=")))
         {
             return Function();
@@ -784,6 +792,56 @@ public class Parser
                 errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             return function;
+    }
+
+    public Node SeedStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after seed", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        Node value = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol to close seed", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, seed order must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.Seed;
+        temp.Branches = new List<Node> { value };
+        return temp;
+    }
+
+    public Node PrintStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after print", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        Node value = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol to close print", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+        {
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, print order must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        }
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.Print;
+        temp.Branches = new List<Node> { value };
+        return temp;
     }
 
     public Node ParseOP()
