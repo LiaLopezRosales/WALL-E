@@ -82,6 +82,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Segment_Fuc => VisitSegmentFuc(node),
         Node.NodeType.Ray_Fuc => VisitRayFuc(node),
         Node.NodeType.Circle_Fuc => VisitCircleFuc(node),
+        Node.NodeType.Polygon_Fuc => VisitPolygonFuc(node),
+        Node.NodeType.Ellipse_Fuc => VisitEllipseFuc(node),
         Node.NodeType.Measure => VisitMeasure(node),
         Node.NodeType.Measure_Fuc => VisitMeasureFuc(node),
         Node.NodeType.Intersect => VisitIntersect(node),
@@ -1107,6 +1109,50 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Circle c = new((Point)center, radius);
         _figures.TryAddExistingCircle(c);
         return new FigureResult(c);
+    }
+
+    public EvaluationResult VisitPolygonFuc(Node node)
+    {
+        EvaluationResult centerResult = Visit(node.Branches[0]);
+        if (centerResult is ErrorResult) return centerResult;
+        EvaluationResult radiusResult = Visit(node.Branches[1]);
+        if (radiusResult is ErrorResult) return radiusResult;
+        EvaluationResult sidesResult = Visit(node.Branches[2]);
+        if (sidesResult is ErrorResult) return sidesResult;
+        object center = UnwrapRaw(centerResult)!;
+        object radius = UnwrapRaw(radiusResult)!;
+        object sides = UnwrapRaw(sidesResult)!;
+        if (center is not Point || !IsDistance(radius) || !(sides is long || sides is double))
+        {
+            AddError("a valid center point, distance and number of sides");
+            return new VoidResult();
+        }
+        double r = radius is Measure meas ? meas.Value : Convert.ToDouble(radius);
+        int n = Convert.ToInt32(sides);
+        Polygon poly = new((Point)center, r, n);
+        return new FigureResult(poly);
+    }
+
+    public EvaluationResult VisitEllipseFuc(Node node)
+    {
+        EvaluationResult centerResult = Visit(node.Branches[0]);
+        if (centerResult is ErrorResult) return centerResult;
+        EvaluationResult rxResult = Visit(node.Branches[1]);
+        if (rxResult is ErrorResult) return rxResult;
+        EvaluationResult ryResult = Visit(node.Branches[2]);
+        if (ryResult is ErrorResult) return ryResult;
+        object center = UnwrapRaw(centerResult)!;
+        object rx = UnwrapRaw(rxResult)!;
+        object ry = UnwrapRaw(ryResult)!;
+        if (center is not Point || !IsDistance(rx) || !IsDistance(ry))
+        {
+            AddError("a valid center point and two distances");
+            return new VoidResult();
+        }
+        double rxi = rx is Measure mx ? mx.Value : Convert.ToDouble(rx);
+        double ryi = ry is Measure my ? my.Value : Convert.ToDouble(ry);
+        Ellipse e = new((Point)center, rxi, ryi);
+        return new FigureResult(e);
     }
 
     public EvaluationResult VisitLineFuc(Node node)

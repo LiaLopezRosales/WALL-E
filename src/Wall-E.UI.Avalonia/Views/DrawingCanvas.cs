@@ -627,6 +627,23 @@ public class DrawingCanvas : Control
                     shapes.Add(new TagShape(tag, a.center.x, a.center.y + a.measure + 1, color));
                 shapes.Add(SampleArc(a, color));
                 break;
+            case Polygon poly:
+            {
+                var verts = poly.Vertices();
+                var pts = new List<DPoint>(verts.Count + 1);
+                pts.AddRange(verts);
+                if (pts.Count > 0) pts.Add(pts[0]);
+                if (!string.IsNullOrEmpty(tag))
+                    shapes.Add(new TagShape(tag, poly.Center.x, poly.Center.y + poly.Radius + 1, color));
+                if (pts.Count >= 2)
+                    shapes.Add(new PolyShape(pts, color));
+                break;
+            }
+            case Ellipse ell:
+                if (!string.IsNullOrEmpty(tag))
+                    shapes.Add(new TagShape(tag, ell.Center.x, ell.Center.y + Math.Max(ell.Rx, ell.Ry) + 1, color));
+                shapes.Add(SampleEllipse(ell, color));
+                break;
             case Finite_Sequence<object> fso:
                 int takenFso = 0;
                 foreach (var item in fso.Sequence!)
@@ -671,6 +688,19 @@ public class DrawingCanvas : Control
             double t = a.MainAngle + a.SweepAngle * i / Steps;
             points.Add(new DPoint(a.center.x + System.Math.Cos(t) * a.measure,
                                   a.center.y + System.Math.Sin(t) * a.measure));
+        }
+        return new PolyShape(points, color);
+    }
+
+    private static PolyShape SampleEllipse(Ellipse e, string color)
+    {
+        const int Steps = 64;
+        var points = new List<DPoint>(Steps + 1);
+        for (int i = 0; i <= Steps; i++)
+        {
+            double t = 2 * System.Math.PI * i / Steps;
+            points.Add(new DPoint(e.Center.x + e.Rx * System.Math.Cos(t),
+                                  e.Center.y + e.Ry * System.Math.Sin(t)));
         }
         return new PolyShape(points, color);
     }

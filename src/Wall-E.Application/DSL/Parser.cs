@@ -138,6 +138,14 @@ public class Parser
         {
             return PArc();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.polygon && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
+        {
+            return PPolygon();
+        }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.ellipse && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
+        {
+            return PEllipse();
+        }
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.intersect)
         {
             return PIntersect();
@@ -800,6 +808,48 @@ public class Parser
                 errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement",tokenstream.tokens[tokenstream.Position()].TokenLocation));
             }
             return function;
+    }
+
+    public Node PPolygon()
+    {
+        tokenstream.MoveForward(2);
+        Node arguments = new Node();
+        arguments.Type = Node.NodeType.Polygon_Fuc;
+        Node center = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node radius = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node sides = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        arguments.Branches = new List<Node> { center, radius, sides };
+        return arguments;
+    }
+
+    public Node PEllipse()
+    {
+        tokenstream.MoveForward(2);
+        Node arguments = new Node();
+        arguments.Type = Node.NodeType.Ellipse_Fuc;
+        Node center = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node rx = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node ry = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        arguments.Branches = new List<Node> { center, rx, ry };
+        return arguments;
     }
 
     public Node SeedStatement()

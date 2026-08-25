@@ -182,6 +182,22 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.rgba,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "polygon" )
+        {
+            token = new Token(Token.TokenType.polygon,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "ellipse" )
+        {
+            token = new Token(Token.TokenType.ellipse,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "repeat" )
+        {
+            token = new Token(Token.TokenType.repeat,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "for" )
+        {
+            token = new Token(Token.TokenType.for_token,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken=="+")
         {
             token = new Token(Token.TokenType.sum,possibletoken,File,Line,index.ToString());
