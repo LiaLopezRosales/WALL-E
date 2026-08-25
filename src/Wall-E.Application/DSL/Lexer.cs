@@ -23,9 +23,8 @@ namespace Wall_E.Application.DSL;
         string quotes ="\"";
         string patronPalabras = @"\+|\-|\*|\%|(\...)|(\<\=)|(\>\=)|(\=\=)|(\!\=)|(\=\>)|\{|\}|\/|\^|(\!)|\,|\(|\)|\{|\}|\<|\>|\=|\;|\:";
         string patronIdentificador = @"\b\w*[a-zA-Z]\w*\b";
-        // Hex color literals (#RRGGBB / #RGB). Six digits first so the
-        // alternation doesn't stop at three.
-        string patronHex = @"(#[0-9a-fA-F]{6})|(#[0-9a-fA-F]{3})";
+        // Hex color literals (#RRGGBBAA / #RRGGBB / #RGBA / #RGB). Longer first so alternation doesn't stop early.
+        string patronHex = @"(#[0-9a-fA-F]{8})|(#[0-9a-fA-F]{6})|(#[0-9a-fA-F]{4})|(#[0-9a-fA-F]{3})";
         string patron = $"{patronTexto}|{low}|{quotes}|{patronHex}|{patronIdentificador}|{patronNumeroNegativo}|{patronPalabras} ";
         MatchCollection matches = Regex.Matches(code, patron);
         List<Token> possibletokens = new List<Token>();
@@ -330,7 +329,7 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.color_value, possibletoken,File,Line,index.ToString());
         }
-        else if (Regex.IsMatch(possibletoken, "^#[0-9a-fA-F]{6}$|^#[0-9a-fA-F]{3}$"))
+        else if (Regex.IsMatch(possibletoken, "^#[0-9a-fA-F]{8}$|^#[0-9a-fA-F]{6}$|^#[0-9a-fA-F]{4}$|^#[0-9a-fA-F]{3}$"))
         {
             token = new Token(Token.TokenType.color_value, possibletoken,File,Line,index.ToString());
         }
