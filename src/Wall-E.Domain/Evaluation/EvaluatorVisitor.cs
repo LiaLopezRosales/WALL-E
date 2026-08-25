@@ -100,6 +100,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Sqrt2 => VisitSqrt2(node),
         Node.NodeType.Seed => VisitSeed(node),
         Node.NodeType.Print => VisitPrint(node),
+        Node.NodeType.ColorRgb => VisitColorRgb(node),
+        Node.NodeType.ColorRgba => VisitColorRgba(node),
         Node.NodeType.Points => VisitPoints(node),
         Node.NodeType.Randoms => VisitRandoms(node),
         Node.NodeType.Samples => VisitSamples(node),
@@ -219,6 +221,40 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         };
         _context.PrintOutput.Add(text);
         return new VoidResult();
+    }
+
+    public EvaluationResult VisitColorRgb(Node node)
+    {
+        string hex = EvalColorHex(node.Branches, 3, null);
+        _scene.PushColor(hex);
+        return new StringResult($"Color changed to {hex}");
+    }
+
+    public EvaluationResult VisitColorRgba(Node node)
+    {
+        string hex = EvalColorHex(node.Branches, 4, node.Branches[3]);
+        _scene.PushColor(hex);
+        return new StringResult($"Color changed to {hex}");
+    }
+
+    private string EvalColorHex(List<Node> channels, int count, Node? alphaNode)
+    {
+        int[] vals = new int[count];
+        for (int i = 0; i < count; i++)
+        {
+            EvaluationResult r = Visit(channels[i]);
+            if (r is ErrorResult) return "#000000";
+            object v = UnwrapRaw(r)!;
+            double d = Convert.ToDouble(v);
+            vals[i] = Math.Clamp((int)Math.Round(d), 0, 255);
+        }
+        if (alphaNode != null)
+        {
+            double a = Convert.ToDouble(UnwrapRaw(Visit(alphaNode))!);
+            int ai = Math.Clamp((int)Math.Round(a * 255), 0, 255);
+            return $"#{vals[0]:X2}{vals[1]:X2}{vals[2]:X2}{ai:X2}";
+        }
+        return $"#{vals[0]:X2}{vals[1]:X2}{vals[2]:X2}";
     }
     public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");

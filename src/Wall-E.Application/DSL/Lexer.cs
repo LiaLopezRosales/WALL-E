@@ -174,6 +174,14 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.print,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "rgb" )
+        {
+            token = new Token(Token.TokenType.rgb,possibletoken,File,Line,index.ToString());
+        }
+        else if (possibletoken == "rgba" )
+        {
+            token = new Token(Token.TokenType.rgba,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken=="+")
         {
             token = new Token(Token.TokenType.sum,possibletoken,File,Line,index.ToString());

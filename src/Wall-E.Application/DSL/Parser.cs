@@ -89,6 +89,14 @@ public class Parser
         {
             return PrintStatement();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.rgb)
+        {
+            return RgbStatement();
+        }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.rgba)
+        {
+            return RgbaStatement();
+        }
          if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket && (tokenstream.Contains("=")))
         {
             return Function();
@@ -841,6 +849,64 @@ public class Parser
         Node temp = new Node();
         temp.Type = Node.NodeType.Print;
         temp.Branches = new List<Node> { value };
+        return temp;
+    }
+
+    public Node RgbStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after rgb", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node r = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' separator", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node g = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' separator", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node b = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol to close rgb", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, rgb order must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.ColorRgb;
+        temp.Branches = new List<Node> { r, g, b };
+        return temp;
+    }
+
+    public Node RgbaStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' symbol after rgba", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node r = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' separator", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node g = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' separator", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node b = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Value != ",")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' separator", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node a = ParseExpression();
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' symbol to close rgba", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Value != ";")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Invalid, "statement, rgba order must end with ';'", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+        Node temp = new Node();
+        temp.Type = Node.NodeType.ColorRgba;
+        temp.Branches = new List<Node> { r, g, b, a };
         return temp;
     }
 
