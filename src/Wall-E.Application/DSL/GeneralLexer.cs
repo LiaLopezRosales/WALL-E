@@ -11,10 +11,10 @@ public class GeneralLexer
 
     public GeneralLexer(string code,string file)
     {
-        this.code=code;
+        this.code=StripLineComments(code);
         errors=new List<List<Error>>();
         //Se dividen las expresiones por ;
-        string[] lines=code.Split(new[] {";"},StringSplitOptions.RemoveEmptyEntries);
+        string[] lines=this.code.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries);
         int index=-1;
         int amount_of_open_let=0;
         //Para tratar el caso especial del let-in se recorren las expresiones separadas existentes
@@ -130,5 +130,30 @@ public class GeneralLexer
         MatchCollection matches=Regex.Matches(s,"\\bin\\b",RegexOptions.IgnoreCase);
         return matches.Count;
     }
-    
+
+    /// <summary>Strips single-line comments (//...) from each line,
+    /// respecting quoted strings so "http://..." is preserved.</summary>
+    private static string StripLineComments(string code)
+    {
+        var result = new System.Text.StringBuilder();
+        var lines = code.Split('\n');
+        for (int i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i];
+            bool inString = false;
+            for (int j = 0; j < line.Length; j++)
+            {
+                if (line[j] == '"') inString = !inString;
+                if (!inString && j + 1 < line.Length && line[j] == '/' && line[j + 1] == '/')
+                {
+                    line = line.Substring(0, j);
+                    break;
+                }
+            }
+            line = line.TrimEnd('\r', ' ');
+            if (i > 0) result.Append('\n');
+            result.Append(line);
+        }
+        return result.ToString();
+    }
 }
