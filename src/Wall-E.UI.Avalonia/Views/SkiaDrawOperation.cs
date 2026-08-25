@@ -32,6 +32,12 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
         IsAntialias = true, Style = SKPaintStyle.Stroke,
         Color = new SKColor(200, 200, 200), StrokeWidth = 1
     };
+    // Subtle drop shadow for filled shapes — very light, offset downward.
+    private readonly SKPaint _shadowPaint = new()
+    {
+        IsAntialias = true, Style = SKPaintStyle.Fill,
+        Color = new SKColor(0, 0, 0, 25), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 3f)
+    };
 
     public SkiaDrawOperation(
         Rect bounds,
@@ -150,6 +156,14 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
             {
                 using var path = new SKPath();
                 path.AddCircle((float)c.X, (float)c.Y, (float)c.R);
+                // Shadow for filled shapes.
+                if (c.FillType != FillType.None)
+                {
+                    canvas.Save();
+                    canvas.Translate(2f, 2f);
+                    canvas.DrawPath(path, _shadowPaint);
+                    canvas.Restore();
+                }
                 // Fill
                 if (c.FillType == FillType.Solid)
                 {
@@ -179,6 +193,14 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                 for (int i = 1; i < p.Points.Count; i++)
                     path.LineTo((float)p.Points[i].x, (float)p.Points[i].y);
                 path.Close();
+                // Shadow for filled shapes.
+                if (p.FillType != FillType.None)
+                {
+                    canvas.Save();
+                    canvas.Translate(2f, 2f);
+                    canvas.DrawPath(path, _shadowPaint);
+                    canvas.Restore();
+                }
                 // Fill
                 if (p.FillType == FillType.Solid)
                 {
