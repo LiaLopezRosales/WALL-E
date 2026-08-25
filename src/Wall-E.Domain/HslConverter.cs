@@ -86,7 +86,7 @@ public static class HslConverter
         var (r, g, b) = ParseHex(hex);
         RgbToHsl(r, g, b, out double h, out double s, out double l);
         h = (h + 180) % 360;
-        return ToHex(h, s * 100, l);
+        return ToHex(h, s * 100, l * 100);
     }
 
     private static (int r, int g, int b) ParseHex(string hex)
