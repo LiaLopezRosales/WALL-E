@@ -42,6 +42,8 @@ public class DrawingCanvas : Control
     private int _builtCount;
     private int _labelBuiltCount;
     private List<Shape> _shapes = new();
+    private SkiaDrawOperation? _cachedOp;
+    private bool _opDirty = true;
 
     // Pens are immutable and reused across frames; widths are quantized so
     // the cache stays tiny even though sizes adapt to zoom.
@@ -94,6 +96,7 @@ public class DrawingCanvas : Control
             _builtCount = 0;
             _shapes = new List<Shape>();
             _hasBounds = false;
+            _opDirty = true;
         }
         AppendNewDraws();
         InvalidateVisual();
@@ -121,6 +124,7 @@ public class DrawingCanvas : Control
             GrowPoint(lbl.Position.x, lbl.Position.y);
         }
         _labelBuiltCount = freshLabels.Count;
+        _opDirty = true;
     }
 
     public void ResetView()
@@ -276,10 +280,14 @@ public class DrawingCanvas : Control
         var hidden = _sourceScene?.HiddenLabels;
 
         // Submit batch GPU draw operation for dots/lines/circles/polygons.
-        var op = new SkiaDrawOperation(
-            new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height),
-            sorted, _scale, _centerX, _centerY, dotR, strokeW, stride, Paper, hidden);
-        context.Custom(op);
+        if (_opDirty || _cachedOp is null)
+        {
+            _cachedOp = new SkiaDrawOperation(
+                new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height),
+                sorted, _scale, _centerX, _centerY, dotR, strokeW, stride, Paper, hidden);
+            _opDirty = false;
+        }
+        context.Custom(_cachedOp);
 
         // Tags still use Avalonia's FormattedText (needs font management not
         // easily available on raw SKCanvas).

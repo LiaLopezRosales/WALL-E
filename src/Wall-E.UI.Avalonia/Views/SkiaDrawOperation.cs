@@ -62,6 +62,9 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
 
     public Rect Bounds { get; }
 
+    private static SKColor ResolveColor(string name) =>
+        SKColor.Parse(ColorTable.Resolve(name));
+
     public void Render(ImmediateDrawingContext context)
     {
         var feature = context.TryGetFeature(typeof(ISkiaSharpApiLeaseFeature)) as ISkiaSharpApiLeaseFeature;
@@ -69,10 +72,6 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
 
         using var lease = feature.Lease();
         var canvas = lease.SkCanvas;
-
-        // Draw paper background.
-        var paperColor = (_paper as ISolidColorBrush)?.Color ?? Colors.White;
-        canvas.Clear(new SKColor(paperColor.R, paperColor.G, paperColor.B, paperColor.A));
 
         canvas.Save();
         // Map world→screen: translate center, scale.
@@ -115,7 +114,7 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
         {
             var pts = kvp.Value;
             if (pts.Count == 0) continue;
-            var skColor = SKColor.Parse(kvp.Key);
+            var skColor = ResolveColor(kvp.Key);
             _dotPaint.Color = skColor;
             _dotPaint.StrokeWidth = dotR * 2;
             _dotPaint.StrokeCap = SKStrokeCap.Round;
@@ -133,7 +132,7 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
 
     private void DrawShape(SKCanvas canvas, DrawingCanvas.Shape shape, float lineW)
     {
-        var skColor = SKColor.Parse(shape.Color);
+        var skColor = ResolveColor(shape.Color);
         bool isWhite = string.Equals(shape.Color.Trim(), "white", StringComparison.OrdinalIgnoreCase);
 
         switch (shape)
@@ -237,13 +236,13 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
             ? SKShader.CreateLinearGradient(
                 new SKPoint(bounds.Left, bounds.Top),
                 new SKPoint(bounds.Right, bounds.Bottom),
-                new[] { SKColor.Parse(shape.GradientColor1), SKColor.Parse(shape.GradientColor2) },
+                new[] { ResolveColor(shape.GradientColor1), ResolveColor(shape.GradientColor2) },
                 new float[] { 0, 1 },
                 SKShaderTileMode.Clamp)
             : SKShader.CreateRadialGradient(
                 new SKPoint(bounds.MidX, bounds.MidY),
                 Math.Max(bounds.Width, bounds.Height) / 2f,
-                new[] { SKColor.Parse(shape.GradientColor1), SKColor.Parse(shape.GradientColor2) },
+                new[] { ResolveColor(shape.GradientColor1), ResolveColor(shape.GradientColor2) },
                 new float[] { 0, 1 },
                 SKShaderTileMode.Clamp);
         _fillStrokePaint.Shader = shader;
@@ -271,6 +270,6 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
     }
 
     public bool HitTest(global::Avalonia.Point p) => Bounds.Contains(p);
-    public bool Equals(ICustomDrawOperation? other) => false;
+    public bool Equals(ICustomDrawOperation? other) => ReferenceEquals(this, other);
     public void Dispose() { }
 }
