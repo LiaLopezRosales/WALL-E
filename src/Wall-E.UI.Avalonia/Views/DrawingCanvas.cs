@@ -36,7 +36,7 @@ public class DrawingCanvas : Control
     /// <summary>Frame budget: beyond this many shapes, dots are decimated
     /// (every stride-th one drawn) so streaming and zooming stay responsive.
     /// Lines, circles, arcs and polygons are never decimated.</summary>
-    private const int MaxDrawnShapes = 25000;
+    private const int MaxDrawnShapes = 100000;
 
     private RenderScene? _sourceScene;
     private int _builtCount;
@@ -46,6 +46,9 @@ public class DrawingCanvas : Control
     // Pens are immutable and reused across frames; widths are quantized so
     // the cache stays tiny even though sizes adapt to zoom.
     private readonly Dictionary<string, Pen> _penCache = new();
+
+    // PaintPool: brushes cached by color name to avoid alloc/frame.
+    private readonly Dictionary<string, IBrush> _brushCache = new();
 
     private static readonly Pen GridMinorPen = new(ColorFromHex("#E8ECF2"), 1);
     private static readonly Pen GridMajorPen = new(ColorFromHex("#CBD4DF"), 1);
@@ -257,8 +260,6 @@ public class DrawingCanvas : Control
         context.FillRectangle(Paper, new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height));
         if (!IsSizeValid()) return;
 
-        // Smart camera: move the viewport only when content falls outside
-        // it, so manual zoom survives iterative editing.
         if (_shapes.Count > 0 && !ContentFullyVisible())
             ComputeFit();
 
@@ -267,83 +268,32 @@ public class DrawingCanvas : Control
 
         var sorted = _shapes.OrderBy(s => s.Layer).ToList();
 
-        // Frame budget + zoom-adaptive sizes. Dots keep a fixed pixel look
-        // at normal zoom but shrink when zoomed far out, so dense scenes
-        // (the stress spiral) still show their structure instead of fusing
-        // into blobs.
         int stride = sorted.Count > MaxDrawnShapes
             ? (int)Math.Ceiling((double)sorted.Count / MaxDrawnShapes)
             : 1;
         double dotR = Math.Clamp(_scale * 2.0, 0.75, 4.0);
         double strokeW = Math.Clamp(_scale, 0.6, 2.0);
-
         var hidden = _sourceScene?.HiddenLabels;
+
+        // Submit batch GPU draw operation for dots/lines/circles/polygons.
+        var op = new SkiaDrawOperation(
+            new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height),
+            sorted, _scale, _centerX, _centerY, dotR, strokeW, stride, Paper, hidden);
+        context.Custom(op);
+
+        // Tags still use Avalonia's FormattedText (needs font management not
+        // easily available on raw SKCanvas).
         for (int si = 0; si < sorted.Count; si++)
         {
             var shape = sorted[si];
-            if (stride > 1 && shape is DotShape && si % stride != 0) continue;
-            if (shape is TagShape ts && hidden != null && hidden.Contains(ts.Tag)) continue;
-
-            // 'white' would vanish on the paper background: draw it over a
-            // gray halo so every palette color keeps minimum contrast.
-            bool isWhite = string.Equals(shape.Color.Trim(), "white", StringComparison.OrdinalIgnoreCase);
-            Pen halo = GetPen("#halo", strokeW + 1.5);
-            Pen pen = GetPen(isWhite ? "white" : shape.Color, isWhite ? strokeW * 0.75 : strokeW);
-            void Stroke(Action<Pen> draw)
-            {
-                if (isWhite) draw(halo);
-                draw(pen);
-            }
-
-            switch (shape)
-            {
-                case DotShape d:
-                {
-                    var c = Map(d.X, d.Y);
-                    context.DrawEllipse(ParseColor(d.Color),
-                        isWhite ? GetPen("#halo", Math.Max(strokeW * 0.5, 1)) : null,
-                        new global::Avalonia.Rect(c.X - dotR, c.Y - dotR, 2 * dotR, 2 * dotR));
-                    break;
-                }
-                case SegShape s:
-                    Stroke(p => context.DrawLine(p, Map(s.X1, s.Y1), Map(s.X2, s.Y2)));
-                    break;
-                case CircleShape c:
-                {
-                    var topLeft = Map(c.X - c.R, c.Y + c.R);
-                    var bounds = new global::Avalonia.Rect(topLeft.X, topLeft.Y,
-                        2 * c.R * _scale, 2 * c.R * _scale);
-                    var fillBrush = GetFillBrush(c, bounds);
-                    Stroke(p => context.DrawEllipse(fillBrush, p, bounds));
-                    break;
-                }
-                case PolyShape p:
-                {
-                    if (p.Points.Count < 2) break;
-                    var geo = new StreamGeometry();
-                    using (var gctx = geo.Open())
-                    {
-                        gctx.BeginFigure(Map(p.Points[0].x, p.Points[0].y), false);
-                        for (int i = 1; i < p.Points.Count; i++)
-                            gctx.LineTo(Map(p.Points[i].x, p.Points[i].y));
-                        gctx.EndFigure(false);
-                    }
-                    var geoBounds = geo.Bounds;
-                    var fillBrush = GetFillBrush(p, geoBounds);
-                    Stroke(pp => context.DrawGeometry(fillBrush, pp, geo));
-                    break;
-                }
-                case TagShape t:
-                {
-                    var pos = Map(t.X, t.Y);
-                    var ft = new FormattedText(t.Tag,
-                        System.Globalization.CultureInfo.InvariantCulture,
-                        FlowDirection.LeftToRight,
-                        new Typeface("Arial"), 12, ParseColor(t.Color));
-                    context.DrawText(ft, new global::Avalonia.Point(pos.X + 6, pos.Y - 14));
-                    break;
-                }
-            }
+            if (shape is not TagShape t) continue;
+            if (hidden != null && hidden.Contains(t.Tag)) continue;
+            var pos = Map(t.X, t.Y);
+            var ft = new FormattedText(t.Tag,
+                CultureInfo.InvariantCulture,
+                FlowDirection.LeftToRight,
+                new Typeface("Arial"), 12, ParseColor(t.Color));
+            context.DrawText(ft, new global::Avalonia.Point(pos.X + 6, pos.Y - 14));
         }
     }
 
@@ -575,7 +525,7 @@ public class DrawingCanvas : Control
         return pen;
     }
 
-    private abstract class Shape
+    internal abstract class Shape
     {
         protected Shape(string color, Wall_E.Domain.LineStyle lineStyle = default, double strokeWidth = 1.0,
             Wall_E.Domain.FillType fillType = default, string grad1 = "", string grad2 = "", int layer = 0)
@@ -590,13 +540,13 @@ public class DrawingCanvas : Control
         public int Layer { get; }
     }
 
-    private sealed class DotShape : Shape
+    internal sealed class DotShape : Shape
     {
         public DotShape(double x, double y, string color, int layer = 0) : base(color, layer: layer) { X = x; Y = y; }
         public double X { get; } public double Y { get; }
     }
 
-    private sealed class SegShape : Shape
+    internal sealed class SegShape : Shape
     {
         public SegShape(double x1, double y1, double x2, double y2, string color,
             Wall_E.Domain.LineStyle ls = default, double sw = 1.0, int layer = 0)
@@ -605,7 +555,7 @@ public class DrawingCanvas : Control
         public double X1 { get; } public double Y1 { get; } public double X2 { get; } public double Y2 { get; }
     }
 
-    private sealed class CircleShape : Shape
+    internal sealed class CircleShape : Shape
     {
         public CircleShape(double x, double y, double r, string color,
             Wall_E.Domain.LineStyle ls = default, double sw = 1.0,
@@ -615,7 +565,7 @@ public class DrawingCanvas : Control
         public double X { get; } public double Y { get; } public double R { get; }
     }
 
-    private sealed class PolyShape : Shape
+    internal sealed class PolyShape : Shape
     {
         public PolyShape(List<DPoint> points, string color,
             Wall_E.Domain.LineStyle ls = default, double sw = 1.0,
@@ -625,7 +575,7 @@ public class DrawingCanvas : Control
         public List<DPoint> Points { get; }
     }
 
-    private sealed class TagShape : Shape
+    internal sealed class TagShape : Shape
     {
         public TagShape(string tag, double x, double y, string color, int layer = 0) : base(color, layer: layer)
         { Tag = tag; X = x; Y = y; }
@@ -766,9 +716,17 @@ public class DrawingCanvas : Control
         return new PolyShape(points, color, ls, sw, ft, g1, g2, layer);
     }
 
-    private static IBrush ParseColor(string name) => DslPalette.ToBrush(name);
+    private IBrush ParseColor(string name)
+    {
+        if (!_brushCache.TryGetValue(name, out var brush))
+        {
+            brush = DslPalette.ToBrush(name);
+            _brushCache[name] = brush;
+        }
+        return brush;
+    }
 
-    private static IBrush? GetFillBrush(Shape shape, global::Avalonia.Rect bounds)
+    private IBrush? GetFillBrush(Shape shape, global::Avalonia.Rect bounds)
     {
         switch (shape.FillType)
         {
