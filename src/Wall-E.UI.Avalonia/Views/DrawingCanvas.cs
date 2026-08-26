@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using SkiaSharp;
 using Wall_E.Domain;
 using APoint = global::Avalonia.Point;
 using DPoint = Wall_E.Domain.Point;
@@ -33,8 +34,6 @@ public class DrawingCanvas : Control
     private const double MaxScale = 80;
     private const double DefaultScale = 2.0;
 
-    private const int MaxDrawnShapes = 10_000_000;
-
     private RenderScene? _sourceScene;
     private int _builtCount;
     private int _labelBuiltCount;
@@ -48,6 +47,8 @@ public class DrawingCanvas : Control
     private bool _hasAnyTags;
     private static readonly List<TagShape> _emptyTags = new();
     private readonly Dictionary<string, FormattedText> _formattedTextCache = new();
+    private Dictionary<string, SKPoint[]>? _dotArrayCache;
+    private List<Shape>? _othersCache;
 
     // Pens are immutable and reused across frames; widths are quantized so
     // the cache stays tiny even though sizes adapt to zoom.
@@ -295,11 +296,9 @@ public class DrawingCanvas : Control
             _tagCache = _hasAnyTags
                 ? _sortedCache.OfType<TagShape>().ToList()
                 : _emptyTags;
+            PrecomputeDrawData();
         }
 
-        int stride = _sortedCache.Count > MaxDrawnShapes
-            ? (int)Math.Ceiling((double)_sortedCache.Count / MaxDrawnShapes)
-            : 1;
         double dotR = Math.Clamp(_scale * 2.0, 0.75, 4.0);
         double strokeW = Math.Clamp(_scale, 0.6, 2.0);
         var hidden = _sourceScene?.HiddenLabels;
@@ -308,7 +307,7 @@ public class DrawingCanvas : Control
         {
             _cachedOp = new SkiaDrawOperation(
                 new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height),
-                _sortedCache, _scale, _centerX, _centerY, dotR, strokeW, stride, Paper, hidden);
+                _dotArrayCache, _othersCache, _scale, _centerX, _centerY, dotR, strokeW, Paper, hidden);
             _shapesDirty = false;
             _transformDirty = false;
         }
@@ -329,6 +328,42 @@ public class DrawingCanvas : Control
             var pos = Map(t.X, t.Y);
             context.DrawText(ft, new global::Avalonia.Point(pos.X + 6, pos.Y - 14));
         }
+    }
+
+    /// <summary>Batches shapes into pre-computed dot arrays and an others
+    /// list so SkiaDrawOperation.Render() avoids iterating all shapes
+    /// every frame. Called only when _shapesDirty is true.</summary>
+    private void PrecomputeDrawData()
+    {
+        var dotLists = new Dictionary<string, List<SKPoint>>();
+        var others = new List<Shape>();
+        var hidden = _sourceScene?.HiddenLabels;
+
+        for (int i = 0; i < _sortedCache!.Count; i++)
+        {
+            var shape = _sortedCache[i];
+            switch (shape)
+            {
+                case DotShape d:
+                    if (!dotLists.TryGetValue(d.Color, out var pts))
+                    {
+                        pts = new List<SKPoint>();
+                        dotLists[d.Color] = pts;
+                    }
+                    pts.Add(new SKPoint((float)d.X, (float)d.Y));
+                    break;
+                case TagShape:
+                    break;
+                default:
+                    others.Add(shape);
+                    break;
+            }
+        }
+
+        _dotArrayCache = new Dictionary<string, SKPoint[]>(dotLists.Count);
+        foreach (var kvp in dotLists)
+            _dotArrayCache[kvp.Key] = kvp.Value.ToArray();
+        _othersCache = others;
     }
 
     // ---- cartesian grid -------------------------------------------------
@@ -383,10 +418,12 @@ public class DrawingCanvas : Control
             new global::Avalonia.Rect(o.X - 5, o.Y - 5, 10, 10));
     }
 
+    private static readonly double[] NiceSteps = { 1d, 2d, 5d, 10d };
+
     private static double NiceStep(double minStep)
     {
         double pow = Math.Pow(10, Math.Floor(Math.Log10(Math.Max(minStep, 1e-9))));
-        foreach (var m in new[] { 1d, 2d, 5d, 10d })
+        foreach (var m in NiceSteps)
             if (m * pow >= minStep)
                 return m * pow;
         return 10 * pow;

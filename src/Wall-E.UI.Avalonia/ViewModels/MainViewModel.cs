@@ -16,6 +16,7 @@ public class MainViewModel : ViewModelBase
     private RenderScene? _scene;
     private int _lastDrawCount;
     private RenderScene? _lastScene;
+    private int _lastColorCount;
 
     private readonly PipelineOrchestrator _pipeline = new();
     private readonly DispatcherTimer _streamTimer;
@@ -98,7 +99,7 @@ public class MainViewModel : ViewModelBase
         // Progressive streaming (M3): poll the synchronized scene while the
         // pipeline runs on a background thread; each tick with new content
         // raises SceneChanged so the canvas repaints incrementally.
-        _streamTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+        _streamTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
         _streamTimer.Tick += (_, _) => PollSceneProgress();
 
         Errors.CollectionChanged += (_, _) =>
@@ -163,10 +164,14 @@ public class MainViewModel : ViewModelBase
         int count = scene.DrawCount;
         bool sceneSwapped = !ReferenceEquals(_lastScene, scene);
         _lastScene = scene;
-        if (count == _lastDrawCount && !sceneSwapped) return;
+        int colorCount = scene.ColorsSnapshot().Count;
+        bool colorsChanged = colorCount != _lastColorCount;
+        if (count == _lastDrawCount && !sceneSwapped && !colorsChanged) return;
         _lastDrawCount = count;
+        _lastColorCount = colorCount;
         StatusMessage = $"Drawing... {count} object(s)";
-        UpdateInkStrip();
+        if (colorsChanged || sceneSwapped)
+            UpdateInkStrip();
         SceneChanged?.Invoke(this, EventArgs.Empty);
     }
 

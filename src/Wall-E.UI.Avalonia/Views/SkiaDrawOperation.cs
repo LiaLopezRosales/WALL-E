@@ -1,4 +1,5 @@
-using System.Globalization;
+using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Rendering.SceneGraph;
@@ -9,21 +10,19 @@ using Wall_E.Domain;
 namespace Wall_E.UI.Avalonia.Views;
 
 /// <summary>
-/// Custom draw operation that renders the scene graph via raw SKCanvas.
-/// Enables batch GPU rendering: dots are batched per color into single
-/// DrawPoints calls, and polygons/lines use native SKPath for minimal
-/// draw-call overhead.
+/// Custom draw operation that renders pre-computed dot arrays and shape
+/// lists via raw SKCanvas. Dot batching and shape classification happen
+/// once in DrawingCanvas.PrecomputeDrawData(); this operation just draws
+/// the pre-computed data with the current viewport transform + culling.
 /// </summary>
 internal sealed class SkiaDrawOperation : ICustomDrawOperation
 {
-    private readonly IReadOnlyList<DrawingCanvas.Shape> _shapes;
+    private readonly Dictionary<string, SKPoint[]>? _dotArrays;
+    private readonly IReadOnlyList<DrawingCanvas.Shape>? _others;
     private readonly double _scale, _centerX, _centerY;
     private readonly double _dotRadius, _strokeWidth;
-    private readonly int _stride;
     private readonly IBrush _paper;
-    private readonly HashSet<string>? _hiddenLabels;
 
-    // Reusable SKPaint objects — allocated once, reused per frame.
     private readonly SKPaint _dotPaint = new() { IsAntialias = true, Style = SKPaintStyle.Fill };
     private readonly SKPaint _linePaint = new() { IsAntialias = true, Style = SKPaintStyle.Stroke };
     private readonly SKPaint _fillStrokePaint = new() { IsAntialias = true, Style = SKPaintStyle.Stroke };
@@ -32,38 +31,32 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
         IsAntialias = true, Style = SKPaintStyle.Stroke,
         Color = new SKColor(200, 200, 200), StrokeWidth = 1
     };
-    // Subtle drop shadow for filled shapes — very light, offset downward.
     private readonly SKPaint _shadowPaint = new()
     {
         IsAntialias = true, Style = SKPaintStyle.Fill,
         Color = new SKColor(0, 0, 0, 25), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 3f)
     };
 
-    // Reusable collections — cleared and rebuilt each frame, never reallocated.
-    private readonly Dictionary<string, List<SKPoint>> _dotsByColor = new();
-    private readonly Dictionary<string, List<SKPoint>> _listPool = new();
-    private readonly List<DrawingCanvas.Shape> _others = new();
     private readonly Dictionary<string, SKColor> _colorCache = new();
 
     public SkiaDrawOperation(
         Rect bounds,
-        IReadOnlyList<DrawingCanvas.Shape> shapes,
+        Dictionary<string, SKPoint[]>? dotArrays,
+        IReadOnlyList<DrawingCanvas.Shape>? others,
         double scale, double centerX, double centerY,
         double dotRadius, double strokeWidth,
-        int stride,
         IBrush paper,
         HashSet<string>? hiddenLabels)
     {
         Bounds = bounds;
-        _shapes = shapes;
+        _dotArrays = dotArrays;
+        _others = others;
         _scale = scale;
         _centerX = centerX;
         _centerY = centerY;
         _dotRadius = dotRadius;
         _strokeWidth = strokeWidth;
-        _stride = stride;
         _paper = paper;
-        _hiddenLabels = hiddenLabels;
     }
 
     public Rect Bounds { get; }
@@ -87,7 +80,6 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
         var canvas = lease.SkCanvas;
 
         canvas.Save();
-        // Map world→screen: translate center, scale.
         canvas.Translate((float)(Bounds.Width / 2 - _centerX * _scale),
                          (float)(Bounds.Height / 2 + _centerY * _scale));
         canvas.Scale((float)_scale, (float)-_scale);
@@ -95,57 +87,54 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
         float dotR = (float)(_dotRadius / _scale);
         float lineW = (float)(_strokeWidth / _scale);
 
-        // --- Batch dots per color (reuse collections) ---
-        foreach (var kvp in _dotsByColor)
-            _listPool[kvp.Key] = kvp.Value;
-        _dotsByColor.Clear();
-        _others.Clear();
-
-        for (int i = 0; i < _shapes.Count; i++)
+        // Draw pre-computed dot arrays — zero iteration, just DrawPoints calls.
+        if (_dotArrays is not null)
         {
-            var shape = _shapes[i];
-            if (_stride > 1 && shape is DrawingCanvas.DotShape && i % _stride != 0) continue;
-            if (shape is DrawingCanvas.TagShape ts && _hiddenLabels != null && _hiddenLabels.Contains(ts.Tag)) continue;
-
-            switch (shape)
+            foreach (var kvp in _dotArrays)
             {
-                case DrawingCanvas.DotShape d:
-                    if (!_dotsByColor.TryGetValue(d.Color, out var list))
-                    {
-                        if (!_listPool.TryGetValue(d.Color, out list))
-                            list = new List<SKPoint>();
-                        else
-                            _listPool.Remove(d.Color);
-                        list.Clear();
-                        _dotsByColor[d.Color] = list;
-                    }
-                    list.Add(new SKPoint((float)d.X, (float)d.Y));
-                    break;
-                default:
-                    _others.Add(shape);
-                    break;
+                if (kvp.Value.Length == 0) continue;
+                _dotPaint.Color = ResolveColor(kvp.Key);
+                _dotPaint.StrokeWidth = dotR * 2;
+                _dotPaint.StrokeCap = SKStrokeCap.Round;
+                canvas.DrawPoints(SKPointMode.Points, kvp.Value, _dotPaint);
             }
         }
 
-        // Draw batched dots.
-        foreach (var kvp in _dotsByColor)
+        // Draw others with viewport culling.
+        if (_others is not null && _others.Count > 0)
         {
-            var pts = kvp.Value;
-            if (pts.Count == 0) continue;
-            var skColor = ResolveColor(kvp.Key);
-            _dotPaint.Color = skColor;
-            _dotPaint.StrokeWidth = dotR * 2;
-            _dotPaint.StrokeCap = SKStrokeCap.Round;
-            canvas.DrawPoints(SKPointMode.Points, pts.ToArray(), _dotPaint);
-        }
+            double hw = Bounds.Width / (2 * _scale);
+            double hh = Bounds.Height / (2 * _scale);
+            float margin = (float)(10 / _scale);
+            float visL = (float)(_centerX - hw) - margin;
+            float visR = (float)(_centerX + hw) + margin;
+            float visB = (float)(_centerY - hh) - margin;
+            float visT = (float)(_centerY + hh) + margin;
 
-        // Draw remaining shapes (lines, circles, polygons, tags).
-        foreach (var shape in _others)
-        {
-            DrawShape(canvas, shape, lineW);
+            for (int i = 0; i < _others.Count; i++)
+            {
+                var shape = _others[i];
+                if (!IsVisible(shape, visL, visR, visB, visT)) continue;
+                DrawShape(canvas, shape, lineW);
+            }
         }
 
         canvas.Restore();
+    }
+
+    private static bool IsVisible(DrawingCanvas.Shape shape, float visL, float visR, float visB, float visT)
+    {
+        switch (shape)
+        {
+            case DrawingCanvas.SegShape s:
+                return !(s.X1 < visL && s.X2 < visL) && !(s.X1 > visR && s.X2 > visR) &&
+                       !(s.Y1 < visB && s.Y2 < visB) && !(s.Y1 > visT && s.Y2 > visT);
+            case DrawingCanvas.CircleShape c:
+                return !(c.X + c.R < visL) && !(c.X - c.R > visR) &&
+                       !(c.Y + c.R < visB) && !(c.Y - c.R > visT);
+            default:
+                return true;
+        }
     }
 
     private void DrawShape(SKCanvas canvas, DrawingCanvas.Shape shape, float lineW)
@@ -173,7 +162,6 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
             {
                 using var path = new SKPath();
                 path.AddCircle((float)c.X, (float)c.Y, (float)c.R);
-                // Shadow for filled shapes.
                 if (c.FillType != FillType.None)
                 {
                     canvas.Save();
@@ -181,7 +169,6 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                     canvas.DrawPath(path, _shadowPaint);
                     canvas.Restore();
                 }
-                // Fill
                 if (c.FillType == FillType.Solid)
                 {
                     _fillStrokePaint.Color = skColor;
@@ -194,7 +181,6 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                         (float)(c.X - c.R), (float)(c.Y - c.R),
                         (float)(c.X + c.R), (float)(c.Y + c.R)));
                 }
-                // Stroke
                 _linePaint.Color = isWhite ? SKColors.White : skColor;
                 _linePaint.StrokeWidth = lineW;
                 _linePaint.Style = SKPaintStyle.Stroke;
@@ -210,7 +196,6 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                 for (int i = 1; i < p.Points.Count; i++)
                     path.LineTo((float)p.Points[i].x, (float)p.Points[i].y);
                 path.Close();
-                // Shadow for filled shapes.
                 if (p.FillType != FillType.None)
                 {
                     canvas.Save();
@@ -218,7 +203,6 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                     canvas.DrawPath(path, _shadowPaint);
                     canvas.Restore();
                 }
-                // Fill
                 if (p.FillType == FillType.Solid)
                 {
                     _fillStrokePaint.Color = skColor;
@@ -230,19 +214,11 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                     path.GetBounds(out var bounds);
                     DrawGradientFill(canvas, path, p, bounds);
                 }
-                // Stroke
                 _linePaint.Color = isWhite ? SKColors.White : skColor;
                 _linePaint.StrokeWidth = lineW;
                 _linePaint.Style = SKPaintStyle.Stroke;
                 ApplyDashStyle(_linePaint, shape.LineStyle);
                 canvas.DrawPath(path, _linePaint);
-                break;
-            }
-            case DrawingCanvas.TagShape t:
-            {
-                // Tags use the Avalonia FormattedText path — too complex for
-                // raw SKCanvas without font management. Skip in GPU mode;
-                // the fallback Avalonia Render handles tags.
                 break;
             }
         }
@@ -276,7 +252,6 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
             paint.PathEffect = null;
             return;
         }
-        float phase = 0;
         float[] intervals = ls switch
         {
             LineStyle.Dashed => new[] { 12f, 6f },
@@ -284,7 +259,7 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
             LineStyle.DashDot => new[] { 12f, 4f, 2f, 4f },
             _ => Array.Empty<float>()
         };
-        paint.PathEffect = SKPathEffect.CreateDash(intervals, phase);
+        paint.PathEffect = SKPathEffect.CreateDash(intervals, 0);
     }
 
     public bool HitTest(global::Avalonia.Point p) => Bounds.Contains(p);

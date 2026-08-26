@@ -1,3 +1,4 @@
+using System.Threading;
 using Wall_E.Domain;
 using Wall_E.Application.DSL;
 using Wall_E.Application.Interfaces;
@@ -110,6 +111,8 @@ public class PipelineOrchestrator : IPipeline
             context.Results.Add(result);
             _errors.AddRange(evaluator.SemanticErrors);
             count++;
+            if (count % 500 == 0)
+                Thread.Sleep(0);
         }
 
         context.HasErrors = _errors.Count > 0;
