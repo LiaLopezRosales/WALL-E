@@ -15,6 +15,7 @@ public class MainViewModel : ViewModelBase
     private bool _statusIsError;
     private RenderScene? _scene;
     private int _lastDrawCount;
+    private RenderScene? _lastScene;
 
     private readonly PipelineOrchestrator _pipeline = new();
     private readonly DispatcherTimer _streamTimer;
@@ -115,11 +116,7 @@ public class MainViewModel : ViewModelBase
         StatusIsError = false;
         StatusMessage = "Processing...";
         _lastDrawCount = 0;
-
-        // Immediately clear the canvas so stale shapes from the prior run
-        // vanish while the pipeline lexes/parses on the background thread.
-        _scene = new RenderScene();
-        SceneChanged?.Invoke(this, EventArgs.Empty);
+        _lastScene = null;
 
         string source = sourceOverride ?? Code;
         _streamTimer.Start();
@@ -162,8 +159,11 @@ public class MainViewModel : ViewModelBase
 
     private void PollSceneProgress()
     {
-        int count = _pipeline.Scene.DrawCount;
-        if (count == _lastDrawCount) return;
+        var scene = _pipeline.Scene;
+        int count = scene.DrawCount;
+        bool sceneSwapped = !ReferenceEquals(_lastScene, scene);
+        _lastScene = scene;
+        if (count == _lastDrawCount && !sceneSwapped) return;
         _lastDrawCount = count;
         StatusMessage = $"Drawing... {count} object(s)";
         UpdateInkStrip();
