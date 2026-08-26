@@ -38,6 +38,13 @@ public class PipelineOrchestrator : IPipeline
         _cts = new CancellationTokenSource();
         CancellationToken token = _cts.Token;
 
+        // Create and assign the scene BEFORE lexing so the UI can detect
+        // the scene change immediately (clears stale shapes from prior run).
+        var scene = new RenderScene();
+        if (!string.IsNullOrWhiteSpace(InitialInk))
+            scene.PushColor(InitialInk);
+        Scene = scene;
+
         var generalLexer = new GeneralLexer(source, file);
 
         List<List<Token>> allTokens = new();
@@ -61,12 +68,8 @@ public class PipelineOrchestrator : IPipeline
 
         var context = new EvaluationContext();
         var figures = new FigureRepository();
-        var scene = new RenderScene();
-        if (!string.IsNullOrWhiteSpace(InitialInk))
-            scene.PushColor(InitialInk);
         Context = context;
         Figures = figures;
-        Scene = scene;
 
         var evaluator = new EvaluatorVisitor(context, figures, scene, file);
         evaluator.CancellationToken = token;

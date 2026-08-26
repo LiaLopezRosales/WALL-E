@@ -46,6 +46,7 @@ public class DrawingCanvas : Control
     private bool _opDirty = true;
     private List<Shape>? _sortedCache;
     private List<TagShape>? _tagCache;
+    private bool _hasNonZeroLayer;
 
     // Pens are immutable and reused across frames; widths are quantized so
     // the cache stays tiny even though sizes adapt to zoom.
@@ -98,6 +99,7 @@ public class DrawingCanvas : Control
             _builtCount = 0;
             _shapes = new List<Shape>();
             _hasBounds = false;
+            _hasNonZeroLayer = false;
             _opDirty = true;
         }
         AppendNewDraws();
@@ -112,6 +114,7 @@ public class DrawingCanvas : Control
         if (fresh.Count == 0) return;
         foreach (var drawable in fresh)
         {
+            if (drawable.Layer != 0) _hasNonZeroLayer = true;
             var shapeListStart = _shapes.Count;
             Collect(_shapes, drawable.Figures, drawable.UsedColor, drawable.Tag, drawable.LineStyle, drawable.StrokeWidth, drawable.FillType, drawable.GradientColor1, drawable.GradientColor2, drawable.Layer);
             for (int i = shapeListStart; i < _shapes.Count; i++)
@@ -281,7 +284,9 @@ public class DrawingCanvas : Control
 
         if (_opDirty || _sortedCache is null)
         {
-            _sortedCache = _shapes.OrderBy(s => s.Layer).ToList();
+            _sortedCache = _hasNonZeroLayer
+                ? _shapes.OrderBy(s => s.Layer).ToList()
+                : new List<Shape>(_shapes);
             _tagCache = _sortedCache.OfType<TagShape>().ToList();
         }
 

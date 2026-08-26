@@ -116,6 +116,11 @@ public class MainViewModel : ViewModelBase
         StatusMessage = "Processing...";
         _lastDrawCount = 0;
 
+        // Immediately clear the canvas so stale shapes from the prior run
+        // vanish while the pipeline lexes/parses on the background thread.
+        _scene = new RenderScene();
+        SceneChanged?.Invoke(this, EventArgs.Empty);
+
         string source = sourceOverride ?? Code;
         _streamTimer.Start();
         try
