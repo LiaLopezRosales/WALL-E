@@ -105,6 +105,8 @@ public class DrawingCanvas : Control
             _hasAnyTags = false;
             _shapesDirty = true;
             _formattedTextCache.Clear();
+            _cachedOp?.Dispose();
+            _cachedOp = null;
         }
         AppendNewDraws();
         InvalidateVisual();
@@ -126,15 +128,15 @@ public class DrawingCanvas : Control
                 GrowBounds(_shapes[i]);
         }
         _builtCount += fresh.Count;
-        var freshLabels = _sourceScene.Labels;
-        for (int li = _labelBuiltCount; li < freshLabels.Count; li++)
+        var freshLabels = _sourceScene.LabelSnapshotRange(_labelBuiltCount);
+        for (int li = 0; li < freshLabels.Count; li++)
         {
             var lbl = freshLabels[li];
             _shapes.Add(new TagShape(lbl.Text, lbl.Position.x, lbl.Position.y, lbl.Color));
             GrowPoint(lbl.Position.x, lbl.Position.y);
             _hasAnyTags = true;
         }
-        _labelBuiltCount = freshLabels.Count;
+        _labelBuiltCount += freshLabels.Count;
         _shapesDirty = true;
     }
 
@@ -238,13 +240,12 @@ public class DrawingCanvas : Control
                 }
             }
 
-            _scale = origScale;
-            _centerX = origCX;
-            _centerY = origCY;
+        _scale = origScale;
+        _centerX = origCX;
+        _centerY = origCY;
         }
 
-        rtb.Save(path);
-        await Task.CompletedTask;
+        await Task.Run(() => rtb.Save(path));
     }
 
     /// <summary>Computes the fit transform without invalidating - safe to
@@ -290,26 +291,28 @@ public class DrawingCanvas : Control
 
         if (_shapesDirty || _sortedCache is null)
         {
-            _sortedCache = _hasNonZeroLayer
-                ? _shapes.OrderBy(s => s.Layer).ToList()
-                : new List<Shape>(_shapes);
+            if (_hasNonZeroLayer)
+                _shapes.Sort((a, b) => a.Layer.CompareTo(b.Layer));
+            _sortedCache = _shapes;
             _tagCache = _hasAnyTags
-                ? _sortedCache.OfType<TagShape>().ToList()
+                ? _sortedCache.FindAll(s => s is TagShape).ConvertAll(s => (TagShape)s)
                 : _emptyTags;
             PrecomputeDrawData();
         }
 
         double dotR = Math.Clamp(_scale * 2.0, 0.75, 4.0);
         double strokeW = Math.Clamp(_scale, 0.6, 2.0);
-        var hidden = _sourceScene?.HiddenLabels;
+        var hidden = _sourceScene?.HiddenLabelsSnapshot();
 
         if (_shapesDirty || _transformDirty || _cachedOp is null)
         {
+            var old = _cachedOp;
             _cachedOp = new SkiaDrawOperation(
                 new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height),
                 _dotArrayCache, _othersCache, _scale, _centerX, _centerY, dotR, strokeW, Paper, hidden);
             _shapesDirty = false;
             _transformDirty = false;
+            old?.Dispose();
         }
         context.Custom(_cachedOp);
 
@@ -337,7 +340,7 @@ public class DrawingCanvas : Control
     {
         var dotLists = new Dictionary<string, List<SKPoint>>();
         var others = new List<Shape>();
-        var hidden = _sourceScene?.HiddenLabels;
+        var hidden = _sourceScene?.HiddenLabelsSnapshot();
 
         for (int i = 0; i < _sortedCache!.Count; i++)
         {

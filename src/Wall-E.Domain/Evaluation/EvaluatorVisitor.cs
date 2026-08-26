@@ -762,8 +762,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     }
 
     // ReturnValue is declared on GenericSequence<T>; sequences reaching GlobalSeq
-    // vary their T, so dispatch dynamically.
-    private static object? ConsumeNext(AbsSequence seq) => ((dynamic)seq).ReturnValue();
+    // vary their T, so use the boxed override on AbsSequence to avoid DLR dispatch.
+    private static object? ConsumeNext(AbsSequence seq) => seq.ReturnValueBoxed();
 
     private static bool IsExhausted(object? v) =>
         v is null

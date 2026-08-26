@@ -66,7 +66,8 @@ public partial class MainWindow : Window
             inkPicker.ColorChanged += (_, e) =>
             {
                 var c = e.NewColor;
-                _vm?.SetDefaultInk(c);
+                var hex = $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+                _vm?.SetDefaultInk(hex);
                 InkSwatch.Fill = new global::Avalonia.Media.SolidColorBrush(
                     global::Avalonia.Media.Color.FromArgb(255, c.R, c.G, c.B));
             };

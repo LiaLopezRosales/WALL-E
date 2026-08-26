@@ -28,4 +28,6 @@ public class GenericSequence<T>:AbsSequence
         return default(T)!;
        }
   }
+
+  public override object? ReturnValueBoxed() => ReturnValue();
 }

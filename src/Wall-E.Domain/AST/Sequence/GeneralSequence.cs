@@ -8,4 +8,7 @@ public abstract class AbsSequence
     public abstract long count { get; protected set; }
     public int MaxElements { get; set; } = DefaultMaxElements;
     public bool IsInfinite => count < 0;
+
+    /// <summary>Boxed ReturnValue() — avoids DLR dynamic dispatch.</summary>
+    public abstract object? ReturnValueBoxed();
 }

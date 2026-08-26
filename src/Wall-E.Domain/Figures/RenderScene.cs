@@ -72,6 +72,23 @@ public class RenderScene
         }
     }
 
+    /// <summary>Copy of labels from <paramref name="start"/> on,
+    /// safe to read from the UI thread while evaluation appends.</summary>
+    public List<LabelObject> LabelSnapshotRange(int start)
+    {
+        lock (_sync)
+        {
+            if (start >= Labels.Count) return new List<LabelObject>();
+            return Labels.GetRange(start, Labels.Count - start);
+        }
+    }
+
+    /// <summary>Snapshot of hidden labels, safe for concurrent read.</summary>
+    public HashSet<string> HiddenLabelsSnapshot()
+    {
+        lock (_sync) return new HashSet<string>(HiddenLabels);
+    }
+
     /// <summary>Single mutation entry point for 'color' statements.</summary>
     public void PushColor(string color)
     {
@@ -98,10 +115,30 @@ public class RenderScene
         get { lock (_sync) return UtilizedColors.Peek(); }
     }
 
+    /// <summary>Number of colors in the stack (avoids full snapshot for count-only reads).</summary>
+    public int ColorCount
+    {
+        get { lock (_sync) return UtilizedColors.Count; }
+    }
+
     /// <summary>Top-first copy of the used-color stack, safe mid-execution.</summary>
     public List<string> ColorsSnapshot()
     {
         lock (_sync) return UtilizedColors.ToList();
+    }
+
+    /// <summary>Returns up to <paramref name="maxCount"/> colors from the top of the stack,
+    /// avoiding a full list allocation when only a few are needed.</summary>
+    public List<string> ColorsTake(int maxCount)
+    {
+        lock (_sync)
+        {
+            var arr = UtilizedColors.ToArray();
+            var result = new List<string>(Math.Min(maxCount, arr.Length));
+            for (int i = 0; i < maxCount && i < arr.Length; i++)
+                result.Add(arr[i]);
+            return result;
+        }
     }
 
     /// <summary>Resets the scene to its initial empty state.</summary>

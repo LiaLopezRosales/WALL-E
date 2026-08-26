@@ -164,7 +164,7 @@ public class MainViewModel : ViewModelBase
         int count = scene.DrawCount;
         bool sceneSwapped = !ReferenceEquals(_lastScene, scene);
         _lastScene = scene;
-        int colorCount = scene.ColorsSnapshot().Count;
+        int colorCount = scene.ColorCount;
         bool colorsChanged = colorCount != _lastColorCount;
         if (count == _lastDrawCount && !sceneSwapped && !colorsChanged) return;
         _lastDrawCount = count;
@@ -188,9 +188,8 @@ public class MainViewModel : ViewModelBase
     /// <summary>Sets the initial ink used by programs without an explicit
     /// color statement. Stored as hex on the orchestrator and applied when
     /// the next run creates its scene (safe to change mid-run).</summary>
-    public void SetDefaultInk(global::Avalonia.Media.Color color)
+    public void SetDefaultInk(string hex)
     {
-        var hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
         _pipeline.InitialInk = hex;
         StatusMessage = $"Tinta inicial: {hex} (se aplica en la próxima ejecución)";
         StatusIsError = false;
@@ -200,7 +199,7 @@ public class MainViewModel : ViewModelBase
     /// (top-first, capped at 8 for space).</summary>
     private void UpdateInkStrip()
     {
-        var colors = _pipeline.Scene.ColorsSnapshot().Take(8).ToList();
+        var colors = _pipeline.Scene.ColorsTake(8);
         InkColors.Clear();
         foreach (var c in colors)
             InkColors.Add(c);

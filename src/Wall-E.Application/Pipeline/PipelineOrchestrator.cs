@@ -36,6 +36,7 @@ public class PipelineOrchestrator : IPipeline
     public void Execute(string source, string file)
     {
         _errors.Clear();
+        _cts?.Dispose();
         _cts = new CancellationTokenSource();
         CancellationToken token = _cts.Token;
 
@@ -112,7 +113,7 @@ public class PipelineOrchestrator : IPipeline
             _errors.AddRange(evaluator.SemanticErrors);
             count++;
             if (count % 500 == 0)
-                Thread.Sleep(0);
+                Thread.Yield();
         }
 
         context.HasErrors = _errors.Count > 0;
@@ -136,6 +137,7 @@ public class PipelineOrchestrator : IPipeline
         var allTokens = new List<List<Token>>();
         foreach (string line in generalLexer.lines)
         {
+            _cts?.Token.ThrowIfCancellationRequested();
             var lexer = new Lexer(libName, line);
             var tokens = lexer.Tokens(line);
             allTokens.Add(tokens);
@@ -152,6 +154,7 @@ public class PipelineOrchestrator : IPipeline
         int count = 0;
         foreach (var node in trees)
         {
+            _cts?.Token.ThrowIfCancellationRequested();
             evaluator.SetLine($"import:{libName}:{count}");
             evaluator.Visit(node);
             _errors.AddRange(evaluator.SemanticErrors);

@@ -264,5 +264,12 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
 
     public bool HitTest(global::Avalonia.Point p) => Bounds.Contains(p);
     public bool Equals(ICustomDrawOperation? other) => ReferenceEquals(this, other);
-    public void Dispose() { }
+    public void Dispose()
+    {
+        _dotPaint.Dispose();
+        _linePaint.Dispose();
+        _fillStrokePaint.Dispose();
+        _whiteHaloPaint.Dispose();
+        _shadowPaint.Dispose();
+    }
 }
