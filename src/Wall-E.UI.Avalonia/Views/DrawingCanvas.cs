@@ -105,8 +105,6 @@ public class DrawingCanvas : Control
             _hasAnyTags = false;
             _shapesDirty = true;
             _formattedTextCache.Clear();
-            _cachedOp?.Dispose();
-            _cachedOp = null;
         }
         AppendNewDraws();
         InvalidateVisual();
@@ -240,9 +238,9 @@ public class DrawingCanvas : Control
                 }
             }
 
-        _scale = origScale;
-        _centerX = origCX;
-        _centerY = origCY;
+            _scale = origScale;
+            _centerX = origCX;
+            _centerY = origCY;
         }
 
         await Task.Run(() => rtb.Save(path));
@@ -293,7 +291,7 @@ public class DrawingCanvas : Control
         {
             if (_hasNonZeroLayer)
                 _shapes.Sort((a, b) => a.Layer.CompareTo(b.Layer));
-            _sortedCache = _shapes;
+            _sortedCache = new List<Shape>(_shapes);
             _tagCache = _hasAnyTags
                 ? _sortedCache.FindAll(s => s is TagShape).ConvertAll(s => (TagShape)s)
                 : _emptyTags;
@@ -306,13 +304,11 @@ public class DrawingCanvas : Control
 
         if (_shapesDirty || _transformDirty || _cachedOp is null)
         {
-            var old = _cachedOp;
             _cachedOp = new SkiaDrawOperation(
                 new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height),
                 _dotArrayCache, _othersCache, _scale, _centerX, _centerY, dotR, strokeW, Paper, hidden);
             _shapesDirty = false;
             _transformDirty = false;
-            old?.Dispose();
         }
         context.Custom(_cachedOp);
 
