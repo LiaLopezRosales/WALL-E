@@ -41,6 +41,7 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
 
     // Reusable collections — cleared and rebuilt each frame, never reallocated.
     private readonly Dictionary<string, List<SKPoint>> _dotsByColor = new();
+    private readonly Dictionary<string, List<SKPoint>> _listPool = new();
     private readonly List<DrawingCanvas.Shape> _others = new();
     private readonly Dictionary<string, SKColor> _colorCache = new();
 
@@ -95,6 +96,8 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
         float lineW = (float)(_strokeWidth / _scale);
 
         // --- Batch dots per color (reuse collections) ---
+        foreach (var kvp in _dotsByColor)
+            _listPool[kvp.Key] = kvp.Value;
         _dotsByColor.Clear();
         _others.Clear();
 
@@ -109,7 +112,11 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                 case DrawingCanvas.DotShape d:
                     if (!_dotsByColor.TryGetValue(d.Color, out var list))
                     {
-                        list = new List<SKPoint>();
+                        if (!_listPool.TryGetValue(d.Color, out list))
+                            list = new List<SKPoint>();
+                        else
+                            _listPool.Remove(d.Color);
+                        list.Clear();
                         _dotsByColor[d.Color] = list;
                     }
                     list.Add(new SKPoint((float)d.X, (float)d.Y));

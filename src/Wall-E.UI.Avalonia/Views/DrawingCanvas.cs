@@ -33,20 +33,21 @@ public class DrawingCanvas : Control
     private const double MaxScale = 80;
     private const double DefaultScale = 2.0;
 
-    /// <summary>Frame budget: beyond this many shapes, dots are decimated
-    /// (every stride-th one drawn) so streaming and zooming stay responsive.
-    /// Lines, circles, arcs and polygons are never decimated.</summary>
-    private const int MaxDrawnShapes = 100000;
+    private const int MaxDrawnShapes = 10_000_000;
 
     private RenderScene? _sourceScene;
     private int _builtCount;
     private int _labelBuiltCount;
     private List<Shape> _shapes = new();
     private SkiaDrawOperation? _cachedOp;
-    private bool _opDirty = true;
+    private bool _shapesDirty = true;
+    private bool _transformDirty = true;
     private List<Shape>? _sortedCache;
     private List<TagShape>? _tagCache;
     private bool _hasNonZeroLayer;
+    private bool _hasAnyTags;
+    private static readonly List<TagShape> _emptyTags = new();
+    private readonly Dictionary<string, FormattedText> _formattedTextCache = new();
 
     // Pens are immutable and reused across frames; widths are quantized so
     // the cache stays tiny even though sizes adapt to zoom.
@@ -100,7 +101,9 @@ public class DrawingCanvas : Control
             _shapes = new List<Shape>();
             _hasBounds = false;
             _hasNonZeroLayer = false;
-            _opDirty = true;
+            _hasAnyTags = false;
+            _shapesDirty = true;
+            _formattedTextCache.Clear();
         }
         AppendNewDraws();
         InvalidateVisual();
@@ -115,6 +118,7 @@ public class DrawingCanvas : Control
         foreach (var drawable in fresh)
         {
             if (drawable.Layer != 0) _hasNonZeroLayer = true;
+            if (!string.IsNullOrEmpty(drawable.Tag)) _hasAnyTags = true;
             var shapeListStart = _shapes.Count;
             Collect(_shapes, drawable.Figures, drawable.UsedColor, drawable.Tag, drawable.LineStyle, drawable.StrokeWidth, drawable.FillType, drawable.GradientColor1, drawable.GradientColor2, drawable.Layer);
             for (int i = shapeListStart; i < _shapes.Count; i++)
@@ -127,9 +131,10 @@ public class DrawingCanvas : Control
             var lbl = freshLabels[li];
             _shapes.Add(new TagShape(lbl.Text, lbl.Position.x, lbl.Position.y, lbl.Color));
             GrowPoint(lbl.Position.x, lbl.Position.y);
+            _hasAnyTags = true;
         }
         _labelBuiltCount = freshLabels.Count;
-        _opDirty = true;
+        _shapesDirty = true;
     }
 
     public void ResetView()
@@ -137,14 +142,14 @@ public class DrawingCanvas : Control
         _scale = DefaultScale;
         _centerX = 0;
         _centerY = 0;
-        _opDirty = true;
+        _transformDirty = true;
         InvalidateVisual();
     }
 
     public void FitToContent()
     {
         ComputeFit();
-        _opDirty = true;
+        _transformDirty = true;
         InvalidateVisual();
     }
 
@@ -268,7 +273,7 @@ public class DrawingCanvas : Control
         }
 
         if (_scale != oldScale || _centerX != oldCX || _centerY != oldCY)
-            _opDirty = true;
+            _transformDirty = true;
     }
 
     public override void Render(DrawingContext context)
@@ -282,12 +287,14 @@ public class DrawingCanvas : Control
         DrawGrid(context);
         if (_shapes.Count == 0) return;
 
-        if (_opDirty || _sortedCache is null)
+        if (_shapesDirty || _sortedCache is null)
         {
             _sortedCache = _hasNonZeroLayer
                 ? _shapes.OrderBy(s => s.Layer).ToList()
                 : new List<Shape>(_shapes);
-            _tagCache = _sortedCache.OfType<TagShape>().ToList();
+            _tagCache = _hasAnyTags
+                ? _sortedCache.OfType<TagShape>().ToList()
+                : _emptyTags;
         }
 
         int stride = _sortedCache.Count > MaxDrawnShapes
@@ -297,23 +304,29 @@ public class DrawingCanvas : Control
         double strokeW = Math.Clamp(_scale, 0.6, 2.0);
         var hidden = _sourceScene?.HiddenLabels;
 
-        if (_opDirty || _cachedOp is null)
+        if (_shapesDirty || _transformDirty || _cachedOp is null)
         {
             _cachedOp = new SkiaDrawOperation(
                 new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height),
                 _sortedCache, _scale, _centerX, _centerY, dotR, strokeW, stride, Paper, hidden);
-            _opDirty = false;
+            _shapesDirty = false;
+            _transformDirty = false;
         }
         context.Custom(_cachedOp);
 
         foreach (var t in _tagCache!)
         {
             if (hidden != null && hidden.Contains(t.Tag)) continue;
+            var key = t.Tag + "|" + t.Color;
+            if (!_formattedTextCache.TryGetValue(key, out var ft))
+            {
+                ft = new FormattedText(t.Tag,
+                    CultureInfo.InvariantCulture,
+                    FlowDirection.LeftToRight,
+                    new Typeface("Arial"), 12, ParseColor(t.Color));
+                _formattedTextCache[key] = ft;
+            }
             var pos = Map(t.X, t.Y);
-            var ft = new FormattedText(t.Tag,
-                CultureInfo.InvariantCulture,
-                FlowDirection.LeftToRight,
-                new Typeface("Arial"), 12, ParseColor(t.Color));
             context.DrawText(ft, new global::Avalonia.Point(pos.X + 6, pos.Y - 14));
         }
     }
@@ -425,7 +438,7 @@ public class DrawingCanvas : Control
         _scale = Math.Clamp(_scale * factor, MinScale, MaxScale);
         _centerX = wx - (p.X - Bounds.Width / 2) / _scale;
         _centerY = wy + (p.Y - Bounds.Height / 2) / _scale;
-        _opDirty = true;
+        _transformDirty = true;
         InvalidateVisual();
     }
 
@@ -465,7 +478,7 @@ public class DrawingCanvas : Control
             _centerX -= (p.X - _panLast.X) / _scale;
             _centerY += (p.Y - _panLast.Y) / _scale;
             _panLast = p;
-            _opDirty = true;
+            _transformDirty = true;
             InvalidateVisual();
         }
         var (wx, wy) = ScreenToWorld(p);
