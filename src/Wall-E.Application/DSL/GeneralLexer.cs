@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using Wall_E.Domain;
 namespace Wall_E.Application.DSL;
@@ -14,96 +15,123 @@ public class GeneralLexer
     {
         this.code=StripLineComments(code);
         errors=new List<List<Error>>();
-        //Se dividen las expresiones por ;
-        string[] lines=this.code.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries);
-        int index=-1;
-        int amount_of_open_let=0;
-        int brace_depth=0;
-        //Para tratar el caso especial del let-in se recorren las expresiones separadas existentes
-        for (int i = 0; i < lines.Length; i++)
+        File=file;
+
+        // Split the source into complete, self-contained statements. Statements
+        // are delimited by ';' but a repeat/for block (or a let-in) may span
+        // several ';' pieces. We accumulate pieces and emit a finished statement
+        // whenever its braces are balanced and no 'let' awaits its 'in'.
+        //
+        // Historical bug this rewrites: a piece that closes one block and then
+        // continues with more statements on the same ';' unit (e.g. "} repeat(2) {"
+        // or "} draw ...") was merged into a single chunk because only the net
+        // brace depth was examined. That silently dropped every block/statement
+        // after the first, so a program with several consecutive loops (or a loop
+        // followed by more code) only rendered the first one. Now, whenever a piece
+        // brings the running depth back to 0, that can only be the close of a
+        // statement-level block (sequence literals like {1,2} stay balanced within
+        // their enclosing block, so their '}' never makes the GLOBAL depth hit 0),
+        // and the text after that point starts a fresh statement: split there.
+        string[] pieces=this.code.Split(new[] {";"}, StringSplitOptions.RemoveEmptyEntries);
+        List<string> statements=new List<string>();
+        StringBuilder acc=new StringBuilder();
+        int depth=0;          // unmatched '{' across the accumulated statement
+        int pendingLet=0;     // unmatched 'let' still awaiting its 'in'
+
+        foreach (string piece in pieces)
         {
-            // Track brace depth for repeat/for blocks
-            foreach (char c in lines[i])
+            if (acc.Length==0)
             {
-                if (c == '{') brace_depth++;
-                else if (c == '}') brace_depth--;
-            }
-            //Si el índice es mayor que 0 hay un let abierto  se concatenan las dos líneas
-            if (index>=0 && !(ContainIn(lines[i])))
-            {
-                if (lines[i].Contains("let ")|| lines[i].Contains("let"))
-                {
-                    int amount=Amount_of_Lets(lines[i]);
-                    amount_of_open_let=amount_of_open_let+amount;
-                }
-                lines[index]=lines[index]+";"+lines[i];
-                lines[i]="";
-            }
-             //Si hay lets abiertos y la línea contiene a 'in' se concatena la línea y se cierra un let
-             if (index>=0 && (ContainIn(lines[i])))
-            {
-                
-                lines[index]=lines[index]+";"+lines[i];
-                
-                amount_of_open_let--;
-                amount_of_open_let=amount_of_open_let+Amount_of_Lets(lines[i]);
-                //Si no hay más lets abiertos se coloca el índice en -1
-                if (amount_of_open_let==0)
-                {
-                    index=-1;
-                }
-               
-                lines[i]="";
-            }
-            //Si una linea contiene expresión let,se busca cuantos hay y se modifica el índice y la cantidad de lets abiertos
-            if (lines[i].Contains("let ") || lines[i].Contains("let"))
-            {
-                int amount=Amount_of_Lets(lines[i]);
-                if (amount==0)
-                {
-                    amount=1;
-                }
-                index=i;
-                amount_of_open_let=amount_of_open_let+amount;
-                //Si el propio chunk contiene suficientes 'in' para cerrar todos sus lets,
-                //no queda ningún let abierto: sin esto, los statements siguientes se
-                //pegaban a este chunk y se perdían silenciosamente.
-                if (CountIns(lines[i]) >= amount_of_open_let)
-                {
-                    amount_of_open_let=0;
-                    index=-1;
-                }
-            }
-            // If braces are still open (repeat/for block), continue concatenating
-            if (brace_depth > 0)
-            {
-                if (index < 0)
-                {
-                    index = i;
-                    amount_of_open_let = 0;
-                }
-            }
-            else if (brace_depth == 0 && index >= 0 && amount_of_open_let == 0)
-            {
-                index = -1;
-            }
-        }
-        
-        this.lines=new List<string>();
-        //Se eliminan las lineas que quedaron vacías luego de concatenar
-        for (int i = 0; i < lines.Length; i++)
-        {
-            if (lines[i]==" " || lines[i]=="" || lines[i]=="  ")
-            {
+                acc.Append(piece);
+                depth=CountBraces(piece);
+                pendingLet=Math.Max(0, Amount_of_Lets(piece)-CountIns(piece));
+                FlushIfComplete(statements, acc, ref depth, ref pendingLet);
                 continue;
             }
-            else
+
+            // A statement is already open. If an unmatched block is pending and
+            // this piece closes it and then opens a fresh unclosed block, the
+            // two halves belong to different statements: split at that boundary.
+            int boundary=EarliestCloseIndex(piece, depth, out int remainderNet);
+            if (depth>0 && boundary>=0 && pendingLet==0)
             {
-                this.lines.Add(lines[i]);
+                string prefix=piece.Substring(0, boundary);
+                string rest=piece.Substring(boundary);
+                if (!string.IsNullOrWhiteSpace(prefix))
+                {
+                    acc.Append(';').Append(prefix);
+                }
+                // The prefix's trailing '}' balances the block that was open in
+                // acc, so the accumulation left behind is now a complete statement.
+                depth=0;
+                FlushIfComplete(statements, acc, ref depth, ref pendingLet); // emits the closed statement
+                acc.Clear();
+                acc.Append(rest);
+                depth=CountBraces(rest);
+                pendingLet=Math.Max(0, Amount_of_Lets(rest)-CountIns(rest));
+                FlushIfComplete(statements, acc, ref depth, ref pendingLet); // may already be complete
+                continue;
             }
+
+            // Otherwise continue the open statement, re-joining pieces with ';'.
+            acc.Append(';').Append(piece);
+            depth+=CountBraces(piece);
+            pendingLet=Math.Max(0, pendingLet+Amount_of_Lets(piece)-CountIns(piece));
+            FlushIfComplete(statements, acc, ref depth, ref pendingLet);
         }
 
-        File=file;
+        // Trailing unclosed text still counts as a statement.
+        if (acc.Length>0 && !string.IsNullOrWhiteSpace(acc.ToString()))
+        {
+            statements.Add(acc.ToString().Trim());
+        }
+
+        this.lines=statements;
+    }
+
+    /// <summary>Emits the accumulated statement when it is complete (balanced
+    /// braces and no pending let), then resets the accumulator.</summary>
+    private void FlushIfComplete(List<string> statements, StringBuilder acc,
+        ref int depth, ref int pendingLet)
+    {
+        if (depth==0 && pendingLet==0 && acc.Length>0 && !string.IsNullOrWhiteSpace(acc.ToString()))
+        {
+            statements.Add(acc.ToString().Trim());
+            acc.Clear();
+        }
+    }
+
+    /// <summary>Counts the net brace depth of a chunk ({ = +1, } = -1).</summary>
+    private int CountBraces(string s)
+    {
+        int d=0;
+        foreach (char c in s)
+        {
+            if (c=='{') d++;
+            else if (c=='}') d--;
+        }
+        return d;
+    }
+
+    /// <summary>Given a piece appended to a statement already at 'startDepth',
+    /// returns the index in the piece where the running depth first falls back
+    /// to 0 (its leading block closes); or -1 if it never does.</summary>
+    private int EarliestCloseIndex(string piece, int startDepth, out int remainderNet)
+    {
+        int running=startDepth;
+        for (int i=0; i<piece.Length; i++)
+        {
+            if (piece[i]=='{') running++;
+            else if (piece[i]=='}') running--;
+            if (running==0 && piece[i]=='}')
+            {
+                string remainder=piece.Substring(i+1);
+                remainderNet=CountBraces(remainder);
+                return i+1;
+            }
+        }
+        remainderNet=0;
+        return -1;
     }
 
     /// <summary>Lexes each statement chunk into a list of tokens, accumulating lexical errors.</summary>
