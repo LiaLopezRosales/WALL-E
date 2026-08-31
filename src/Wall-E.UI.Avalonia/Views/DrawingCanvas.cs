@@ -112,6 +112,7 @@ public class DrawingCanvas : Control
         {
             _sourceScene = scene;
             _builtCount = 0;
+            _labelBuiltCount = 0;
             _shapes = new List<Shape>();
             _hasBounds = false;
             _hasNonZeroLayer = false;
@@ -124,6 +125,7 @@ public class DrawingCanvas : Control
             _precomputeFromIndex = 0;
             _dotArrayCache = null;
             _othersCache = null;
+            _sortedCache = null;
             _tagCache = null;
         }
         AppendNewDraws();
