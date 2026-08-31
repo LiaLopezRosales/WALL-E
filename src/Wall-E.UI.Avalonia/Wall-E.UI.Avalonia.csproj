@@ -14,4 +14,10 @@
     <ProjectReference Include="..\Wall-E.Application\Wall-E.Application.csproj" />
     <ProjectReference Include="..\Wall-E.Infrastructure\Wall-E.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Bundle the example DSL programs next to the executable so the Ejemplos
+         picker (ProgramsCatalog) can load them at runtime. -->
+    <None Include="..\..\programs\**\*.geo" Link="programs\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

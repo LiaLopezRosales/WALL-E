@@ -93,6 +93,25 @@ public partial class MainWindow : Window
                 }
             }
         };
+
+        // Ejemplos picker: loads a bundled example into the editor and runs it.
+        var programNames = ProgramsCatalog.List();
+        ExamplesCombo.ItemsSource = programNames;
+        ExamplesCombo.SelectionChanged += (_, _) =>
+        {
+            if (_vm is null || ExamplesCombo.SelectedItem is not string name) return;
+            string? content = ProgramsCatalog.Read(name);
+            if (content is null)
+            {
+                _vm.ReportStatus($"No se encontró el ejemplo «{name}».", isError: true);
+                return;
+            }
+            _vm.Code = content;            // editor syncs via VmOnPropertyChanged
+            _vm.ReportStatus($"Ejemplo «{name}» cargado.");
+            if (_vm.ProcessCommand.CanExecute(null))
+                _vm.ProcessCommand.Execute(null);
+            ExamplesCombo.SelectedItem = null; // allow re-selecting the same demo
+        };
         ExportPngButton.Click += async (_, _) =>
         {
             var topLevel = TopLevel.GetTopLevel(this);

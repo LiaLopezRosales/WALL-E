@@ -455,3 +455,4 @@ $RECYCLE.BIN/
 
 ## NO se guardan en el repositorio ninguno de los archivos de comandos que se puedan utilizar para probar
 *.geo
+!programs/**/*.geo

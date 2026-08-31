@@ -23,14 +23,18 @@
         <!-- Header bar -->
         <Border Grid.Row="0" Background="{DynamicResource BgSurfaceBrush}"
                 BorderBrush="{DynamicResource HairlineBrush}" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="16,10,12,10">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="16,10,12,10">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
                     <Ellipse Width="11" Height="11" VerticalAlignment="Center"
                              Fill="{DynamicResource AccentBrush}"/>
-                    <TextBlock Text="GeoWall-E" FontSize="15" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="GeoWall-E" FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
 
+                <ComboBox Grid.Column="9" x:Name="ExamplesCombo" Width="150" Margin="10,0,0,0"
+                          PlaceholderText="Ejemplos" VerticalAlignment="Center"
+                          HorizontalContentAlignment="Center" FontSize="13"
+                          ToolTip.Tip="Cargar y ejecutar un programa de ejemplo incorporado"/>
                 <Button Grid.Column="2" x:Name="OpenButton" ToolTip.Tip="Cargar programa .geo"
                         Margin="8,0,0,0" MinWidth="70" Padding="12,7" HorizontalContentAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8">
