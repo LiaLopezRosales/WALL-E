@@ -3,6 +3,7 @@
         xmlns:views="using:Wall_E.UI.Avalonia.Views"
         xmlns:vm="using:Wall_E.UI.Avalonia.ViewModels"
         xmlns:fac="using:FluentAvalonia.UI.Controls"
+        xmlns:edit="using:AvaloniaEdit"
         x:Class="Wall_E.UI.Avalonia.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="GeoWall-E" Width="1200" Height="760" MinWidth="900" MinHeight="600"
@@ -105,10 +106,11 @@
                     <TextBlock Grid.Row="0" Text="PROGRAM" FontSize="11" FontWeight="SemiBold"
                                LetterSpacing="2" Foreground="{DynamicResource TextSecondaryBrush}"
                                Margin="14,10,0,4"/>
-                    <TextBox Grid.Row="1" Text="{Binding Code}" AcceptsReturn="True"
-                             Background="Transparent" BorderThickness="0" Padding="14,6,14,12"
-                             FontFamily="Cascadia Code,Consolas,Menlo,monospace" FontSize="13.5"
-                             TextWrapping="NoWrap"/>
+                    <edit:TextEditor x:Name="CodeEditor" Grid.Row="1"
+                                     Padding="12,6,12,12"
+                                     FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                                     FontSize="13.5" WordWrap="False"
+                                     ShowLineNumbers="False"/>
                 </Grid>
             </Border>
 

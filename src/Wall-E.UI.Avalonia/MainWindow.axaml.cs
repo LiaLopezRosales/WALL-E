@@ -1,19 +1,37 @@
+using System.ComponentModel;
 using System.IO;
 using Avalonia.Controls;
 using Avalonia.Input;
+using AvaloniaEdit.Document;
 using Wall_E.UI.Avalonia.ViewModels;
+using Wall_E.UI.Avalonia.Views;
 
 namespace Wall_E.UI.Avalonia;
 
 public partial class MainWindow : Window
 {
     private MainViewModel? _vm;
+    private bool _syncingEditor;
 
     public MainWindow()
     {
         InitializeComponent();
         DataContextChanged += (_, _) => WireViewModel();
         WireViewModel();
+
+        // Rebuild syntax-highlighting colors when the app theme flips so the
+        // DSL palette stays legible in both light and dark mode.
+        ActualThemeVariantChanged += (_, _) => ReapplyHighlighting();
+
+        // Two-way binding for the editor document (AvaloniaEdit.TextEditor has
+        // no string-Text property, so we sync VM.Code <-> TextDocument here).
+        CodeEditor.TextChanged += (_, _) =>
+        {
+            if (_syncingEditor) return;
+            _syncingEditor = true;
+            _vm!.Code = CodeEditor.Text;
+            _syncingEditor = false;
+        };
 
         Canvas.CursorWorldPositionChanged += (x, y) =>
             CursorPos.Text = $"x: {x:F1}   y: {y:F1}";
@@ -133,9 +151,43 @@ public partial class MainWindow : Window
 
     private void WireViewModel()
     {
-        if (_vm is not null) _vm.SceneChanged -= VmOnSceneChanged;
+        if (_vm is not null)
+        {
+            _vm.SceneChanged -= VmOnSceneChanged;
+            _vm.PropertyChanged -= VmOnPropertyChanged;
+        }
         _vm = DataContext as MainViewModel;
-        if (_vm is not null) _vm.SceneChanged += VmOnSceneChanged;
+        if (_vm is not null)
+        {
+            _vm.SceneChanged += VmOnSceneChanged;
+            _vm.PropertyChanged += VmOnPropertyChanged;
+            SyncEditorFromViewModel();
+            ReapplyHighlighting();
+        }
+    }
+
+    private void VmOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.Code))
+            SyncEditorFromViewModel();
+    }
+
+    /// <summary>Pushes the ViewModel's Code into the editor document (guarded
+    /// against the TextChanged round-trip).</summary>
+    private void SyncEditorFromViewModel()
+    {
+        if (_vm is null) return;
+        _syncingEditor = true;
+        CodeEditor.Document ??= new TextDocument();
+        if (CodeEditor.Text != _vm.Code)
+            CodeEditor.Text = _vm.Code;
+        _syncingEditor = false;
+    }
+
+    private void ReapplyHighlighting()
+    {
+        CodeEditor.SyntaxHighlighting =
+            GeoWallEDslHighlighting.ForTheme(_vm?.IsDarkTheme ?? false);
     }
 
     private void VmOnSceneChanged(object? sender, EventArgs e)
