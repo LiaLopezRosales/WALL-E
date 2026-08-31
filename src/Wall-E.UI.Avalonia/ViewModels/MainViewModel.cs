@@ -54,6 +54,16 @@ public class MainViewModel : ViewModelBase
         private set => SetField(ref _statusIsError, value);
     }
 
+    /// <summary>Shows a status-bar message from UI-side operations (e.g. file
+    /// open/save) that don't go through the pipeline.</summary>
+    public void ReportStatus(string message, bool isError = false)
+    {
+        StatusMessage = message;
+        StatusIsError = isError;
+        OnPropertyChanged(nameof(StatusMessage));
+        OnPropertyChanged(nameof(StatusIsError));
+    }
+
     /// <summary>Latest finished scene snapshot.</summary>
     public RenderScene? Scene => _scene;
 

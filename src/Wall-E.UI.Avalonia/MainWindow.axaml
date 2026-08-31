@@ -22,7 +22,7 @@
         <!-- Header bar -->
         <Border Grid.Row="0" Background="{DynamicResource BgSurfaceBrush}"
                 BorderBrush="{DynamicResource HairlineBrush}" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto" Margin="16,10,12,10">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="16,10,12,10">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
                     <Ellipse Width="11" Height="11" VerticalAlignment="Center"
                              Fill="{DynamicResource AccentBrush}"/>
@@ -30,7 +30,23 @@
                                Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <Button Grid.Column="2" x:Name="StressRunButton" Command="{Binding StressRunCommand}"
+                <Button Grid.Column="2" x:Name="OpenButton" ToolTip.Tip="Cargar programa .geo"
+                        Margin="8,0,0,0" MinWidth="70" Padding="12,7" HorizontalContentAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Width="11" Height="11"
+                                  Data="M 0 0 L 2 0 L 2 1 L 10 1 L 10 0 L 12 0 L 12 12 L 0 12 Z M 2 3 L 10 3 L 10 10 L 2 10 Z"/>
+                        <TextBlock Text="Open"/>
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="3" x:Name="SaveButton" ToolTip.Tip="Guardar programa como .geo"
+                        Margin="8,0,0,0" MinWidth="70" Padding="12,7" HorizontalContentAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Width="11" Height="11"
+                                  Data="M 0 0 L 11 0 L 11 12 L 0 12 Z M 2 1 L 2 5 L 9 5 L 9 1 Z M 3 7 L 8 7 L 8 11 L 3 11 Z"/>
+                        <TextBlock Text="Save"/>
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="4" x:Name="StressRunButton" Command="{Binding StressRunCommand}"
                         ToolTip.Tip="Ejecuta un programa largo en memoria (sin tocar el editor) para probar streaming y Stop"
                         Margin="8,0,0,0" MinWidth="124" Padding="14,7" HorizontalContentAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -39,7 +55,7 @@
                         <TextBlock Text="Stress demo"/>
                     </StackPanel>
                 </Button>
-                <Button Grid.Column="3" x:Name="ProcessButton" Classes="accent"
+                <Button Grid.Column="5" x:Name="ProcessButton" Classes="accent"
                         Command="{Binding ProcessCommand}" ToolTip.Tip="F5"
                         MinWidth="118" HorizontalContentAlignment="Center" Padding="14,7">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -48,7 +64,7 @@
                         <TextBlock Text="Run" FontWeight="Medium"/>
                     </StackPanel>
                 </Button>
-                <Button Grid.Column="4" x:Name="StopButton" Classes="danger"
+                <Button Grid.Column="6" x:Name="StopButton" Classes="danger"
                         Command="{Binding StopCommand}" ToolTip.Tip="Cancel execution"
                         IsVisible="{Binding IsProcessing}" Margin="8,0,0,0"
                         MinWidth="96" Padding="14,7">
@@ -58,7 +74,7 @@
                         <TextBlock Text="Stop"/>
                     </StackPanel>
                 </Button>
-                <Button Grid.Column="5" x:Name="ClearButton" Command="{Binding ClearCommand}"
+                <Button Grid.Column="7" x:Name="ClearButton" Command="{Binding ClearCommand}"
                         Margin="8,0,0,0" MinWidth="110" Padding="14,7">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <PathIcon Width="10" Height="10"
@@ -66,7 +82,7 @@
                         <TextBlock Text="Clear"/>
                     </StackPanel>
                 </Button>
-                <Button Grid.Column="6" x:Name="ThemeButton" Command="{Binding ToggleThemeCommand}"
+                <Button Grid.Column="8" x:Name="ThemeButton" Command="{Binding ToggleThemeCommand}"
                         ToolTip.Tip="Tema claro / oscuro" Margin="8,0,0,0"
                         MinWidth="52" Padding="10,7" HorizontalContentAlignment="Center">
                     <Panel>

@@ -1,3 +1,4 @@
+using System.IO;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Wall_E.UI.Avalonia.ViewModels;
@@ -18,6 +19,62 @@ public partial class MainWindow : Window
             CursorPos.Text = $"x: {x:F1}   y: {y:F1}";
         Canvas.CursorLeftCanvas += () => CursorPos.Text = "x: —   y: —";
         FitButton.Click += (_, _) => Canvas.FitToContent();
+        OpenButton.Click += async (_, _) =>
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel is null || _vm is null) return;
+            var file = await topLevel.StorageProvider.OpenFilePickerAsync(new global::Avalonia.Platform.Storage.FilePickerOpenOptions
+            {
+                Title = "Cargar programa (.geo)",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new global::Avalonia.Platform.Storage.FilePickerFileType("GeoWall-E Program")
+                    {
+                        Patterns = new[] { "*.geo" }
+                    },
+                    global::Avalonia.Platform.Storage.FilePickerFileTypes.All
+                }
+            });
+            if (file is null || file.Count == 0) return;
+            try
+            {
+                var path = file[0].Path.LocalPath;
+                _vm.Code = await File.ReadAllTextAsync(path);
+            }
+            catch (Exception ex)
+            {
+                _vm.ReportStatus($"Error al abrir: {ex.Message}", isError: true);
+            }
+        };
+        SaveButton.Click += async (_, _) =>
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel is null || _vm is null) return;
+            var file = await topLevel.StorageProvider.SaveFilePickerAsync(new global::Avalonia.Platform.Storage.FilePickerSaveOptions
+            {
+                Title = "Guardar programa como .geo",
+                SuggestedFileName = "program.geo",
+                FileTypeChoices = new[]
+                {
+                    new global::Avalonia.Platform.Storage.FilePickerFileType("GeoWall-E Program")
+                    {
+                        Patterns = new[] { "*.geo" }
+                    }
+                }
+            });
+            if (file is not null)
+            {
+                try
+                {
+                    await File.WriteAllTextAsync(file.Path.LocalPath, _vm.Code);
+                }
+                catch (Exception ex)
+                {
+                    _vm.ReportStatus($"Error al guardar: {ex.Message}", isError: true);
+                }
+            }
+        };
         ExportPngButton.Click += async (_, _) =>
         {
             var topLevel = TopLevel.GetTopLevel(this);
