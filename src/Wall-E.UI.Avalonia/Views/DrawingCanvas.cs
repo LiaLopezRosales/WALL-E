@@ -49,6 +49,13 @@ public class DrawingCanvas : Control
     private readonly Dictionary<string, FormattedText> _formattedTextCache = new();
     private Dictionary<string, SKPoint[]>? _dotArrayCache;
     private List<Shape>? _othersCache;
+    // Persistent incremental precompute state: dots accumulate per color as
+    // List<SKPoint> and 'others' as a growing list. Each dirty pass only walks
+    // shapes from _precomputeFromIndex onwards, so a 200k-draw stream stays
+    // O(new-shapes) per tick instead of re-walking and re-allocating all shapes.
+    private readonly Dictionary<string, List<SKPoint>> _dotLists = new();
+    private readonly List<Shape> _othersList = new();
+    private int _precomputeFromIndex;
 
     // Pens are immutable and reused across frames; widths are quantized so
     // the cache stays tiny even though sizes adapt to zoom.
@@ -71,6 +78,12 @@ public class DrawingCanvas : Control
 
     private bool _panning;
     private APoint _panLast;
+
+    // Auto-fit is enabled only while new draws are streaming in. Any user
+    // interaction (pan/zoom) disables it so the viewport stays where the
+    // user put it instead of re-centering to the full bounds on the next
+    // render. A new scene reference re-arms it for the next run.
+    private bool _autoFitEnabled = true;
 
     private IBrush _paper = Brushes.White;
 
@@ -105,6 +118,13 @@ public class DrawingCanvas : Control
             _hasAnyTags = false;
             _shapesDirty = true;
             _formattedTextCache.Clear();
+            _autoFitEnabled = true;
+            _dotLists.Clear();
+            _othersList.Clear();
+            _precomputeFromIndex = 0;
+            _dotArrayCache = null;
+            _othersCache = null;
+            _tagCache = null;
         }
         AppendNewDraws();
         InvalidateVisual();
@@ -281,7 +301,7 @@ public class DrawingCanvas : Control
         context.FillRectangle(Paper, new global::Avalonia.Rect(0, 0, Bounds.Width, Bounds.Height));
         if (!IsSizeValid()) return;
 
-        if (_shapes.Count > 0 && !ContentFullyVisible())
+        if (_autoFitEnabled && _shapes.Count > 0 && !ContentFullyVisible())
             ComputeFit();
 
         DrawGrid(context);
@@ -289,11 +309,9 @@ public class DrawingCanvas : Control
 
         if (_shapesDirty || _sortedCache is null)
         {
-            if (_hasNonZeroLayer)
-                _shapes.Sort((a, b) => a.Layer.CompareTo(b.Layer));
-            _sortedCache = new List<Shape>(_shapes);
+            RefreshSortedCache();
             _tagCache = _hasAnyTags
-                ? _sortedCache.FindAll(s => s is TagShape).ConvertAll(s => (TagShape)s)
+                ? _sortedCache!.FindAll(s => s is TagShape).ConvertAll(s => (TagShape)s)
                 : _emptyTags;
             PrecomputeDrawData();
         }
@@ -329,40 +347,80 @@ public class DrawingCanvas : Control
         }
     }
 
+    /// <summary>Builds/brings _sortedCache up to date with _shapes. When there
+    /// are no layers, new shapes are always appended at the very end (a stable
+    /// append, since Collect() and labels only ever Add), so we extend the
+    /// cached list instead of copying the whole shape list every streaming
+    /// tick. With layers, fall back to a full re-sort+copy.</summary>
+    private void RefreshSortedCache()
+    {
+        if (_sortedCache is null)
+        {
+            if (_hasNonZeroLayer)
+                _shapes.Sort((a, b) => a.Layer.CompareTo(b.Layer));
+            _sortedCache = new List<Shape>(_shapes);
+            return;
+        }
+        if (_hasNonZeroLayer)
+        {
+            _shapes.Sort((a, b) => a.Layer.CompareTo(b.Layer));
+            _sortedCache = new List<Shape>(_shapes);
+            _precomputeFromIndex = 0;
+            _dotLists.Clear();
+            _othersList.Clear();
+            _dotArrayCache = null;
+            _othersCache = null;
+        }
+        else if (_sortedCache.Count < _shapes.Count)
+        {
+            for (int i = _sortedCache.Count; i < _shapes.Count; i++)
+                _sortedCache.Add(_shapes[i]);
+        }
+    }
+
     /// <summary>Batches shapes into pre-computed dot arrays and an others
     /// list so SkiaDrawOperation.Render() avoids iterating all shapes
-    /// every frame. Called only when _shapesDirty is true.</summary>
+    /// every frame. Called only when _shapesDirty is true, and walks ONLY
+    /// the shapes not yet consumed (_precomputeFromIndex..end) so repeated
+    /// streaming ticks are O(new-shapes) instead of O(total).</summary>
     private void PrecomputeDrawData()
     {
-        var dotLists = new Dictionary<string, List<SKPoint>>();
-        var others = new List<Shape>();
-        var hidden = _sourceScene?.HiddenLabelsSnapshot();
-
-        for (int i = 0; i < _sortedCache!.Count; i++)
+        var sorted = _sortedCache!;
+        int from = _precomputeFromIndex;
+        for (int i = from; i < sorted.Count; i++)
         {
-            var shape = _sortedCache[i];
+            var shape = sorted[i];
             switch (shape)
             {
                 case DotShape d:
-                    if (!dotLists.TryGetValue(d.Color, out var pts))
+                    if (!_dotLists.TryGetValue(d.Color, out var pts))
                     {
                         pts = new List<SKPoint>();
-                        dotLists[d.Color] = pts;
+                        _dotLists[d.Color] = pts;
                     }
                     pts.Add(new SKPoint((float)d.X, (float)d.Y));
                     break;
                 case TagShape:
                     break;
                 default:
-                    others.Add(shape);
+                    _othersList.Add(shape);
                     break;
             }
         }
+        _precomputeFromIndex = sorted.Count;
 
-        _dotArrayCache = new Dictionary<string, SKPoint[]>(dotLists.Count);
-        foreach (var kvp in dotLists)
+        // Commit the accumulated per-color point lists to arrays only when
+        // new dots arrived (avoid re-ToArray-ing on transform-only ticks).
+        if (from < sorted.Count)
+            CommitDotArrays();
+        _othersCache = _othersList;
+    }
+
+    private void CommitDotArrays()
+    {
+        _dotArrayCache = new Dictionary<string, SKPoint[]>(_dotLists.Count);
+        foreach (var kvp in _dotLists)
             _dotArrayCache[kvp.Key] = kvp.Value.ToArray();
-        _othersCache = others;
     }
 
     // ---- cartesian grid -------------------------------------------------
@@ -470,6 +528,7 @@ public class DrawingCanvas : Control
     private void ZoomAt(APoint p, double factor)
     {
         if (!IsSizeValid()) return;
+        _autoFitEnabled = false;
         var (wx, wy) = ScreenToWorld(p);
         _scale = Math.Clamp(_scale * factor, MinScale, MaxScale);
         _centerX = wx - (p.X - Bounds.Width / 2) / _scale;
@@ -511,6 +570,7 @@ public class DrawingCanvas : Control
         var p = e.GetPosition(this);
         if (_panning)
         {
+            _autoFitEnabled = false;
             _centerX -= (p.X - _panLast.X) / _scale;
             _centerY += (p.Y - _panLast.Y) / _scale;
             _panLast = p;
