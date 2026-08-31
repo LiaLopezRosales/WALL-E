@@ -204,6 +204,10 @@ namespace Wall_E.Application.DSL;
         {
             token = new Token(Token.TokenType.for_token,possibletoken,File,Line,index.ToString());
         }
+        else if (possibletoken == "animate" )
+        {
+            token = new Token(Token.TokenType.animate,possibletoken,File,Line,index.ToString());
+        }
         else if (possibletoken == "label" )
         {
             token = new Token(Token.TokenType.label,possibletoken,File,Line,index.ToString());

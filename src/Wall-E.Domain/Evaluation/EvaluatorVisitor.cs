@@ -13,6 +13,14 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     private readonly List<Error> _semanticErrors = new();
     public CancellationToken CancellationToken { get; set; }
 
+    /// <summary>Frames produced by <c>animate(...)</c> blocks. Each frame is an
+    /// isolated RenderScene (one per sampled parameter value) so the UI can
+    /// replay the parametric animation. Empty when the program has no animate.</summary>
+    public List<RenderScene> AnimationFrames { get; } = new();
+
+    /// <summary>Number of discrete parameter samples rendered per animate block.</summary>
+    public const int AnimateFrames = 60;
+
     public IReadOnlyList<Error> SemanticErrors => _semanticErrors;
     public Scope CurrentScope => _currentScope;
 
@@ -111,6 +119,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Complement => VisitComplement(node),
         Node.NodeType.Repeat => VisitRepeat(node),
         Node.NodeType.For => VisitFor(node),
+        Node.NodeType.Animate => VisitAnimate(node),
         Node.NodeType.Label => VisitLabel(node),
         Node.NodeType.LineStyleStmt => VisitLineStyleStmt(node),
         Node.NodeType.GrosorStmt => VisitGrosorStmt(node),
@@ -399,6 +408,65 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Scope parent = CurrentScope.Parent!;
         SetCurrentScope(parent);
         return last;
+    }
+
+    /// <summary>Evaluates a parametric animation <c>animate(t from A to B) { ... }</c>.
+    /// Produces <see cref="AnimateFrames"/> isolated RenderScenes (one per sampled
+    /// parameter value) replayed later by the UI. Each frame evaluates the body in
+    /// its own child scope and scratch scene, so frames never leak state between
+    /// themselves nor into the surrounding program.</summary>
+    public EvaluationResult VisitAnimate(Node node)
+    {
+        string varName = node.NodeExpression!.ToString()!;
+
+        EvaluationResult fromResult = Visit(node.Branches[0]);
+        if (fromResult is ErrorResult) return fromResult;
+        EvaluationResult toResult = Visit(node.Branches[1]);
+        if (toResult is ErrorResult) return toResult;
+
+        object fromRaw = UnwrapRaw(fromResult)!;
+        object toRaw = UnwrapRaw(toResult)!;
+        if (!(fromRaw is long || fromRaw is double) || !(toRaw is long || toRaw is double))
+        {
+            AddError("numerical from/to bounds for animate");
+            return new VoidResult();
+        }
+        double from = Convert.ToDouble(fromRaw);
+        double to = Convert.ToDouble(toRaw);
+
+        Node body = node.Branches[2];
+        RenderScene outerScene = _scene;
+        Scope outerScope = CurrentScope;
+
+        AnimationFrames.Clear();
+        for (int i = 0; i < AnimateFrames; i++)
+        {
+            CancellationToken.ThrowIfCancellationRequested();
+            double t = from + (to - from) * i / (AnimateFrames - 1);
+
+            var frameScene = new RenderScene();
+            _scene = frameScene;
+
+            Scope frameScope = outerScope.Child();
+            SetCurrentScope(frameScope);
+            frameScope.Variables[varName] = t;
+
+            foreach (var stmt in body.Branches)
+            {
+                EvaluationResult last = Visit(stmt);
+                if (last is ErrorResult)
+                {
+                    SetCurrentScope(outerScope);
+                    _scene = outerScene;
+                    return last;
+                }
+            }
+
+            SetCurrentScope(outerScope);
+            _scene = outerScene;
+            AnimationFrames.Add(frameScene);
+        }
+        return new VoidResult();
     }
 
     public EvaluationResult VisitLabel(Node node)

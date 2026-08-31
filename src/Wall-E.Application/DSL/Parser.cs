@@ -113,6 +113,10 @@ public class Parser
         {
             return ForStatement();
         }
+        if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.animate)
+        {
+            return AnimateStatement();
+        }
         if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.label)
         {
             return LabelStatement();
@@ -1083,6 +1087,44 @@ public class Parser
         temp.Type = Node.NodeType.For;
         temp.NodeExpression = varName;
         temp.Branches = new List<Node> { seq, body };
+        return temp;
+    }
+
+    /// <summary>Parses a parametric animation block: <c>animate(t from A to B) { ... }</c>.
+    /// The parameter name lives in NodeExpression; Branches are [from, to, body].</summary>
+    public Node AnimateStatement()
+    {
+        tokenstream.MoveForward(1);
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.left_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'(' after animate", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.identifier)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "animation parameter name", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        string varName = tokenstream.tokens[tokenstream.Position()].Value;
+        tokenstream.MoveForward(1);
+
+        if (tokenstream.tokens[tokenstream.Position()].Value != "from")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'from' keyword", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+
+        Node from = ParseExpression();
+
+        if (tokenstream.tokens[tokenstream.Position()].Value != "to")
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'to' keyword", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+
+        Node to = ParseExpression();
+
+        if (tokenstream.tokens[tokenstream.Position()].Type != Token.TokenType.right_bracket)
+            errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "')' to close animate header", tokenstream.tokens[tokenstream.Position()].TokenLocation));
+        else tokenstream.MoveForward(1);
+
+        Node body = ParseBlock();
+        Node temp = new Node();
+        temp.Type = Node.NodeType.Animate;
+        temp.NodeExpression = varName;
+        temp.Branches = new List<Node> { from, to, body };
         return temp;
     }
 

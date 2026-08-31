@@ -21,6 +21,11 @@ public class PipelineOrchestrator : IPipeline
     /// <summary>Render scene containing the drawing commands and color stack.</summary>
     public RenderScene Scene { get; private set; } = new();
 
+    /// <summary>Animation frames produced by any <c>animate(...)</c> block, each an
+    /// isolated RenderScene. Populated after a successful run; empty when the program
+    /// uses no animate. The UI replays these frames for parametric animation.</summary>
+    public List<RenderScene> Frames { get; private set; } = new();
+
     /// <summary>Optional initial ink (DSL color name or "#RRGGBB") pushed onto
     /// the scene's color stack when a run starts, so programs without an
     /// explicit `color` statement draw with it. Pushing over the black base
@@ -117,6 +122,7 @@ public class PipelineOrchestrator : IPipeline
         }
 
         context.HasErrors = _errors.Count > 0;
+        Frames = evaluator.AnimationFrames;
     }
 
     // Import failures are reported on both channels: pipeline.Errors (for the
