@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.IO;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -11,7 +10,6 @@ namespace Wall_E.UI.Avalonia;
 public partial class MainWindow : Window
 {
     private MainViewModel? _vm;
-    private bool _syncingEditor;
 
     public MainWindow()
     {
@@ -23,14 +21,12 @@ public partial class MainWindow : Window
         // DSL palette stays legible in both light and dark mode.
         ActualThemeVariantChanged += (_, _) => ReapplyHighlighting();
 
-        // Two-way binding for the editor document (AvaloniaEdit.TextEditor has
-        // no string-Text property, so we sync VM.Code <-> TextDocument here).
+        // One-way binding: editor → ViewModel. The editor is the sole source
+        // of truth for code content; nothing pushes VM → editor.
         CodeEditor.TextChanged += (_, _) =>
         {
-            if (_syncingEditor) return;
-            _syncingEditor = true;
-            _vm!.Code = CodeEditor.Text;
-            _syncingEditor = false;
+            if (_vm is not null)
+                _vm.Code = CodeEditor.Text;
         };
 
         Canvas.CursorWorldPositionChanged += (x, y) =>
@@ -40,7 +36,7 @@ public partial class MainWindow : Window
         OpenButton.Click += async (_, _) =>
         {
             var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel is null || _vm is null) return;
+            if (topLevel is null) return;
             var file = await topLevel.StorageProvider.OpenFilePickerAsync(new global::Avalonia.Platform.Storage.FilePickerOpenOptions
             {
                 Title = "Cargar programa (.geo)",
@@ -58,11 +54,13 @@ public partial class MainWindow : Window
             try
             {
                 var path = file[0].Path.LocalPath;
-                _vm.Code = await File.ReadAllTextAsync(path);
+                CodeEditor.Text = await File.ReadAllTextAsync(path);
+                if (_vm is not null)
+                    _vm.ReportStatus($"Cargado: {System.IO.Path.GetFileName(path)}");
             }
             catch (Exception ex)
             {
-                _vm.ReportStatus($"Error al abrir: {ex.Message}", isError: true);
+                _vm?.ReportStatus($"Error al abrir: {ex.Message}", isError: true);
             }
         };
         SaveButton.Click += async (_, _) =>
@@ -106,11 +104,11 @@ public partial class MainWindow : Window
                 _vm.ReportStatus($"No se encontró el ejemplo «{name}».", isError: true);
                 return;
             }
-            _vm.Code = content;            // editor syncs via VmOnPropertyChanged
+            CodeEditor.Text = content;              // TextChanged syncs to _vm.Code
             _vm.ReportStatus($"Ejemplo «{name}» cargado.");
             if (_vm.ProcessCommand.CanExecute(null))
                 _vm.ProcessCommand.Execute(null);
-            ExamplesCombo.SelectedItem = null; // allow re-selecting the same demo
+            ExamplesCombo.SelectedItem = null;       // allow re-selecting the same demo
         };
         ExportPngButton.Click += async (_, _) =>
         {
@@ -171,43 +169,18 @@ public partial class MainWindow : Window
     private void WireViewModel()
     {
         if (_vm is not null)
-        {
             _vm.SceneChanged -= VmOnSceneChanged;
-            _vm.PropertyChanged -= VmOnPropertyChanged;
-        }
         _vm = DataContext as MainViewModel;
         if (_vm is not null)
         {
             _vm.SceneChanged += VmOnSceneChanged;
-            _vm.PropertyChanged += VmOnPropertyChanged;
-            SyncEditorFromViewModel();
+            // Push the default code into the editor (one-time). The
+            // TextChanged handler will sync it back to _vm.Code.
+            CodeEditor.Document ??= new TextDocument();
+            if (CodeEditor.Text != _vm.Code)
+                CodeEditor.Text = _vm.Code;
             ReapplyHighlighting();
         }
-    }
-
-    private void VmOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        // Only push VM -> editor for EXTERNAL changes (Open .geo, bundled demo
-        // picker). While the user types, the Code change is raised synchronously
-        // inside CodeEditor.TextChanged with _syncingEditor still true, so this
-        // guard stops us from writing back to the document mid-edit (which
-        // reverted keystrokes). Without a TextProperty, AvaloniaEdit.Text is a
-        // plain CLR property, so a manual one-directional sync is required.
-        if (e.PropertyName == nameof(MainViewModel.Code) && !_syncingEditor)
-            SyncEditorFromViewModel();
-    }
-
-    /// <summary>Pushes the ViewModel's Code into the editor document. Must not
-    /// be called from within the editor's own TextChanged handler (writes back
-    /// during an active edit).</summary>
-    private void SyncEditorFromViewModel()
-    {
-        if (_vm is null || _syncingEditor) return;
-        _syncingEditor = true;
-        CodeEditor.Document ??= new TextDocument();
-        if (CodeEditor.Text != _vm.Code)
-            CodeEditor.Text = _vm.Code;
-        _syncingEditor = false;
     }
 
     private void ReapplyHighlighting()

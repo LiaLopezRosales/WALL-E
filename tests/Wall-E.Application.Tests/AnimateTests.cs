@@ -61,4 +61,19 @@ public class AnimateTests
         var p = DslRunner.Run("draw point(0, 0);");
         Assert.Empty(p.Frames);
     }
+
+    [Fact]
+    public void Multiple_animate_blocks_append_all_frames()
+    {
+        // Frames from every animate block must accumulate (not just the last
+        // block's) so the full animation replays end to end.
+        var p = DslRunner.Run(
+            "animate(t from 0 to 1) { draw point(t, t); }\n" +
+            "animate(t from 0 to 1) { draw circle(point(0,0), t); }");
+        Assert.Empty(p.Errors);
+        Assert.Equal(2 * EvaluatorVisitor.AnimateFrames, p.Frames.Count);
+        // First block's frame carries the point; second block's a circle.
+        Assert.IsType<Point>(p.Frames[0].Snapshot()[0].Figures);
+        Assert.IsType<Circle>(p.Frames[^1].Snapshot()[0].Figures);
+    }
 }

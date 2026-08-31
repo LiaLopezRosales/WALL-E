@@ -438,7 +438,10 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         RenderScene outerScene = _scene;
         Scope outerScope = CurrentScope;
 
-        AnimationFrames.Clear();
+        // NOTE: no AnimationFrames.Clear() here — multiple `animate` blocks in
+        // one program must APPEND their frames so the full animation replays,
+        // not just the last block's. A fresh EvaluatorVisitor starts each run
+        // with an empty list, so there's nothing stale to clear.
         for (int i = 0; i < AnimateFrames; i++)
         {
             CancellationToken.ThrowIfCancellationRequested();
