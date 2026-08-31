@@ -219,7 +219,7 @@ public class MainViewModel : ViewModelBase
         SceneChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private const int StressPoints = 300000; // ~3.8s at ~1.27ms/100 statements
+    private const int StressPoints = 200000; // ~2.5s at ~1.27ms/100 statements
     private static readonly string[] DemoColors = { "cyan", "green", "yellow", "red", "magenta", "blue" };
 
     /// <summary>Generates a long valid DSL program (a rainbow spiral of
@@ -236,7 +236,10 @@ public class MainViewModel : ViewModelBase
         for (int i = 0; i < points; i++)
         {
             if (i % colorStride == 0)
-                sb.Append("color ").Append(DemoColors[i / colorStride]).Append(';').AppendLine();
+            {
+                int colorIdx = System.Math.Min(i / colorStride, DemoColors.Length - 1);
+                sb.Append("color ").Append(DemoColors[colorIdx]).Append(';').AppendLine();
+            }
             double angle = i * System.Math.PI / 180 * 2.2;
             double radius = 3 + i * 0.30;
             double x = System.Math.Round(radius * System.Math.Cos(angle), 2);
