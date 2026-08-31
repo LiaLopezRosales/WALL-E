@@ -168,15 +168,22 @@ public partial class MainWindow : Window
 
     private void VmOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(MainViewModel.Code))
+        // Only push VM -> editor for EXTERNAL changes (Open .geo, bundled demo
+        // picker). While the user types, the Code change is raised synchronously
+        // inside CodeEditor.TextChanged with _syncingEditor still true, so this
+        // guard stops us from writing back to the document mid-edit (which
+        // reverted keystrokes). Without a TextProperty, AvaloniaEdit.Text is a
+        // plain CLR property, so a manual one-directional sync is required.
+        if (e.PropertyName == nameof(MainViewModel.Code) && !_syncingEditor)
             SyncEditorFromViewModel();
     }
 
-    /// <summary>Pushes the ViewModel's Code into the editor document (guarded
-    /// against the TextChanged round-trip).</summary>
+    /// <summary>Pushes the ViewModel's Code into the editor document. Must not
+    /// be called from within the editor's own TextChanged handler (writes back
+    /// during an active edit).</summary>
     private void SyncEditorFromViewModel()
     {
-        if (_vm is null) return;
+        if (_vm is null || _syncingEditor) return;
         _syncingEditor = true;
         CodeEditor.Document ??= new TextDocument();
         if (CodeEditor.Text != _vm.Code)
