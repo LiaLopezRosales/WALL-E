@@ -823,9 +823,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var min = new Minor();
-        min.Evaluate(left, right);
-        return WrapResult(min.Value);
+        return WrapResult(EvalMinor(left, right));
     }
 
     public EvaluationResult VisitMajor(Node node)
@@ -844,9 +842,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var maj = new Major();
-        maj.Evaluate(left, right);
-        return WrapResult(maj.Value);
+        return WrapResult(EvalMajor(left, right));
     }
 
     public EvaluationResult VisitEqualMajor(Node node)
@@ -865,9 +861,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var emaj = new Equal_Major();
-        emaj.Evaluate(left, right);
-        return WrapResult(emaj.Value);
+        return WrapResult(EvalEqualMajor(left, right));
     }
 
     public EvaluationResult VisitEqualMinor(Node node)
@@ -886,9 +880,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var emin = new Equal_Minor();
-        emin.Evaluate(left, right);
-        return WrapResult(emin.Value);
+        return WrapResult(EvalEqualMinor(left, right));
     }
 
     public EvaluationResult VisitOr(Node node)
@@ -907,9 +899,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var or = new Or();
-        or.Evaluate(left, right);
-        return WrapResult(or.Value);
+        return WrapResult(EvalOr(left, right));
     }
 
     public EvaluationResult VisitAnd(Node node)
@@ -928,9 +918,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var and = new And();
-        and.Evaluate(left, right);
-        return WrapResult(and.Value);
+        return WrapResult(EvalAnd(left, right));
     }
 
     public EvaluationResult VisitEqual(Node node)
@@ -949,9 +937,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var eq = new Equal();
-        eq.Evaluate(left, right);
-        return WrapResult(eq.Value);
+        return WrapResult(EvalEqual(left, right));
     }
 
     public EvaluationResult VisitDiferent(Node node)
@@ -970,9 +956,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var dif = new Diferent();
-        dif.Evaluate(left, right);
-        return WrapResult(dif.Value);
+        return WrapResult(EvalDiferent(left, right));
     }
 
     public EvaluationResult VisitSum(Node node)
@@ -992,16 +976,12 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
              left is Finite_Sequence<Point> || left is Infinite_Sequence || left is InfinitePointSequence ||
              left is InfiniteDoubleSequence) && right is string s2 && s2 == "undefined")
         {
-            var sum = new Sum();
-            sum.Evaluate(left, right);
-            return WrapResult(sum.Value);
+            return WrapResult(EvalSum(left, right));
         }
 
         if (left is AbsSequence && right is AbsSequence)
         {
-            var sum = new Sum();
-            sum.Evaluate(left, right);
-            return WrapResult(sum.Value);
+            return WrapResult(EvalSum(left, right));
         }
 
         if (left.GetType() != right.GetType() ||
@@ -1014,9 +994,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var sumOp = new Sum();
-        sumOp.Evaluate(left, right);
-        return WrapResult(sumOp.Value);
+        var sumOp = EvalSum(left, right);
+        return WrapResult(sumOp);
     }
 
     public EvaluationResult VisitSub(Node node)
@@ -1035,9 +1014,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var sub = new Substraction();
-        sub.Evaluate(left, right);
-        return WrapResult(sub.Value);
+        var sub = EvalSub(left, right);
+        return WrapResult(sub);
     }
 
     public EvaluationResult VisitMul(Node node)
@@ -1058,9 +1036,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var mul = new Multiplication();
-        mul.Evaluate(left, right);
-        return WrapResult(mul.Value);
+        var mul = EvalMul(left, right);
+        return WrapResult(mul);
     }
 
     public EvaluationResult VisitDiv(Node node)
@@ -1087,9 +1064,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
 
         try
         {
-            var div = new Division();
-            div.Evaluate(left, right);
-            return WrapResult(div.Value);
+            return WrapResult(EvalDiv(left, right));
         }
         catch (DivideByZeroException)
         {
@@ -1114,9 +1089,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var mod = new Module();
-        mod.Evaluate(left, right);
-        return WrapResult(mod.Value);
+        var mod = EvalModule(left, right);
+        return WrapResult(mod);
     }
 
     public EvaluationResult VisitPow(Node node)
@@ -1135,10 +1109,184 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        var pow = new Power();
-        pow.Evaluate(left, right);
-        return WrapResult(pow.Value);
+        var pow = EvalPow(left, right);
+        return WrapResult(pow);
     }
+
+    // ---- operator evaluation helpers ------------------------------------
+    // These reimplement the arithmetic/boolean/sequence operator logic inline
+    // so the visitor no longer depends on the self-evaluating Expression
+    // subclasses (Sum, Minor, And, ...). Behavior is preserved exactly.
+
+    private static object EvalMinor(object left, object right)
+    {
+        if (left is double ld && right is double rd)
+            return ld < rd ? 1 : 0;
+        if (left is long ll && right is long rl)
+            return ll < rl ? 1 : 0;
+        if (left is Measure lm && right is Measure rm)
+            return Measure.GreaterThen(lm, rm) ? 0 : 1;
+        return 0;
+    }
+
+    private static object EvalMajor(object left, object right)
+    {
+        if (left is double ld && right is double rd)
+            return ld > rd ? 1 : 0;
+        if (left is long ll && right is long rl)
+            return ll > rl ? 1 : 0;
+        if (left is Measure lm && right is Measure rm)
+            return Measure.GreaterThen(lm, rm) ? 1 : 0;
+        return 0;
+    }
+
+    private static object EvalEqualMajor(object left, object right)
+    {
+        if (left is double ld && right is double rd)
+            return ld >= rd ? 1 : 0;
+        if (left is long ll && right is long rl)
+            return ll >= rl ? 1 : 0;
+        if (left is Measure lm && right is Measure rm)
+            return Measure.Equals(lm, rm) && Measure.GreaterThen(lm, rm) ? 1 : 0;
+        return 0;
+    }
+
+    private static object EvalEqualMinor(object left, object right)
+    {
+        if (left is double ld && right is double rd)
+            return ld <= rd ? 1 : 0;
+        if (left is long ll && right is long rl)
+            return Convert.ToDouble(ll, System.Globalization.CultureInfo.InvariantCulture) <= Convert.ToDouble(rl, System.Globalization.CultureInfo.InvariantCulture) ? 1 : 0;
+        if (left is Measure lm && right is Measure rm)
+            return Measure.Equals(lm, rm) || !Measure.GreaterThen(lm, rm) ? 1 : 0;
+        return 0;
+    }
+
+    private static object EvalOr(object left, object right)
+    {
+        bool l = CheckTrueORFalse.Check(left), r = CheckTrueORFalse.Check(right);
+        return (l && r) || (l && !r) || (!l && r) ? 1 : 0;
+    }
+
+    private static object EvalAnd(object left, object right) =>
+        CheckTrueORFalse.Check(left) && CheckTrueORFalse.Check(right) ? 1 : 0;
+
+    private static object EvalEqual(object left, object right)
+    {
+        if (left is double ld && right is double rd)
+            return Convert.ToDouble(ld, System.Globalization.CultureInfo.InvariantCulture) == Convert.ToDouble(rd, System.Globalization.CultureInfo.InvariantCulture) ? 1 : 0;
+        if (left is long ll && right is long rl)
+            return Convert.ToInt64(ll, System.Globalization.CultureInfo.InvariantCulture) == Convert.ToInt64(rl, System.Globalization.CultureInfo.InvariantCulture) ? 1 : 0;
+        if (left is Measure lm && right is Measure rm)
+            return Measure.Equals(lm, rm) ? 1 : 0;
+        if (left is string ls && right is string rs)
+            return ls.ToString() == rs.ToString() ? 1 : 0;
+        return left.Equals(right) ? 1 : 0;
+    }
+
+    private static object EvalDiferent(object left, object right)
+    {
+        if (left is double ld && right is double rd)
+            return Convert.ToDouble(ld, System.Globalization.CultureInfo.InvariantCulture) != Convert.ToDouble(rd, System.Globalization.CultureInfo.InvariantCulture) ? 1 : 0;
+        if (left is long ll && right is long rl)
+            return Convert.ToInt64(ll, System.Globalization.CultureInfo.InvariantCulture) != Convert.ToInt64(rl, System.Globalization.CultureInfo.InvariantCulture) ? 1 : 0;
+        if (left is Measure lm && right is Measure rm)
+            return !Measure.Equals(lm, rm) ? 1 : 0;
+        if (left is string ls && right is string rs)
+            return ls.ToString() != rs.ToString() ? 1 : 0;
+        return !left.Equals(right) ? 1 : 0;
+    }
+
+    private static object EvalSub(object left, object right)
+    {
+        if (left is double ld && right is double rd)
+            return Convert.ToDouble(ld, System.Globalization.CultureInfo.InvariantCulture) - Convert.ToDouble(rd, System.Globalization.CultureInfo.InvariantCulture);
+        if (left is long ll && right is long rl)
+            return Convert.ToInt64(ll, System.Globalization.CultureInfo.InvariantCulture) - Convert.ToInt64(rl, System.Globalization.CultureInfo.InvariantCulture);
+        if (left is Measure lm && right is Measure rm)
+            return lm.Rest(rm);
+        return 0;
+    }
+
+    private static object EvalMul(object left, object right)
+    {
+        if (left is double ld && right is double rd)
+            return Convert.ToDouble(ld, System.Globalization.CultureInfo.InvariantCulture) * Convert.ToDouble(rd, System.Globalization.CultureInfo.InvariantCulture);
+        if (left is long ll && right is long rl)
+            return Convert.ToInt64(ll, System.Globalization.CultureInfo.InvariantCulture) * Convert.ToInt64(rl, System.Globalization.CultureInfo.InvariantCulture);
+        if (left is Measure lm && right is double rd2)
+            return lm.Product(Convert.ToDouble(rd2, System.Globalization.CultureInfo.InvariantCulture));
+        if (left is double ld2 && right is Measure rm2)
+            return rm2.Product(Convert.ToDouble(ld2, System.Globalization.CultureInfo.InvariantCulture));
+        return 0;
+    }
+
+    private static object EvalDiv(object left, object right)
+    {
+        if (left is double ld && right is double rd)
+            return Convert.ToDouble(ld, System.Globalization.CultureInfo.InvariantCulture) / Convert.ToDouble(rd, System.Globalization.CultureInfo.InvariantCulture);
+        if (left is long ll && right is long rl)
+            return Convert.ToInt64(ll, System.Globalization.CultureInfo.InvariantCulture) / Convert.ToInt64(rl, System.Globalization.CultureInfo.InvariantCulture);
+        if (left is Measure lm && right is Measure rm)
+            return lm.Division(rm);
+        return 0;
+    }
+
+    private static object EvalModule(object left, object right) =>
+        Convert.ToDouble(left, System.Globalization.CultureInfo.InvariantCulture) % Convert.ToDouble(right, System.Globalization.CultureInfo.InvariantCulture);
+
+    private static object EvalPow(object left, object right) =>
+        System.Math.Pow(Convert.ToDouble(left, System.Globalization.CultureInfo.InvariantCulture), Convert.ToDouble(right, System.Globalization.CultureInfo.InvariantCulture));
+
+    private object EvalSum(object left, object right)
+    {
+        if (left is double ld && right is double rd)
+            return Convert.ToDouble(ld, System.Globalization.CultureInfo.InvariantCulture) + Convert.ToDouble(rd, System.Globalization.CultureInfo.InvariantCulture);
+        if (left is string ls && right is string rs)
+            return ls.ToString() + rs.ToString();
+        if (left is long ll && right is long rl)
+            return Convert.ToInt64(ll, System.Globalization.CultureInfo.InvariantCulture) + Convert.ToInt64(rl, System.Globalization.CultureInfo.InvariantCulture);
+        if (left is Measure lm && right is Measure rm)
+            return lm.Sum(rm);
+        if (left is AbsSequence al && right is AbsSequence ar)
+        {
+            if (al is Enclosed_Infinite_Sequence || al is Infinite_Sequence || ar is Enclosed_Infinite_Sequence || ar is Infinite_Sequence)
+            {
+                IEnumerable<object> Generate(AbsSequence r, AbsSequence l)
+                {
+                    var gr = (GenericSequence<object>)r;
+                    var gl = (GenericSequence<object>)l;
+                    long limit = gr.count < 0 ? gr.MaxElements : gr.count;
+                    long taken = 0;
+                    foreach (object item in gr.Sequence!)
+                        if (taken++ >= limit) break; else yield return item;
+                    taken = 0;
+                    limit = gl.count < 0 ? gl.MaxElements : gl.count;
+                    foreach (object item in gl.Sequence!)
+                        if (taken++ >= limit) break; else yield return item;
+                }
+                IEnumerable<object> sum1 = Generate(al, ar);
+                IEnumerable<long> sum = sum1.OfType<long>();
+                return new Infinite_Sequence((IEnumerable<long>)sum);
+            }
+            else
+            {
+                Sequence_Concatenation<object> sum = new Sequence_Concatenation<object>(al, ar);
+                if (sum.count < 0)
+                    return new Infinite_Sequence((IEnumerable<long>)sum.Result);
+                return new Finite_Sequence<object>(sum.Result, sum.count);
+            }
+        }
+        else if (left is AbsSequence al2 && right is string rs2 && rs2 == "undefined")
+        {
+            Sequence_Concatenation<object> sum = new Sequence_Concatenation<object>(al2, rs2);
+            if (sum.count < 0)
+                return new Infinite_Sequence((IEnumerable<long>)sum.Result);
+            return new Finite_Sequence<object>(sum.Result, sum.count);
+        }
+        return 0;
+    }
+
     public EvaluationResult VisitVar(Node node)
     {
         string name = node.NodeExpression!.ToString()!;
