@@ -20,6 +20,11 @@ public class MainViewModel : ViewModelBase
 
     private readonly PipelineOrchestrator _pipeline = new();
     private readonly DispatcherTimer _streamTimer;
+    private readonly DispatcherTimer _playTimer;
+
+    private System.Collections.Generic.List<RenderScene> _animationFrames = new();
+    private int _frameIndex;
+    private bool _isPlaying;
 
     public string Code
     {
@@ -68,8 +73,43 @@ public class MainViewModel : ViewModelBase
     public RenderScene? Scene => _scene;
 
     /// <summary>What the canvas should render right now: the live pipeline
-    /// scene during streaming, the finished scene afterwards.</summary>
-    public RenderScene? DisplayScene => IsProcessing ? _pipeline.Scene : _scene;
+    /// scene during streaming, the current animation frame while playing,
+    /// the finished scene otherwise.</summary>
+    public RenderScene? DisplayScene => IsProcessing ? _pipeline.Scene : (IsPlaying ? CurrentFrame : _scene);
+
+    public bool HasAnimation => _animationFrames.Count > 0;
+    public int FrameCount => _animationFrames.Count;
+
+    public bool IsPlaying
+    {
+        get => _isPlaying;
+        private set
+        {
+            if (SetField(ref _isPlaying, value))
+            {
+                PlayPauseCommand?.RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(DisplayScene));
+            }
+        }
+    }
+
+    /// <summary>Current playback frame, clamped to the frame range.
+    /// Exposed so the status bar can show "frame k / n".</summary>
+    public int FrameIndex
+    {
+        get => _frameIndex;
+        private set
+        {
+            if (SetField(ref _frameIndex, value))
+                OnPropertyChanged(nameof(FrameLabel));
+        }
+    }
+
+    /// <summary>Short "k/n" frame readout shown next to the Play control.</summary>
+    public string FrameLabel => HasAnimation ? $"{FrameIndex + 1}/{FrameCount}" : "";
+
+    private RenderScene? CurrentFrame =>
+        _animationFrames.Count > 0 ? _animationFrames[FrameIndex % _animationFrames.Count] : null;
 
     public ObservableCollection<string> Errors { get; } = new();
 
@@ -97,6 +137,7 @@ public class MainViewModel : ViewModelBase
     public RelayCommand StopCommand { get; }
     public RelayCommand StressRunCommand { get; }
     public RelayCommand ToggleThemeCommand { get; }
+    public RelayCommand PlayPauseCommand { get; }
 
     public MainViewModel()
     {
@@ -105,12 +146,17 @@ public class MainViewModel : ViewModelBase
         StopCommand = new RelayCommand(_ => _pipeline.Cancel(), _ => IsProcessing);
         StressRunCommand = new RelayCommand(_ => _ = RunAsync(BuildStressProgram()), _ => !IsProcessing);
         ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
+        PlayPauseCommand = new RelayCommand(_ => TogglePlayback(), _ => HasAnimation && !IsProcessing);
 
         // Progressive streaming (M3): poll the synchronized scene while the
         // pipeline runs on a background thread; each tick with new content
         // raises SceneChanged so the canvas repaints incrementally.
         _streamTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
         _streamTimer.Tick += (_, _) => PollSceneProgress();
+
+        // Animation playback (M12a): advance frame index and repaint.
+        _playTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(25) };
+        _playTimer.Tick += (_, _) => PlaybackTick();
 
         Errors.CollectionChanged += (_, _) =>
         {
@@ -122,6 +168,7 @@ public class MainViewModel : ViewModelBase
     private async Task RunAsync(string? sourceOverride = null)
     {
         if (IsProcessing) return;
+        StopPlayback();
         Errors.Clear();
         IsProcessing = true;
         StatusIsError = false;
@@ -161,11 +208,41 @@ public class MainViewModel : ViewModelBase
         {
             _streamTimer.Stop();
             IsProcessing = false;
+
+            // Surface animation frames (if any) for playback.
+            var frames = _pipeline.Frames;
+            _animationFrames = frames.Count > 0 ? new System.Collections.Generic.List<RenderScene>(frames) : new();
+            FrameIndex = 0;
+            OnPropertyChanged(nameof(HasAnimation));
+            OnPropertyChanged(nameof(FrameCount));
+            OnPropertyChanged(nameof(FrameLabel));
             OnPropertyChanged(nameof(Scene));
             OnPropertyChanged(nameof(DisplayScene));
             UpdateInkStrip();
             SceneChanged?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    private void TogglePlayback()
+    {
+        if (_animationFrames.Count == 0 || IsProcessing) return;
+        IsPlaying = !IsPlaying;
+        StatusMessage = IsPlaying ? $"Playing frame {FrameIndex + 1}/{_animationFrames.Count}" : $"Paused at frame {FrameIndex + 1}/{_animationFrames.Count}";
+        StatusIsError = false;
+        if (IsPlaying) _playTimer.Start(); else _playTimer.Stop();
+    }
+
+    private void StopPlayback()
+    {
+        _playTimer.Stop();
+        IsPlaying = false;
+    }
+
+    private void PlaybackTick()
+    {
+        FrameIndex = (FrameIndex + 1) % _animationFrames.Count;
+        StatusMessage = $"Playing frame {FrameIndex + 1}/{_animationFrames.Count}";
+        SceneChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void PollSceneProgress()
@@ -219,12 +296,18 @@ public class MainViewModel : ViewModelBase
     private void Clear()
     {
         if (IsProcessing) return;
+        StopPlayback();
+        _animationFrames = new();
+        FrameIndex = 0;
         _scene = new RenderScene();
         Errors.Clear();
         StatusMessage = "Canvas cleared";
         StatusIsError = false;
         InkColors.Clear();
         InkEmpty = true;
+        OnPropertyChanged(nameof(HasAnimation));
+        OnPropertyChanged(nameof(FrameCount));
+        OnPropertyChanged(nameof(FrameLabel));
         OnPropertyChanged(nameof(Scene));
         SceneChanged?.Invoke(this, EventArgs.Empty);
     }
