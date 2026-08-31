@@ -23,15 +23,21 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
     private readonly double _dotRadius, _strokeWidth;
     private readonly IBrush _paper;
 
-    private readonly SKPaint _dotPaint = new() { IsAntialias = true, Style = SKPaintStyle.Fill };
-    private readonly SKPaint _linePaint = new() { IsAntialias = true, Style = SKPaintStyle.Stroke };
-    private readonly SKPaint _fillStrokePaint = new() { IsAntialias = true, Style = SKPaintStyle.Stroke };
-    private readonly SKPaint _whiteHaloPaint = new()
+    // Paints are static + never disposed: they are shared by every draw
+    // operation instance. Disposing them (as instance fields) while the
+    // Avalonia compositor may still hold a reference to a previous operation
+    // caused a native access violation (SIGSEGV) in libSkiaSharp on window
+    // interaction, because the compositor disposes an operation's resources
+    // while a new operation sharing/following it is being rendered.
+    private static readonly SKPaint s_dotPaint = new() { IsAntialias = true, Style = SKPaintStyle.Fill };
+    private static readonly SKPaint s_linePaint = new() { IsAntialias = true, Style = SKPaintStyle.Stroke };
+    private static readonly SKPaint s_fillStrokePaint = new() { IsAntialias = true, Style = SKPaintStyle.Stroke };
+    private static readonly SKPaint s_whiteHaloPaint = new()
     {
         IsAntialias = true, Style = SKPaintStyle.Stroke,
         Color = new SKColor(200, 200, 200), StrokeWidth = 1
     };
-    private readonly SKPaint _shadowPaint = new()
+    private static readonly SKPaint s_shadowPaint = new()
     {
         IsAntialias = true, Style = SKPaintStyle.Fill,
         Color = new SKColor(0, 0, 0, 25), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 3f)
@@ -93,10 +99,10 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
             foreach (var kvp in _dotArrays)
             {
                 if (kvp.Value.Length == 0) continue;
-                _dotPaint.Color = ResolveColor(kvp.Key);
-                _dotPaint.StrokeWidth = dotR * 2;
-                _dotPaint.StrokeCap = SKStrokeCap.Round;
-                canvas.DrawPoints(SKPointMode.Points, kvp.Value, _dotPaint);
+                s_dotPaint.Color = ResolveColor(kvp.Key);
+                s_dotPaint.StrokeWidth = dotR * 2;
+                s_dotPaint.StrokeCap = SKStrokeCap.Round;
+                canvas.DrawPoints(SKPointMode.Points, kvp.Value, s_dotPaint);
             }
         }
 
@@ -148,14 +154,14 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
             {
                 if (isWhite)
                 {
-                    _whiteHaloPaint.StrokeWidth = lineW * 1.5f;
-                    canvas.DrawLine((float)s.X1, (float)s.Y1, (float)s.X2, (float)s.Y2, _whiteHaloPaint);
+                    s_whiteHaloPaint.StrokeWidth = lineW * 1.5f;
+                    canvas.DrawLine((float)s.X1, (float)s.Y1, (float)s.X2, (float)s.Y2, s_whiteHaloPaint);
                 }
-                _linePaint.Color = isWhite ? SKColors.White : skColor;
-                _linePaint.StrokeWidth = lineW;
-                _linePaint.StrokeCap = SKStrokeCap.Round;
-                ApplyDashStyle(_linePaint, shape.LineStyle);
-                canvas.DrawLine((float)s.X1, (float)s.Y1, (float)s.X2, (float)s.Y2, _linePaint);
+                s_linePaint.Color = isWhite ? SKColors.White : skColor;
+                s_linePaint.StrokeWidth = lineW;
+                s_linePaint.StrokeCap = SKStrokeCap.Round;
+                ApplyDashStyle(s_linePaint, shape.LineStyle);
+                canvas.DrawLine((float)s.X1, (float)s.Y1, (float)s.X2, (float)s.Y2, s_linePaint);
                 break;
             }
             case DrawingCanvas.CircleShape c:
@@ -166,14 +172,14 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                 {
                     canvas.Save();
                     canvas.Translate(2f, 2f);
-                    canvas.DrawPath(path, _shadowPaint);
+                    canvas.DrawPath(path, s_shadowPaint);
                     canvas.Restore();
                 }
                 if (c.FillType == FillType.Solid)
                 {
-                    _fillStrokePaint.Color = skColor;
-                    _fillStrokePaint.Style = SKPaintStyle.Fill;
-                    canvas.DrawPath(path, _fillStrokePaint);
+                    s_fillStrokePaint.Color = skColor;
+                    s_fillStrokePaint.Style = SKPaintStyle.Fill;
+                    canvas.DrawPath(path, s_fillStrokePaint);
                 }
                 else if (c.FillType == FillType.LinearGradient || c.FillType == FillType.RadialGradient)
                 {
@@ -181,11 +187,11 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                         (float)(c.X - c.R), (float)(c.Y - c.R),
                         (float)(c.X + c.R), (float)(c.Y + c.R)));
                 }
-                _linePaint.Color = isWhite ? SKColors.White : skColor;
-                _linePaint.StrokeWidth = lineW;
-                _linePaint.Style = SKPaintStyle.Stroke;
-                ApplyDashStyle(_linePaint, shape.LineStyle);
-                canvas.DrawPath(path, _linePaint);
+                s_linePaint.Color = isWhite ? SKColors.White : skColor;
+                s_linePaint.StrokeWidth = lineW;
+                s_linePaint.Style = SKPaintStyle.Stroke;
+                ApplyDashStyle(s_linePaint, shape.LineStyle);
+                canvas.DrawPath(path, s_linePaint);
                 break;
             }
             case DrawingCanvas.PolyShape p:
@@ -200,25 +206,25 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                 {
                     canvas.Save();
                     canvas.Translate(2f, 2f);
-                    canvas.DrawPath(path, _shadowPaint);
+                    canvas.DrawPath(path, s_shadowPaint);
                     canvas.Restore();
                 }
                 if (p.FillType == FillType.Solid)
                 {
-                    _fillStrokePaint.Color = skColor;
-                    _fillStrokePaint.Style = SKPaintStyle.Fill;
-                    canvas.DrawPath(path, _fillStrokePaint);
+                    s_fillStrokePaint.Color = skColor;
+                    s_fillStrokePaint.Style = SKPaintStyle.Fill;
+                    canvas.DrawPath(path, s_fillStrokePaint);
                 }
                 else if (p.FillType == FillType.LinearGradient || p.FillType == FillType.RadialGradient)
                 {
                     path.GetBounds(out var bounds);
                     DrawGradientFill(canvas, path, p, bounds);
                 }
-                _linePaint.Color = isWhite ? SKColors.White : skColor;
-                _linePaint.StrokeWidth = lineW;
-                _linePaint.Style = SKPaintStyle.Stroke;
-                ApplyDashStyle(_linePaint, shape.LineStyle);
-                canvas.DrawPath(path, _linePaint);
+                s_linePaint.Color = isWhite ? SKColors.White : skColor;
+                s_linePaint.StrokeWidth = lineW;
+                s_linePaint.Style = SKPaintStyle.Stroke;
+                ApplyDashStyle(s_linePaint, shape.LineStyle);
+                canvas.DrawPath(path, s_linePaint);
                 break;
             }
         }
@@ -239,10 +245,10 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
                 new[] { ResolveColor(shape.GradientColor1), ResolveColor(shape.GradientColor2) },
                 new float[] { 0, 1 },
                 SKShaderTileMode.Clamp);
-        _fillStrokePaint.Shader = shader;
-        _fillStrokePaint.Style = SKPaintStyle.Fill;
-        canvas.DrawPath(path, _fillStrokePaint);
-        _fillStrokePaint.Shader = null;
+        s_fillStrokePaint.Shader = shader;
+        s_fillStrokePaint.Style = SKPaintStyle.Fill;
+        canvas.DrawPath(path, s_fillStrokePaint);
+        s_fillStrokePaint.Shader = null;
     }
 
     private static void ApplyDashStyle(SKPaint paint, LineStyle ls)
@@ -264,12 +270,9 @@ internal sealed class SkiaDrawOperation : ICustomDrawOperation
 
     public bool HitTest(global::Avalonia.Point p) => Bounds.Contains(p);
     public bool Equals(ICustomDrawOperation? other) => ReferenceEquals(this, other);
-    public void Dispose()
-    {
-        _dotPaint.Dispose();
-        _linePaint.Dispose();
-        _fillStrokePaint.Dispose();
-        _whiteHaloPaint.Dispose();
-        _shadowPaint.Dispose();
-    }
+    // Paints are shared static instances owned for the process lifetime, so
+    // there is nothing per-operation to dispose. Disposing them here is what
+    // used to trigger the native SIGSEGV when the compositor released the
+    // operation while a sibling/following one was still rendering.
+    public void Dispose() { }
 }
