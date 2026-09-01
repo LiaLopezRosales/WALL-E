@@ -22,8 +22,9 @@ dotnet run --project src/Wall-E.CLI -- GeoLibrary/colors.geo output.svg
 dotnet run --project src/Wall-E.CLI -- GeoLibrary/samples.geo output.png --width 1200 --height 800
 
 # Run tests
-dotnet test tests/Wall-E.Application.Tests/Wall-E.Application.Tests.csproj    # 219 tests
-dotnet test tests/Wall-E.Domain.Tests/Wall-E.Domain.Tests.csproj              # 61 tests
+dotnet test tests/Wall-E.Application.Tests/Wall-E.Application.Tests.csproj    # 227 tests
+dotnet test tests/Wall-E.Domain.Tests/Wall-E.Domain.Tests.csproj              # 68 tests
+dotnet test tests/Wall-E.UI.Tests/Wall-E.UI.Tests.csproj                      # 6 tests
 ```
 
 ## DSL examples
@@ -80,12 +81,16 @@ repeat(5) { draw circle(point(300, 300), f(30)); }
 | **Wall-E.UI.Avalonia** | `src/Wall-E.UI.Avalonia/` | Desktop UI (Avalonia 11 + SkiaSharp) |
 | **Wall-E (legacy)** | `Wall-E.csproj` | WinForms app (Windows only) |
 
-Two test suites:
+Three test suites:
 
 | Suite | Tests | What it covers |
 |---|---|---|
-| `Wall-E.Application.Tests` | 219 | Full pipeline characterization + lexer/parser isolated |
-| `Wall-E.Domain.Tests` | 61 | Domain unit tests (ColorTable, HSL, Result monad, etc.) |
+| `Wall-E.Application.Tests` | 227 | Full pipeline characterization + lexer/parser isolated |
+| `Wall-E.Domain.Tests` | 68 | Domain unit tests (ColorTable, HSL, Result monad, intersections) |
+| `Wall-E.UI.Tests` | 6 | MainViewModel tests (Avalonia.Headless) |
+
+Line coverage is measured with Coverlet and gated at **>40%** in CI
+(`Wall-E.Application.Tests` run: Domain 50.7%, Application 76.7%, combined 60.9%).
 
 ![Samples showcase](docs/screenshots/samples.png)
 
@@ -95,11 +100,13 @@ Two test suites:
 export PATH="$HOME/.dotnet:$PATH"  # dotnet SDK is at ~/.dotnet
 
 dotnet build src/Wall-E.sln                     # build all new-arch projects
-dotnet test tests/Wall-E.Application.Tests/...   # 219 characterization tests
-dotnet test tests/Wall-E.Domain.Tests/...        # 61 domain unit tests
+dotnet test tests/Wall-E.Application.Tests/...   # 227 characterization tests
+dotnet test tests/Wall-E.Domain.Tests/...        # 68 domain unit tests
+dotnet test tests/Wall-E.UI.Tests/...            # 6 viewmodel tests (headless)
 ```
 
-CI runs on every push (`.github/workflows/ci.yml`, ubuntu, Release).
+CI runs on every push (`.github/workflows/ci.yml`, ubuntu, Release): build + all
+tests, plus a coverage job that fails under 40% line coverage.
 
 ## Sample files
 

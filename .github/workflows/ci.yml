@@ -22,3 +22,34 @@ jobs:
 
       - name: Test
         run: dotnet test src/Wall-E.sln -c Release --no-build --nologo
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Collect coverage
+        run: |
+          dotnet test tests/Wall-E.Application.Tests/Wall-E.Application.Tests.csproj \
+            -c Release --nologo \
+            --collect:"XPlat Code Coverage" \
+            --results-directory coverage-results
+
+      - name: Enforce >40% line coverage
+        run: |
+          python3 - <<'EOF'
+          import glob, sys, xml.etree.ElementTree as ET
+          files = glob.glob("coverage-results/**/coverage.cobertura.xml", recursive=True)
+          if not files:
+              sys.exit("no cobertura report produced")
+          root = ET.parse(files[0]).getroot()
+          rate = float(root.get("line-rate"))
+          print(f"combined line coverage: {rate:.1%}")
+          if rate < 0.40:
+              sys.exit(f"coverage {rate:.1%} below 40% threshold")
+          EOF
