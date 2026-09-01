@@ -95,7 +95,7 @@ Generators like `GenerateRandoms`/`GenerateSamples`/`GeneratePointsInFigure` are
 - Palette expansion COMPLETE (post-Fase 2): hex literals `#RGB`/`#RRGGBB`, orchestrator `InitialInk`, paper/ink pickers.
 - **Plan vigente = hitos M6–M12** (auditoría 2026-08-24 reordenó Fases 3–6; nothing dropped): see «Plan vigente tras la auditoría» in ROADMAP.md. **M6–M12 COMPLETE** (2026-09-01); M12c demo Wasm movida a backlog futuro (no entra en el plan; requiere Blazor+Wasm). Ver también la sección «Backlog futuro» de ROADMAP.md para ítems históricos y extensions diferidas.
 - Post-migration debts → **sprint COMPLETE, record in `DEBT_SPRINT.md`**; only remaining debt: expression nodes still self-evaluate (explicitly deferred)
-- Planning docs: `ROADMAP.md` (unified plan + audit), `MIGRATION_LOG.md`, `DEBT_SPRINT.md`, `IMPROVEMENT_PLAN.md`, `PERFORMANCE_PLAN.md`, `ENHANCEMENTS.md`
+- Planning docs (in `docs/planning/`): `ROADMAP.md` (unified plan + audit), `MIGRATION_LOG.md`, `DEBT_SPRINT.md`, `IMPROVEMENT_PLAN.md`, `PERFORMANCE_PLAN.md`, `ENHANCEMENTS.md`
 
 ## Other
 

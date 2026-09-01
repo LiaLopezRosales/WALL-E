@@ -4,7 +4,7 @@
 > extracción de arquitectura limpia y alimentó el [`ROADMAP.md`](./ROADMAP.md) v2.
 > Algunos puntos ya están resueltos (límite garantizado en secuencias,
 > `ExpressionCache` existe en Application); el resto se ejecuta dentro de las
-> Fases 2–3 del ROADMAP. Estado real: [`AGENTS.md`](./AGENTS.md).
+> Fases 2–3 del ROADMAP. Estado real: [`AGENTS.md`](../AGENTS.md).
 
 Análisis de cuellos de botella y plan de arquitectura para rendimiento garantizado,
 centrado en el caso de uso de dibujo de fractales.

@@ -159,6 +159,6 @@ dropdown):
 | Document | Contents |
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | Architecture, conventions, DSL semantics |
-| [`ROADMAP.md`](ROADMAP.md) | Implementation plan and audit (M6–M12) |
-| [`MIGRATION_LOG.md`](MIGRATION_LOG.md) | Evaluator migration record (monolith → Visitor) |
-| [`DEBT_SPRINT.md`](DEBT_SPRINT.md) | Post-migration debt sprint |
+| [`ROADMAP.md`](docs/planning/ROADMAP.md) | Implementation plan and audit (M6–M12) |
+| [`MIGRATION_LOG.md`](docs/planning/MIGRATION_LOG.md) | Evaluator migration record (monolith → Visitor) |
+| [`DEBT_SPRINT.md`](docs/planning/DEBT_SPRINT.md) | Post-migration debt sprint |
