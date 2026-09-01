@@ -84,11 +84,11 @@ Wall-E.Infrastructure/      FileSystem/GeoLibraryLoader
 
 Generators like `GenerateRandoms`/`GenerateSamples`/`GeneratePointsInFigure` are unbounded `while(true)` by design. Safety relies on every consumption path going through `AbsSequence` subclasses whose constructors apply `.Take(MaxElements)` (MaxElements=10000). **Any new code that consumes a sequence must go through the `AbsSequence` wrapper or apply its own `.Take()` bound** — otherwise it hangs forever.
 
-## Deferred gaps (per ROADMAP.md)
+## Plan status (per ROADMAP.md)
 
 - Fase 2 (Avalonia UI) COMPLETE — M1–M4: shell, viewport, streaming+Stop, temas/pickers/tira de tinta. Zero `MessageBox` in `src/`; errors render in an expander list.
 - Palette expansion COMPLETE (post-Fase 2): hex literals `#RGB`/`#RRGGBB`, orchestrator `InitialInk`, paper/ink pickers.
-- **Plan vigente = hitos M6–M12** (auditoría 2026-08-24 reordenó Fases 3–6; nothing dropped): see «Plan vigente tras la auditoría» in ROADMAP.md. M6–M11 COMPLETE; **M12 COMPLETE except M12c**: M12a animation (`animate(t from A to B){...}`, frames precomputados + Play/Pause UI) DONE; M12b DSL syntax highlighting (AvaloniaEdit) DONE; bundled examples DONE (`programs/` = 8 demo `.geo` per feature, git-tracked, copied to output via `CopyToOutputDirectory`, loaded+auto-run from the header «Ejemplos» ComboBox → `Views/ProgramsCatalog.cs`); **M12c demo Wasm DEFERRED 2026-08-31** (needs Blazor+Wasm host, GH Pages workflow, browser-port of file-system APIs).
+- **Plan vigente = hitos M6–M12** (auditoría 2026-08-24 reordenó Fases 3–6; nothing dropped): see «Plan vigente tras la auditoría» in ROADMAP.md. **M6–M12 COMPLETE** (2026-09-01); M12c demo Wasm movida a backlog futuro (no entra en el plan; requiere Blazor+Wasm). Ver también la sección «Backlog futuro» de ROADMAP.md para ítems históricos y extensions diferidas.
 - Post-migration debts → **sprint COMPLETE, record in `DEBT_SPRINT.md`**; only remaining debt: expression nodes still self-evaluate (explicitly deferred)
 - Planning docs: `ROADMAP.md` (unified plan + audit), `MIGRATION_LOG.md`, `DEBT_SPRINT.md`, `IMPROVEMENT_PLAN.md`, `PERFORMANCE_PLAN.md`, `ENHANCEMENTS.md`
 

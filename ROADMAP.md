@@ -446,14 +446,34 @@ public class MainViewModel : ViewModelBase
 | **M7 · Lenguaje completo** | `polygon(center,r,n)` · `ellipse(center,rx,ry)` · bucles `for i in seq {…}` / `repeat(n){…}` · `label(point,"text",size)` · estilos de línea dashed/dotted/dash-dot/grosor · fill solid/none | 3.10, 3.11(solid), 4.10–4.13 |
 | **M8 · Sistema de color completo** | `ColorTable.cs` con ~140 nombres CSS · `hsl(h,s%,l%)` · ops cromáticas lighten/darken/mix/complement · gradientes fill linear/radial (dependen del fill de M7) · hex8 alpha opcional | 3.11(gradientes), 4.3–4.6, ENH 1.4 |
 | **M9 · Render premium + performance** | Batch GPU `SKCanvas.DrawPoints` vía `ICustomDrawOperation` (permite subir `MaxDrawnShapes`) · `SKPath` nativo por figura · AA/sombras/glows sutiles · capas `layer N` z-order · `hide/show` · snap configurable · ExpressionCache cableado de verdad o eliminación honesta si no demuestra mejora medible | 3.1–3.5, 3.7, 3.9, 3.12 |
-| **M10 · Calidad final** | `Wall-E.Domain.Tests` · tests aislados lexer/parser · tests de ViewModel con Avalonia.Headless · intersecciones: todas las combinaciones · Roslynator+SonarAnalyzer vía `Directory.Build.props` (warnings) · XML docs en API pública Domain+Application · cobertura medida >40% | 5.1–5.8, 5.11, 5.12 |
+| **M10 · Calidad final** | `Wall-E.Domain.Tests` · tests aislados lexer/parser · tests de ViewModel con Avalonia.Headless · intersecciones: todas las combinaciones · Roslynator+SonarAnalyzer vía `Directory.Build.props` (warnings) · XML docs en API pública Domain+Application · cobertura medida >40% → **✅ COMPLETO 2026-09-01** (`tests/Wall-E.UI.Tests`, `IntersectionTests`, `src/Directory.Build.props`, XML docs, gate de cobertura en CI) | 5.1–5.8, 5.11, 5.12 |
 | **M11 · Ecosistema portafolio** | Screenshots alta calidad en `docs/` · ejemplos `.geo` demo/fractal/samples en GeoLibrary · README final con imágenes · CLI headless `input.geo → output.png` (reusa ExportService de M6) · export SVG | 6.1–6.3, 6.5, 6.6 |
-| **M12 · Extras finales** | Animación paramétrica `animate(t from … to …){…}` ✅ · syntax highlighting del editor ✅ · demo Wasm en GitHub Pages ⏸️ (diferido por decisión explícita 2026-08-31: requiere host Blazor+Wasm, workflow GH Pages y porter browser-limited APIs como PNG export/filesystem) · **programas de ejemplo ✅** (`programs/` con 8 demos por feature —basics, colors, sequences, loops, figures, layers, math, animate— copiadas al output y auto-ejecutadas desde el dropdown «Ejemplos» de la UI) | 4.15, 6.7, 6.8 |
+| **M12 · Extras finales** | Animación paramétrica `animate(t from … to …){…}` ✅ · syntax highlighting del editor ✅ · demo Wasm en GitHub Pages → movido a backlog (no entra en el plan; requiere Blazor+Wasm) · **programas de ejemplo ✅** (`programs/` con 8 demos por feature —basics, colors, sequences, loops, figures, layers, math, animate— copiadas al output y auto-ejecutadas desde el dropdown «Ejemplos» de la UI) → **✅ COMPLETO 2026-09-01 (salvo demo Wasm → backlog)** | 4.15, 6.7, 6.8 |
 
 **Reglas del plan vigente**: cada hito entra por commits pequeños verificados
 (build + tests + humo cuando toca UI); CI debe permanecer verde; ningún ítem
 sale del plan sin decisión explícita del usuario. Orden pensado para que cada
 hito habilite al siguiente (fill→gradientes, loops→batch GPU, PNG headless→CLI).
+
+### Backlog futuro (sin hito, sin compromiso)
+
+Ítems históricos y funcionalidades futuras que quedan registradas pero **no
+entran en el plan M6–M12**. Se pueden retomar como work posterior si se decide.
+
+| Ítem | Fuente | Notas |
+|---|---|---|
+| ENH 1.9 Color por figura | ENHANCEMENTS.md | Assignar un color independiente por figura |
+| ENH 2.4 Coordenadas relativas | ENHANCEMENTS.md | Deltas y anchors a la última figura |
+| ENH 2.6 round/min/max/clamp | ENHANCEMENTS.md | Funciones auxiliares matemáticas |
+| ENH 2.7 While loops | ENHANCEMENTS.md | Ciclo continuo condicional (futuro vs repeat) |
+| 4.15 Animate con step / velocidad variable | ENHANCEMENTS.md | Paso manual del slider en animate |
+| 5.3 Barra de progreso en UI | IMPROVEMENT_PLAN.md | Feedback de render largo |
+| 6.2 Export PDF | ENHANCEMENTS.md | Extensión de ExportService |
+| Hover highlight en canvas | ENHANCEMENTS.md | Resaltado al pasar el mouse |
+| PERFORMANCE F3 State-machine eval | PERFORMANCE_PLAN.md | Sustituida por el Visitor actual |
+| PERFORMANCE F5 ArrayPool / pooling | PERFORMANCE_PLAN.md | Parcial en batch GPU; sin medir mejora |
+| PERFORMANCE §9 Objetivos de métricas | PERFORMANCE_PLAN.md | Nunca medido formalmente |
+| **M12c · Demo Wasm (Blazor)** | ROADMAP.md | Publicar Avalonia Wasm en GH Pages; requiere Blazor+Wasm host, browser-port de APIs y workflow de despliegue |
 
 ---
 
