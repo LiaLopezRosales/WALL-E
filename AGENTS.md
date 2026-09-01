@@ -5,11 +5,11 @@
 GeoWall-E: geometric drawing interpreter for a small DSL (points, lines, circles, sequences, functions). Pipeline: Lexer → Parser → Evaluator → Canvas.
 Two codebases coexist in this repo:
 
-| | Legacy | New architecture |
+| | Legacy (archived) | New architecture |
 |---|---|---|
-| Project | root `Wall-E.csproj` (`net6.0-windows`, WinForms) | `src/Wall-E.{Domain,Application,Infrastructure}` (`net8.0`) |
-| Status | fully working, runs on Windows only | Fase 0–2 complete; M6–M9 complete |
-| Solution | root `Wall-E.sln` (contains ONLY legacy project) | `src/Wall-E.sln` |
+| Project | `legacy/Wall-E.csproj` (`net6.0-windows`, WinForms) | `src/Wall-E.{Domain,Application,Infrastructure}` (`net8.0`) |
+| Status | archived, kept for history only | Fase 0–2 complete; M6–M12 complete |
+| Solution | `legacy/Wall-E.sln` (contains ONLY legacy project) | `src/Wall-E.sln` |
 
 ## Critical environment gotcha
 
@@ -19,11 +19,11 @@ Two codebases coexist in this repo:
 
 ```bash
 export PATH="$HOME/.dotnet:$PATH"                          # required first, every session
-./Wall-E.sh                                                # build + run legacy WinForms app
+./legacy/Wall-E.sh                                          # build + run legacy WinForms app
 dotnet build src/Wall-E.sln                                # build new architecture (Domain+App+Infra+CLI)
-dotnet test tests/Wall-E.Application.Tests/...csproj       # characterization test suite (219+ tests)
-dotnet test tests/Wall-E.Domain.Tests/...csproj            # domain unit tests (61+ tests)
-dotnet build Wall-E.csproj                                 # build legacy (needs net6.0-windows SDK)
+dotnet test tests/Wall-E.Application.Tests/...csproj       # characterization test suite (227 tests)
+dotnet test tests/Wall-E.Domain.Tests/...csproj            # domain unit tests (68 tests)
+dotnet build legacy/Wall-E.csproj                          # build legacy (needs net6.0-windows SDK)
 dotnet run --project src/Wall-E.CLI -- input.geo out.png   # headless CLI render (PNG/SVG)
 ```
 

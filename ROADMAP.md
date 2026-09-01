@@ -120,7 +120,7 @@ Fase 6                                                  ████████
 | 1.11 | **Crear `Wall-E.Infrastructure`** (net6.0, ref a Application) | 0.3 | `Wall-E.Infrastructure.csproj` (nuevo) |
 | 1.12 | Mover a Infrastructure: `GeoLibrary` loader, file I/O | 0.5 | mover |
 | 1.13 | **`Result<T, E>` monádico** para el pipeline completo | 2 | `Result.cs` (nuevo) |
-| 1.14 | Solución `Wall-E.sln` con estructura `src/` profesional | 0.3 | `Wall-E.sln` (nuevo) |
+| 1.14 | Solución `src/Wall-E.sln` con estructura `src/` profesional | 0.3 | `src/Wall-E.sln` (nuevo) |
 | 1.15 | Build en Linux: `dotnet build` pasa en Domain + Application + Infrastructure | 0.5 | csproj adjustments |
 
 **Checkpoint**: `dotnet build` pasa en Linux. Domain no referencia Windows. Evaluator usa visitor pattern. Return type es `IEvaluationResult` sellado. Context dividido en 3.
@@ -481,7 +481,7 @@ entran en el plan M6–M12**. Se pueden retomar como work posterior si se decide
 
 ```
 WALL-E/
-  Wall-E.sln
+  legacy/                  (archived WinForms codebase, history only)
   src/
     Wall-E.Domain/
       AST/
