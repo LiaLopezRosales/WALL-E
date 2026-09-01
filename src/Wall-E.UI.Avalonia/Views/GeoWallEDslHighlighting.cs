@@ -47,15 +47,19 @@ public sealed class GeoWallEDslHighlighting : IHighlightingDefinition
         var commentColor = new HighlightingColor { Foreground = Brush(p.Comment), FontStyle = AMedia.FontStyle.Italic };
         var hexColor = new HighlightingColor { Foreground = Brush(p.Hex), FontWeight = AMedia.FontWeight.SemiBold };
 
-        // Block spans: line comments and quoted strings.
+        // Block spans: line comments and quoted strings. The engine requires
+        // an EndExpression on every span (it dereferences it once the span is
+        // open), otherwise it NREs on the first comment/string line.
         def.MainRuleSet.Spans.Add(new HighlightingSpan
         {
             StartExpression = new System.Text.RegularExpressions.Regex(@"//"),
+            EndExpression = new System.Text.RegularExpressions.Regex(@"$"),
             SpanColor = commentColor,
         });
         def.MainRuleSet.Spans.Add(new HighlightingSpan
         {
             StartExpression = new System.Text.RegularExpressions.Regex(@""""),
+            EndExpression = new System.Text.RegularExpressions.Regex(@""""),
             SpanColor = stringColor,
         });
 
