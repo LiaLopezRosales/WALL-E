@@ -164,7 +164,7 @@ public class ParserTests
     {
         var (ast, errors) = Parse("f(x) = x + 1;");
         Assert.Empty(errors);
-        Assert.Equal(Node.NodeType.Fuction, ast.Type);
+        Assert.Equal(Node.NodeType.Function, ast.Type);
     }
 
     [Fact]

@@ -45,21 +45,21 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.GlobalVar => VisitGlobalVar(node),
         Node.NodeType.GlobalSeq => VisitGlobalSeq(node),
         Node.NodeType.VarName => VisitVarName(node),
-        Node.NodeType.Assigment => VisitAssigment(node),
+        Node.NodeType.Assignment => VisitAssignment(node),
         Node.NodeType.Low_Hyphen => VisitLowHyphen(node),
         Node.NodeType.Let_exp => VisitLetExp(node),
         Node.NodeType.Draw => VisitDraw(node),
         Node.NodeType.Conditional => VisitConditional(node),
         Node.NodeType.IF => VisitIf(node),
         Node.NodeType.Else => VisitElse(node),
-        Node.NodeType.FucName => VisitFucName(node),
-        Node.NodeType.Declared_FucName => VisitDeclaredFucName(node),
-        Node.NodeType.Declared_Fuc => VisitDeclaredFuc(node),
+        Node.NodeType.FuncName => VisitFuncName(node),
+        Node.NodeType.DeclaredFuncName => VisitDeclaredFuncName(node),
+        Node.NodeType.DeclaredFunc => VisitDeclaredFunc(node),
         Node.NodeType.ParName => VisitParName(node),
         Node.NodeType.Negation => VisitNegation(node),
         Node.NodeType.Var => VisitVar(node),
         Node.NodeType.parameters => VisitParameters(node),
-        Node.NodeType.Fuction => VisitFuction(node),
+        Node.NodeType.Function => VisitFunction(node),
         Node.NodeType.Concat => VisitConcat(node),
         Node.NodeType.And => VisitAnd(node),
         Node.NodeType.Or => VisitOr(node),
@@ -68,7 +68,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Equal_Minor => VisitEqualMinor(node),
         Node.NodeType.Equal_Major => VisitEqualMajor(node),
         Node.NodeType.Equal => VisitEqual(node),
-        Node.NodeType.Diferent => VisitDiferent(node),
+        Node.NodeType.Different => VisitDifferent(node),
         Node.NodeType.Sum => VisitSum(node),
         Node.NodeType.Sub => VisitSub(node),
         Node.NodeType.Mul => VisitMul(node),
@@ -87,15 +87,15 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Color => VisitColor(node),
         Node.NodeType.Restore => VisitRestore(node),
         Node.NodeType.Import => VisitImport(node),
-        Node.NodeType.Point_Fuc => VisitPointFuc(node),
-        Node.NodeType.Line_Fuc => VisitLineFuc(node),
-        Node.NodeType.Segment_Fuc => VisitSegmentFuc(node),
-        Node.NodeType.Ray_Fuc => VisitRayFuc(node),
-        Node.NodeType.Circle_Fuc => VisitCircleFuc(node),
-        Node.NodeType.Polygon_Fuc => VisitPolygonFuc(node),
-        Node.NodeType.Ellipse_Fuc => VisitEllipseFuc(node),
+        Node.NodeType.PointFunc => VisitPointFunc(node),
+        Node.NodeType.LineFunc => VisitLineFunc(node),
+        Node.NodeType.SegmentFunc => VisitSegmentFunc(node),
+        Node.NodeType.RayFunc => VisitRayFunc(node),
+        Node.NodeType.CircleFunc => VisitCircleFunc(node),
+        Node.NodeType.PolygonFunc => VisitPolygonFunc(node),
+        Node.NodeType.EllipseFunc => VisitEllipseFunc(node),
         Node.NodeType.Measure => VisitMeasure(node),
-        Node.NodeType.Measure_Fuc => VisitMeasureFuc(node),
+        Node.NodeType.MeasureFunc => VisitMeasureFunc(node),
         Node.NodeType.Intersect => VisitIntersect(node),
         Node.NodeType.Count => VisitCount(node),
         Node.NodeType.Text => VisitText(node),
@@ -139,7 +139,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         Node.NodeType.Finite_Seq => VisitFiniteSeq(node),
         Node.NodeType.PI => VisitPI(node),
         Node.NodeType.E => VisitE(node),
-        Node.NodeType.Indefined => VisitIndefined(node),
+        Node.NodeType.None => VisitNone(node),
         Node.NodeType.Undefined => VisitUndefined(node),
         _ => throw new NotImplementedException($"Unknown node type: {node.Type}")
     };
@@ -193,8 +193,8 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
 
     public EvaluationResult VisitNumber(Node node) => new NumberResult(double.Parse(node.NodeExpression!.ToString()!));
     public EvaluationResult VisitVarName(Node node) => new StringResult(node.NodeExpression!.ToString()!);
-    public EvaluationResult VisitFucName(Node node) => new StringResult(node.NodeExpression!.ToString()!);
-    public EvaluationResult VisitDeclaredFucName(Node node) => new StringResult(node.NodeExpression!.ToString()!);
+    public EvaluationResult VisitFuncName(Node node) => new StringResult(node.NodeExpression!.ToString()!);
+    public EvaluationResult VisitDeclaredFuncName(Node node) => new StringResult(node.NodeExpression!.ToString()!);
     public EvaluationResult VisitParName(Node node) => new StringResult(node.NodeExpression!.ToString()!);
     public EvaluationResult VisitText(Node node) => new StringResult(node.NodeExpression!.ToString()!);
     public EvaluationResult VisitLowHyphen(Node node) => new StringResult(node.NodeExpression!.ToString()!);
@@ -588,7 +588,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new VoidResult();
     }
 
-    public EvaluationResult VisitIndefined(Node node) => new StringResult("undefined");
+    public EvaluationResult VisitNone(Node node) => new StringResult("undefined");
     public EvaluationResult VisitUndefined(Node node) => new StringResult("undefined");
 
     public EvaluationResult VisitInstructions(Node node)
@@ -612,7 +612,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return value;
     }
 
-    public EvaluationResult VisitDeclaredFuc(Node node)
+    public EvaluationResult VisitDeclaredFunc(Node node)
     {
         string dfuncName = node.Branches[0].NodeExpression!.ToString()!;
         Node funcParameters = node.Branches[1];
@@ -732,7 +732,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new VoidResult();
     }
 
-    public EvaluationResult VisitFuction(Node node)
+    public EvaluationResult VisitFunction(Node node)
     {
         string name = node.Branches[0].NodeExpression!.ToString()!;
         Dictionary<string, object> arg = new();
@@ -742,7 +742,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             parName = (string)item.NodeExpression!;
             arg.Add(parName, "");
         }
-        var func = new Fuction(node.Branches[0].NodeExpression!.ToString()!, node.Branches[2], arg);
+        var func = new Function(node.Branches[0].NodeExpression!.ToString()!, node.Branches[2], arg);
         bool exist = false;
 
         if (CurrentScope.Parent == null)
@@ -863,7 +863,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     // Parser never produces Else/If/Parameters nodes; kept as transparent no-ops.
     public EvaluationResult VisitIf(Node node) => VisitConditional(node);
     public EvaluationResult VisitElse(Node node) => new VoidResult();
-    public EvaluationResult VisitAssigment(Node node) => Visit(node.Branches[0]);
+    public EvaluationResult VisitAssignment(Node node) => Visit(node.Branches[0]);
     public EvaluationResult VisitParameters(Node node)
     {
         foreach (var branch in node.Branches)
@@ -1013,7 +1013,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return WrapResult(EvalEqual(left, right));
     }
 
-    public EvaluationResult VisitDiferent(Node node)
+    public EvaluationResult VisitDifferent(Node node)
     {
         EvaluationResult leftResult = Visit(node.Branches[0]);
         if (leftResult is ErrorResult) return leftResult;
@@ -1029,7 +1029,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
             return new VoidResult();
         }
 
-        return WrapResult(EvalDiferent(left, right));
+        return WrapResult(EvalDifferent(left, right));
     }
 
     public EvaluationResult VisitSum(Node node)
@@ -1257,7 +1257,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return left.Equals(right) ? 1 : 0;
     }
 
-    private static object EvalDiferent(object left, object right)
+    private static object EvalDifferent(object left, object right)
     {
         if (left is double ld && right is double rd)
             return Convert.ToDouble(ld, System.Globalization.CultureInfo.InvariantCulture) != Convert.ToDouble(rd, System.Globalization.CultureInfo.InvariantCulture) ? 1 : 0;
@@ -1389,7 +1389,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         if (valResult is ErrorResult) return valResult;
         object value = UnwrapRaw(valResult)!;
         string tag = " ";
-        if (node.Branches[1].Type != Node.NodeType.Indefined)
+        if (node.Branches[1].Type != Node.NodeType.None)
             tag = RawString(Visit(node.Branches[1]));
         var d = new DrawObject(value, tag, _scene.UtilizedColors.Peek(), _scene.CurrentLineStyle, _scene.CurrentStrokeWidth, _scene.CurrentFillType, _scene.CurrentGradientColor1, _scene.CurrentGradientColor2, _scene.CurrentLayer);
         if (!d.CheckValidType())
@@ -1553,7 +1553,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
     // Parser never produces plain Measure nodes; only measure(p1,p2).
     public EvaluationResult VisitMeasure(Node node) => new VoidResult();
 
-    public EvaluationResult VisitPointFuc(Node node)
+    public EvaluationResult VisitPointFunc(Node node)
     {
         EvaluationResult xResult = Visit(node.Branches[0]);
         if (xResult is ErrorResult) return xResult;
@@ -1571,7 +1571,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new FigureResult(p);
     }
 
-    public EvaluationResult VisitCircleFuc(Node node)
+    public EvaluationResult VisitCircleFunc(Node node)
     {
         EvaluationResult centerResult = Visit(node.Branches[0]);
         if (centerResult is ErrorResult) return centerResult;
@@ -1590,7 +1590,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new FigureResult(c);
     }
 
-    public EvaluationResult VisitPolygonFuc(Node node)
+    public EvaluationResult VisitPolygonFunc(Node node)
     {
         EvaluationResult centerResult = Visit(node.Branches[0]);
         if (centerResult is ErrorResult) return centerResult;
@@ -1612,7 +1612,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new FigureResult(poly);
     }
 
-    public EvaluationResult VisitEllipseFuc(Node node)
+    public EvaluationResult VisitEllipseFunc(Node node)
     {
         EvaluationResult centerResult = Visit(node.Branches[0]);
         if (centerResult is ErrorResult) return centerResult;
@@ -1634,7 +1634,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new FigureResult(e);
     }
 
-    public EvaluationResult VisitLineFuc(Node node)
+    public EvaluationResult VisitLineFunc(Node node)
     {
         EvaluationResult r1 = Visit(node.Branches[0]);
         if (r1 is ErrorResult) return r1;
@@ -1652,7 +1652,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new FigureResult(l);
     }
 
-    public EvaluationResult VisitSegmentFuc(Node node)
+    public EvaluationResult VisitSegmentFunc(Node node)
     {
         EvaluationResult r1 = Visit(node.Branches[0]);
         if (r1 is ErrorResult) return r1;
@@ -1670,7 +1670,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new FigureResult(s);
     }
 
-    public EvaluationResult VisitRayFuc(Node node)
+    public EvaluationResult VisitRayFunc(Node node)
     {
         EvaluationResult r1 = Visit(node.Branches[0]);
         if (r1 is ErrorResult) return r1;
@@ -1688,7 +1688,7 @@ public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
         return new FigureResult(ray);
     }
 
-    public EvaluationResult VisitMeasureFuc(Node node)
+    public EvaluationResult VisitMeasureFunc(Node node)
     {
         EvaluationResult r1 = Visit(node.Branches[0]);
         if (r1 is ErrorResult) return r1;

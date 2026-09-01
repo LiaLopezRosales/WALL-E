@@ -6,12 +6,12 @@ public class Scope
 {
     public Scope? Parent { get; set; }
     public Dictionary<string, object> Variables { get; set; }
-    public Dictionary<string, Fuction> TemporalFunctions { get; set; }
+    public Dictionary<string, Function> TemporalFunctions { get; set; }
     public bool InFunction {get;set;}
     public Scope()
     {
         Variables = new Dictionary<string, object>();
-        TemporalFunctions = new Dictionary<string, Fuction>();
+        TemporalFunctions = new Dictionary<string, Function>();
         this.Parent = null;
         InFunction=false;
     }

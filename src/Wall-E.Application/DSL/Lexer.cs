@@ -318,7 +318,7 @@ namespace Wall_E.Application.DSL;
         }
         else if (possibletoken == "!=" )
         {
-            token = new Token(Token.TokenType.diferent, possibletoken,File,Line,index.ToString());
+            token = new Token(Token.TokenType.different, possibletoken,File,Line,index.ToString());
         }
         else if (possibletoken == "," ||  possibletoken == ";" || possibletoken == ":" || possibletoken == "=>" || possibletoken == "="||  possibletoken == "..." )
         {

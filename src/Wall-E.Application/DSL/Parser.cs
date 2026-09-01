@@ -165,7 +165,7 @@ public class Parser
         }
          if ((tokenstream.Position() < tokens.Count) && tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket && (tokenstream.Contains("=")))
         {
-            return Function();
+            return ParseFunction();
         }
         return ParseExpression();
 
@@ -248,7 +248,7 @@ public class Parser
         return value;
 
     }
-    public Node Exp_Fuc()
+    public Node ExpFunc()
     {
         string name = tokenstream.tokens[tokenstream.Position()].Value;
         tokenstream.MoveForward(1);
@@ -277,9 +277,9 @@ public class Parser
 
         }
         else tokenstream.MoveForward(1);
-        function.Type = Node.NodeType.Declared_Fuc;
+        function.Type = Node.NodeType.DeclaredFunc;
         Node func_name = new Node();
-        func_name.Type = Node.NodeType.Declared_FucName;
+        func_name.Type = Node.NodeType.DeclaredFuncName;
         func_name.NodeExpression = name;
         function.Branches = new List<Node> { func_name, Arguments };
         return function;
@@ -608,7 +608,7 @@ public class Parser
     {
         tokenstream.MoveForward(2);
         Node arguments = new Node();
-        arguments.Type = Node.NodeType.Circle_Fuc;
+        arguments.Type = Node.NodeType.CircleFunc;
         Node center = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
@@ -628,7 +628,7 @@ public class Parser
     {
         tokenstream.MoveForward(2);
         Node arguments = new Node();
-        arguments.Type = Node.NodeType.Point_Fuc;
+        arguments.Type = Node.NodeType.PointFunc;
         Node x = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
@@ -648,7 +648,7 @@ public class Parser
     {
         tokenstream.MoveForward(2);
         Node arguments = new Node();
-        arguments.Type = Node.NodeType.Line_Fuc;
+        arguments.Type = Node.NodeType.LineFunc;
         Node p1 = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
@@ -668,7 +668,7 @@ public class Parser
     {
         tokenstream.MoveForward(2);
         Node arguments = new Node();
-        arguments.Type = Node.NodeType.Segment_Fuc;
+        arguments.Type = Node.NodeType.SegmentFunc;
         Node p1 =ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
@@ -688,7 +688,7 @@ public class Parser
     {
         tokenstream.MoveForward(2);
         Node arguments = new Node();
-        arguments.Type = Node.NodeType.Ray_Fuc;
+        arguments.Type = Node.NodeType.RayFunc;
         Node p1 = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
@@ -713,7 +713,7 @@ public class Parser
         }
         else tokenstream.MoveForward(1);
         Node arguments = new Node();
-        arguments.Type = Node.NodeType.Measure_Fuc;
+        arguments.Type = Node.NodeType.MeasureFunc;
         Node p1 = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {
@@ -813,17 +813,17 @@ public class Parser
             instructions.Branches.Add(instruction);
             
         } while (tokenstream.tokens[tokenstream.Position()].Value != "in");
-        Node assigment_exp = new Node();
-        assigment_exp.Type = Node.NodeType.Assigment;
+        Node assignment_exp = new Node();
+        assignment_exp.Type = Node.NodeType.Assignment;
         tokenstream.MoveForward(1);
        
         Node assig=ParseExpression();
-        assigment_exp.Branches = new List<Node>{assig};
-        let_exp.Branches = new List<Node> { instructions, assigment_exp };
+        assignment_exp.Branches = new List<Node>{assig};
+        let_exp.Branches = new List<Node> { instructions, assignment_exp };
         return let_exp;
     }
 
-    public Node Function()
+    public Node ParseFunction()
     {
         string name = tokenstream.tokens[tokenstream.Position()].Value;
         int original_index=tokenstream.Position();
@@ -857,9 +857,9 @@ public class Parser
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "'=' symbol",tokenstream.tokens[tokenstream.Position()].TokenLocation));
         }
         else tokenstream.MoveForward(1);
-            function.Type = Node.NodeType.Fuction;
+            function.Type = Node.NodeType.Function;
             Node function_name = new Node();
-            function_name.Type = Node.NodeType.FucName;
+            function_name.Type = Node.NodeType.FuncName;
             function_name.NodeExpression = name;
             Node body = ParseExpression();
             foreach (var item in Arguments.Branches)
@@ -881,7 +881,7 @@ public class Parser
     {
         tokenstream.MoveForward(2);
         Node arguments = new Node();
-        arguments.Type = Node.NodeType.Polygon_Fuc;
+        arguments.Type = Node.NodeType.PolygonFunc;
         Node center = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
@@ -902,7 +902,7 @@ public class Parser
     {
         tokenstream.MoveForward(2);
         Node arguments = new Node();
-        arguments.Type = Node.NodeType.Ellipse_Fuc;
+        arguments.Type = Node.NodeType.EllipseFunc;
         Node center = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
             errors.Add(new Error(Error.TypeError.Syntactic_Error, Error.ErrorCode.Expected, "',' symbol", tokenstream.tokens[tokenstream.Position()].TokenLocation));
@@ -1401,7 +1401,7 @@ public class Parser
             else and_or.Type = Node.NodeType.And;
             and_or.Branches = new List<Node> { left, right };
         }
-        if (and_or.Type != Node.NodeType.Indefined)
+        if (and_or.Type != Node.NodeType.None)
         {
             return and_or;
         }
@@ -1442,10 +1442,10 @@ public class Parser
             {
                 com.Type = Node.NodeType.Equal;
             }
-            else com.Type = Node.NodeType.Diferent;
+            else com.Type = Node.NodeType.Different;
             com.Branches = new List<Node> { left, right };
         }
-        if (com.Type != Node.NodeType.Indefined)
+        if (com.Type != Node.NodeType.None)
         {
             return com;
         }
@@ -1477,7 +1477,7 @@ public class Parser
             }
             sus.Branches = new List<Node> { left, right };
         }
-        if (sus.Type != Node.NodeType.Indefined)
+        if (sus.Type != Node.NodeType.None)
         {
             return sus;
         }
@@ -1510,7 +1510,7 @@ public class Parser
             pro.Branches = new List<Node> { left, right };
 
         }
-        if (pro.Type != Node.NodeType.Indefined)
+        if (pro.Type != Node.NodeType.None)
         {
             return pro;
         }
@@ -1533,7 +1533,7 @@ public class Parser
             pow.Type = Node.NodeType.Pow;
             pow.Branches = new List<Node> { left, right };
         }
-        if (pow.Type != Node.NodeType.Indefined)
+        if (pow.Type != Node.NodeType.None)
         {
             return pow;
         }
@@ -1598,7 +1598,7 @@ public class Parser
         }
         if (tokens[tokenstream.Position()].Type == Token.TokenType.identifier && tokens[tokenstream.Position() + 1].Type == Token.TokenType.left_bracket)
         {
-            return Exp_Fuc();
+            return ExpFunc();
         }
         else if (tokenstream.tokens[tokenstream.Position()].Type==Token.TokenType.PI)
         {
@@ -1787,7 +1787,7 @@ public class Parser
         }
         else tokenstream.MoveForward(1);
         Node arguments = new Node();
-        arguments.Type = Node.NodeType.Measure_Fuc;
+        arguments.Type = Node.NodeType.MeasureFunc;
         Node p1 = ParseExpression();
         if (tokenstream.tokens[tokenstream.Position()].Value != ",")
         {

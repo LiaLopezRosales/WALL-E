@@ -41,15 +41,20 @@ refactor: extract StoreVariable, eliminate 35 duplications
 
 Rationale: portfolio project; commit history is what recruiters audit.
 
-## Known typos (search carefully)
+## Known typos (historical)
 
-| Intended | Actual in codebase |
+| Intended | Historical spelling |
 |---|---|
 | `Environment` | `Enviroment` (missing `n`) |
 | `Function` | `Fuction` (missing `n`) |
 | `Analyze`/`Analyzer` | `Analize` / `Anallizer` |
+| `Different` / `Assignment` / `Undefined` | `Diferent` / `Assigment` / `Indefined` |
 
-These appear in class names, enums, and namespaces — renaming them breaks references everywhere.
+All typos were **fixed in the active codebase** (`src/` + `tests/`) on 2026-09-01
+(`Fuction`→`Function`, `Diferent`→`Different`, `Assigment`→`Assignment`,
+`Indefined`→`None`, `Fuc*`→`Func*`, method `Parser.Function()`→`ParseFunction()`).
+They survive only in the archived `legacy/` tree (appear in class names, enums,
+and namespaces there) — do not rename inside `legacy/`.
 
 ## Architecture (new, `src/`)
 

@@ -4,7 +4,7 @@ namespace Wall_E.Domain;
 public class EvaluationContext
 {
     /// <summary>User-defined functions declared by the program (and imports).</summary>
-    public List<Fuction> Available_Functions { get; set; } = new();
+    public List<Function> Available_Functions { get; set; } = new();
     /// <summary>Global constants and variables bound by the program.</summary>
     public Dictionary<string, object> GlobalConstant { get; set; } = new();
     /// <summary>Built-in unary math functions (sin, cos, sqrt, tan, atan, abs, floor, ceil).</summary>

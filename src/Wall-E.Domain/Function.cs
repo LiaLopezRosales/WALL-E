@@ -1,14 +1,14 @@
 namespace Wall_E.Domain;
 
 /// <summary>Represents a user-defined function with its name, parameters, and AST body.</summary>
-public class Fuction
+public class Function
 {
    public string Name{get;set;}
    public Dictionary<string,object> Functions_Arguments{get;set;} 
    public int NumberofCalls{get;set;}
    public Node Code{get;set;}
 
-   public Fuction(string name,Node code,Dictionary<string,object> functions_arg)
+   public Function(string name,Node code,Dictionary<string,object> functions_arg)
    {
      this.Name=name;
      this.Code=code;

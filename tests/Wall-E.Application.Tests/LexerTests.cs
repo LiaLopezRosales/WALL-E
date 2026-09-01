@@ -118,7 +118,7 @@ public class LexerTests
         Assert.Equal(Token.TokenType.equal_minor, tokens[5].Type);
         Assert.Equal(Token.TokenType.equal_major, tokens[7].Type);
         Assert.Equal(Token.TokenType.equal, tokens[9].Type);
-        Assert.Equal(Token.TokenType.diferent, tokens[11].Type);
+        Assert.Equal(Token.TokenType.different, tokens[11].Type);
     }
 
     [Fact]
