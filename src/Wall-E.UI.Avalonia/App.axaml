@@ -51,6 +51,10 @@
     <Application.Styles>
         <sty:FluentAvaloniaTheme/>
 
+        <!-- Required ControlTheme for AvaloniaEdit's TextArea/TextEditor:
+             without it the editor has no template and renders at 0x0. -->
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml"/>
+
         <Style Selector="Button.danger">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>

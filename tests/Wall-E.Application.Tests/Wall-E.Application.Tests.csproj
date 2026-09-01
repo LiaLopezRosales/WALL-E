@@ -25,4 +25,8 @@
     <ProjectReference Include="..\..\src\Wall-E.Application\Wall-E.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\..\programs\08-animate.geo" Link="Examples/08-animate.geo" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

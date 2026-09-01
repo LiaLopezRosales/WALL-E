@@ -1,3 +1,4 @@
+using System.IO;
 using Wall_E.Domain;
 using Xunit;
 
@@ -75,5 +76,33 @@ public class AnimateTests
         // First block's frame carries the point; second block's a circle.
         Assert.IsType<Point>(p.Frames[0].Snapshot()[0].Figures);
         Assert.IsType<Circle>(p.Frames[^1].Snapshot()[0].Figures);
+    }
+
+    [Fact]
+    public void Full_checked_in_animate_example_runs_end_to_end()
+    {
+        // Regression guard for the bundled example programs/08-animate.geo
+        // (colours, grosor, cos/sin, two animate blocks).
+        var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Examples", "08-animate.geo"));
+        var p = DslRunner.Run(source);
+        Assert.Empty(p.Errors);
+        Assert.Equal(2 * EvaluatorVisitor.AnimateFrames, p.Frames.Count);
+
+        // First block draws a point and a growing circle in every frame.
+        var first = p.Frames[0].Snapshot();
+        Assert.Equal(2, first.Count);
+        Assert.Single(first, f => f.Figures is Point);
+        Assert.Single(first, f => f.Figures is Circle);
+
+        // Second block draws two orbiting points in distinct colours.
+        var last = p.Frames[^1].Snapshot();
+        Assert.Equal(2, last.Count);
+        Assert.All(last, f => Assert.IsType<Point>(f.Figures));
+        Assert.Equal(2, last.Select(f => f.UsedColor).Distinct().Count());
+
+        // The point sweeps across the parabola between first and last frame.
+        var leadingPoint = (Point)last[0].Figures;
+        var firstPoint = (Point)first.First(f => f.Figures is Point).Figures;
+        Assert.True(leadingPoint.x > firstPoint.x);
     }
 }

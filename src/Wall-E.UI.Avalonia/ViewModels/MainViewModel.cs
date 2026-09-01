@@ -42,6 +42,7 @@ public class MainViewModel : ViewModelBase
                 ProcessCommand?.RaiseCanExecuteChanged();
                 StopCommand?.RaiseCanExecuteChanged();
                 StressRunCommand?.RaiseCanExecuteChanged();
+                PlayPauseCommand?.RaiseCanExecuteChanged();
                 OnPropertyChanged(nameof(DisplayScene));
             }
         }
@@ -73,9 +74,11 @@ public class MainViewModel : ViewModelBase
     public RenderScene? Scene => _scene;
 
     /// <summary>What the canvas should render right now: the live pipeline
-    /// scene during streaming, the current animation frame while playing,
-    /// the finished scene otherwise.</summary>
-    public RenderScene? DisplayScene => IsProcessing ? _pipeline.Scene : (IsPlaying ? CurrentFrame : _scene);
+    /// scene during streaming, the current (or first/paused) animation frame
+    /// while an animation is loaded, the finished scene otherwise.</summary>
+    public RenderScene? DisplayScene => IsProcessing
+        ? _pipeline.Scene
+        : (IsPlaying || HasAnimation ? CurrentFrame : _scene);
 
     public bool HasAnimation => _animationFrames.Count > 0;
     public int FrameCount => _animationFrames.Count;
@@ -219,6 +222,7 @@ public class MainViewModel : ViewModelBase
             OnPropertyChanged(nameof(Scene));
             OnPropertyChanged(nameof(DisplayScene));
             UpdateInkStrip();
+            PlayPauseCommand?.RaiseCanExecuteChanged();
             SceneChanged?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -309,6 +313,7 @@ public class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(FrameCount));
         OnPropertyChanged(nameof(FrameLabel));
         OnPropertyChanged(nameof(Scene));
+        PlayPauseCommand?.RaiseCanExecuteChanged();
         SceneChanged?.Invoke(this, EventArgs.Empty);
     }
 
