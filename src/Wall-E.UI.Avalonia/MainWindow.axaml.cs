@@ -192,7 +192,12 @@ public partial class MainWindow : Window
     private void VmOnSceneChanged(object? sender, EventArgs e)
     {
         Canvas.SetScene(_vm!.DisplayScene);
-        ProcessButton.Focus();
+        // Only steal focus to the Run button when idle. During playback
+        // (25 ms ticks) or streaming (50 ms), focusing away mid-press makes
+        // Button.OnLostFocus clear IsPressed, so the release never clicks:
+        // Pause/Clear/Stop would appear dead while the animation runs.
+        if (!_vm.IsPlaying && !_vm.IsProcessing)
+            ProcessButton.Focus();
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
