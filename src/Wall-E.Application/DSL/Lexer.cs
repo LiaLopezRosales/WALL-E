@@ -5,9 +5,12 @@ namespace Wall_E.Application.DSL;
     /// <summary>Lexical analyzer that converts a single line of DSL source code into a list of tokens.</summary>
     public class Lexer
     {
+        /// <summary>Lexical errors accumulated while tokenizing.</summary>
         public List<Error> lexererrors;
-     public string File{get;set;}
-     public string Line{get;set;}
+        /// <summary>The source file being tokenized.</summary>
+        public string File { get; set; }
+        /// <summary>The source line being tokenized.</summary>
+        public string Line { get; set; }
 
     public Lexer(string file,string line)
     {
@@ -53,7 +56,8 @@ namespace Wall_E.Application.DSL;
         return lexererrors;
     }
 
-    public Token IdentifyType(string possibletoken,List<Error> errors,int index)
+    /// <summary>Classifies a raw text fragment into an appropriate TokenType, recording errors for unknown vocabulary.</summary>
+    public Token IdentifyType(string possibletoken, List<Error> errors, int index)
     {
         Token token=new Token(Token.TokenType.not_id,possibletoken,File,Line,index.ToString());
         if (possibletoken == "draw" )

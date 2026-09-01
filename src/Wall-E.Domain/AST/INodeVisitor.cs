@@ -1,5 +1,6 @@
 namespace Wall_E.Domain;
 
+/// <summary>Visitor interface with one Visit method per AST node kind, each returning a result.</summary>
 public interface INodeVisitor<out T>
 {
     T Visit(Node node);

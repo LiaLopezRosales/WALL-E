@@ -1,27 +1,40 @@
 namespace Wall_E.Domain;
 
+/// <summary>Holds the mutable evaluation state: functions, constants, built-in tables, and results.</summary>
 public class EvaluationContext
 {
+    /// <summary>User-defined functions declared by the program (and imports).</summary>
     public List<Fuction> Available_Functions { get; set; } = new();
+    /// <summary>Global constants and variables bound by the program.</summary>
     public Dictionary<string, object> GlobalConstant { get; set; } = new();
+    /// <summary>Built-in unary math functions (sin, cos, sqrt, tan, atan, abs, floor, ceil).</summary>
     public Dictionary<string, Func<double, double>> Trig_functions { get; }
+    /// <summary>Built-in numeric constants (PI, E).</summary>
     public Dictionary<string, Func<double>> Math_value { get; } = new()
     {
         ["PI"] = () => Math.PI,
         ["E"] = () => Math.E,
     };
+    /// <summary>Built-in logarithmic function (log(base, argument)).</summary>
     public Dictionary<string, Func<double, double, double>> Log { get; } = new()
     {
         ["log"] = (double Base, double argument) => Math.Log(argument, Base),
     };
+    /// <summary>Built-in random double-sequence generator (randoms).</summary>
     public Dictionary<string, Func<IEnumerable<double>>> Randoms { get; }
+    /// <summary>Built-in random point-sample generator (samples).</summary>
     public Dictionary<string, Func<IEnumerable<Point>>> Samples { get; }
+    /// <summary>Built-in points-inside-circle generator (points).</summary>
     public Dictionary<string, Func<Circle, IEnumerable<Point>>> Points { get; }
 
+    /// <summary>Evaluated values of every top-level statement, in program order.</summary>
     public List<object> Results { get; set; } = new();
+    /// <summary>Output produced by the print statement.</summary>
     public List<string> PrintOutput { get; set; } = new();
+    /// <summary>Becomes true when the run accumulated any semantic error.</summary>
     public bool HasErrors { get; set; }
 
+    /// <summary>Creates a context seeded with the built-in function and constant tables.</summary>
     public EvaluationContext()
     {
         Trig_functions = new Dictionary<string, Func<double, double>>

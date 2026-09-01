@@ -6,10 +6,13 @@ namespace Wall_E.Application.DSL;
 /// <summary>Splits multi-line DSL source code into logical statement chunks, handling let-in and block concatenation.</summary>
 public class GeneralLexer
 {    //Divide un código en expresiones y declaraciones
-    public string code{get;set;}
-    List<List<Error>> errors{get;set;}
-    public List<string> lines{get;private set;}
-    public string File{get;set;}
+    /// <summary>The raw source code with line comments stripped.</summary>
+    public string code { get; set; }
+    List<List<Error>> errors { get; set; }
+    /// <summary>The split statement chunks ready for tokenization.</summary>
+    public List<string> lines { get; private set; }
+    /// <summary>The name of the source file.</summary>
+    public string File { get; set; }
 
     public GeneralLexer(string code,string file)
     {
@@ -162,6 +165,7 @@ public class GeneralLexer
     }
 
     /// <summary>Returns all lexical errors collected during processing.</summary>
+    /// <summary>Returns the per-line lexical error lists collected while tokenizing.</summary>
     public List<List<Error>> LexicalErrors()
     {
         return errors;

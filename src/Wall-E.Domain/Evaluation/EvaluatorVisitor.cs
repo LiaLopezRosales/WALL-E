@@ -1,6 +1,8 @@
 using System.Threading;
 namespace Wall_E.Domain;
 
+/// <summary>Evaluates every reachable AST node into an EvaluationResult, mutating
+/// the shared EvaluationContext, FigureRepository, and RenderScene.</summary>
 public class EvaluatorVisitor : INodeVisitor<EvaluationResult>
 {
     private EvaluationContext _context;

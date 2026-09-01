@@ -36,6 +36,7 @@ public class GeneralParser
 
         return Trees;
     }
+    /// <summary>Returns the line where an import appears after a non-import statement, or 0 when ordering is valid.</summary>
     public long CheckImportStatementsOrder(List<Node> lines)
     {
        bool is_import=true;
